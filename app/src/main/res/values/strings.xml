@@ -19,4 +19,5 @@
     <string name="IOException">IOException</string>
     <string name="NoErrorOnFileOps">No error detected during file operation</string>
     <string name="LineReadError">Line could not be read</string>
+    <string name="fileName">sometextfile</string>
 </resources>
