@@ -20,4 +20,5 @@
     <string name="NoErrorOnFileOps">No error detected during file operation</string>
     <string name="LineReadError">Line could not be read</string>
     <string name="fileName">sometextfile</string>
+    <string name="ClickOnBtnNext">Click detected on btnNext</string>
 </resources>

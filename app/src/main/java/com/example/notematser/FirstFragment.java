@@ -1,5 +1,8 @@
 package com.example.notematser;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +12,11 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+
+import com.flask.colorpicker.ColorPickerView;
+import com.flask.colorpicker.OnColorSelectedListener;
+import com.flask.colorpicker.builder.ColorPickerClickListener;
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -36,9 +44,11 @@ public class FirstFragment extends Fragment {
         if(savedInstanceState == null) {
             getSavedFileOnStartup(view); //only load once on init of fragment (savedInstanceState = null)
         }
+        setBackgroundColorUsingPrefs(view);
         return view;
 
     }
+
 
     private void updateTextObject(View v, final String msg) {
         final String str = msg;
@@ -192,6 +202,13 @@ public class FirstFragment extends Fragment {
         }
     }
  */
+    public void setBackgroundColorUsingPrefs(View view) {
+
+        SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
+        Log.d("prefcolor", String.valueOf(prefs.getInt("BackGroundColor", 1)));
+        EditText et = (EditText) view.getRootView().findViewById(R.id.editText);
+        et.setBackgroundColor(prefs.getInt("BackGroundColor", 1));
+    }
 
     public void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
 
@@ -199,8 +216,43 @@ public class FirstFragment extends Fragment {
 
         view.findViewById(R.id.button_first).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Log.d(getString(R.string.DefaultTag), "Click detected on btnNext");
+            public void onClick(final View view) {
+
+                Log.d(getString(R.string.DefaultTag), getString(R.string.ClickOnBtnNext));
+
+                ColorPickerDialogBuilder
+                        .with(getContext())
+                        .setTitle("Choose color")
+                        //.initialColor(currentBackgroundColor)
+                        .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                        .density(12)
+                        .setOnColorSelectedListener(new OnColorSelectedListener() {
+                            @Override
+                            public void onColorSelected(int selectedColor) {
+                                Log.d("onColorSelected: 0x" ,Integer.toHexString(selectedColor));
+                            }
+                        })
+                        .setPositiveButton("ok", new ColorPickerClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                                //changeBackgroundColor(selectedColor);
+                                Log.d("onColorSelectedok" ,Integer.toHexString(selectedColor));
+                                SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor prefsEdit = prefs.edit();
+                                prefsEdit.putInt("BackGroundColor", selectedColor);
+                                prefsEdit.commit();
+                                setBackgroundColorUsingPrefs(view);
+                            }
+                        })
+                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.d("onColorSelectedCancel" , "cancel");
+                            }
+                        })
+                        .build()
+                        .show();
+
             }
         });
 
