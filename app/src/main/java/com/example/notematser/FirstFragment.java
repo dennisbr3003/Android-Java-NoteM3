@@ -205,9 +205,9 @@ public class FirstFragment extends Fragment {
     public void setBackgroundColorUsingPrefs(View view) {
 
         SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
-        Log.d("prefcolor", String.valueOf(prefs.getInt("BackGroundColor", 1)));
+        Log.d("prefcolor", String.valueOf(prefs.getInt("BackGroundColor", -1)));
         EditText et = (EditText) view.getRootView().findViewById(R.id.editText);
-        et.setBackgroundColor(prefs.getInt("BackGroundColor", 1));
+        et.setBackgroundColor(prefs.getInt("BackGroundColor", -1));
     }
 
     public void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
