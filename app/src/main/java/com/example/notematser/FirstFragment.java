@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -40,7 +41,6 @@ public class FirstFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_first, container, false);
 
         /* read session */
-        Log.d("Test", String.valueOf(savedInstanceState == null));
         if(savedInstanceState == null) {
             getSavedFileOnStartup(view); //only load once on init of fragment (savedInstanceState = null)
         }
@@ -111,7 +111,6 @@ public class FirstFragment extends Fragment {
 
     private void saveText(View v){
         EditText et = (EditText) v.getRootView().findViewById(R.id.editText); //use getRootView to get correct view/container because we are in a thread
-        Log.d(getString(R.string.DefaultTag), getString(R.string.FoundValue) + et.getText().toString());
         try {
             FileOutputStream fos = getContext().openFileOutput(getString(R.string.fileName), getContext().MODE_PRIVATE);
             fos.write(et.getText().toString().getBytes());
@@ -123,85 +122,6 @@ public class FirstFragment extends Fragment {
         }
     }
 
-/*
-    private String getSessionValue(final View v, final int value) {
-        final String[] returnValue = {null};
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                FileInputStream fis = null;
-
-                try {
-                    fis = getContext().openFileInput("session");
-                } catch (FileNotFoundException e) {
-                    Log.e(getString(R.string.FileNotFoundException), getString(R.string.FileOpsError));
-                    return; //do nothing file needs to be created
-                }
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(new DataInputStream(fis)));
-                String line;
-                int i = 0;
-                while(true){
-                    try {
-                        if (((line = br.readLine()) != null)) {
-                            i++;
-                            if(i==value) {
-                                returnValue[0] = line;
-                                Log.i(getString(R.string.DefaultTag), line);
-                                break;
-                            }
-                        }
-                        else {break;}  // avoid endless loop
-                    } catch (IOException e) {
-                        Log.e(getString(R.string.IOException), getString(R.string.LineReadError));
-                    }
-                }
-                try {
-                    fis.close();
-                    Log.i(getString(R.string.DefaultTag), getString(R.string.NoErrorOnFileOps));
-                } catch (IOException e) {
-                    Log.e(getString(R.string.IOException), getString(R.string.FileOpsError));
-                    return; // do nothing
-                }
-            }
-        });
-        t.start();
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            Log.e(getString(R.string.InterruptedException), getString(R.string.ThreadNotExceuted));
-        }
-        return returnValue[0];
-    }
-
- */
-
-/*
-    private void setSessionValue(final View v, final String svalue){
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    FileOutputStream fos = getContext().openFileOutput("session", getContext().MODE_PRIVATE);
-                    fos.write(svalue.toString().getBytes());
-                    fos.close();
-                } catch (FileNotFoundException e) {
-                    Log.e(getString(R.string.FileNotFoundException), getString(R.string.FileOpsError));
-                } catch (IOException e) {
-                    Log.e(getString(R.string.IOException), getString(R.string.FileOpsError));
-                }
-            }
-        });
-        t.start();
-        try {
-            t.join();
-            Log.i(getString(R.string.DefaultTag), getString(R.string.NoErrorOnFileOps));
-        } catch (InterruptedException e) {
-            Log.e(getString(R.string.InterruptedException), getString(R.string.ThreadNotExceuted));
-        }
-    }
- */
     public void setBackgroundColorUsingPrefs(View view) {
 
         SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
@@ -235,7 +155,6 @@ public class FirstFragment extends Fragment {
                         .setPositiveButton("ok", new ColorPickerClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                                //changeBackgroundColor(selectedColor);
                                 Log.d("onColorSelectedok" ,Integer.toHexString(selectedColor));
                                 SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
                                 SharedPreferences.Editor prefsEdit = prefs.edit();
@@ -269,9 +188,9 @@ public class FirstFragment extends Fragment {
                 t.start();
                 try {
                     t.join();
-                    Log.i(getString(R.string.DefaultTag), getString(R.string.NoErrorOnFileOps));
+                    Toast.makeText(getContext(),getString(R.string.ToastSaveSucces), Toast.LENGTH_LONG).show();
                 } catch (InterruptedException e) {
-                    Log.e(getString(R.string.InterruptedException), getString(R.string.ThreadNotExceuted));
+                    Toast.makeText(getContext(),getString(R.string.ToastSaveFailure), Toast.LENGTH_LONG).show();
                 }
             }
         });
