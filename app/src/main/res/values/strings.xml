@@ -3,7 +3,7 @@
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">TakeNote (draft)</string>
-    <string name="StartupActivityCaption">TakeNote</string>
+    <string name="StartupActivityCaption">TakeNote Passpoints</string>
     <string name="next">Color</string>
     <string name="previous">Previous</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
@@ -23,5 +23,9 @@
     <string name="ClickOnBtnNext">Click detected on btnNext</string>
     <string name="ToastSaveSucces">Note saved succesfully</string>
     <string name="ToastSaveFailure">Note could not be saved</string>
-    <string name="passwordimage">PasswordImage</string>
+    <string name="passwordimage">PasspointImage</string>
+    <string name="DialogMessage">Touch four points on the image to set an access code. You will need these points to gain access to your notes in the future.</string>
+    <string name="DialogTitle">Create Access Passpoints</string>
+    <string name="btnPosCaption">Ok</string>
+    <string name="DebugTCLabel">TouchCoordinates</string>
 </resources>
