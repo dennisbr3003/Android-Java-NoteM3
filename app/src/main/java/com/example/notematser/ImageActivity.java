@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageView;
 
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.List;
 public class ImageActivity extends AppCompatActivity implements PointCollectorListener {
 
     private PointCollector pointCollector = new PointCollector();
-
+    private Database sdb = new Database(this);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,13 +60,13 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
     // This method is overridden from the PointCollectorListener interface and will be called from
     // PointCollector class. In this class an ArrayList with point will be send to this method. I
     // have added code to check the contents and send them to to the log subsequently.
-
     @Override
     public void pointsCollected(List<Point> points_list) {
         try {
                 for (Point p: points_list) {
                     Log.d("Point captured", String.valueOf(p.x) +  " " + String.valueOf(p.y));
                 }
+                sdb.setPoints(points_list);
         }
         catch (Exception e){
             Log.d("Debug-DB", "No point collected, object = null (" + e.getLocalizedMessage() + ")");
