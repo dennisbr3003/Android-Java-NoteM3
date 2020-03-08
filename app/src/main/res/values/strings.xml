@@ -28,4 +28,5 @@
     <string name="DialogTitle">Create Access Passpoints</string>
     <string name="btnPosCaption">Ok</string>
     <string name="DebugTCLabel">TouchCoordinates</string>
+    <string name="storing_progress">Storing values...</string>
 </resources>

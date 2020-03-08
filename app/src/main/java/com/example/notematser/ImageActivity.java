@@ -6,8 +6,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.graphics.Point;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import java.util.List;
@@ -61,16 +64,78 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
     // PointCollector class. In this class an ArrayList with point will be send to this method. I
     // have added code to check the contents and send them to to the log subsequently.
     @Override
-    public void pointsCollected(List<Point> points_list) {
-        try {
-                for (Point p: points_list) {
-                    Log.d("Point captured", String.valueOf(p.x) +  " " + String.valueOf(p.y));
+    public void pointsCollected(final List<Point> points_list) {
+
+        // this code could hold up the UI thread so we should move this to a asynchronous thread of its own
+
+        // First show a dialog to indicate activity
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Do not use setMessage if you want to use an icon; instead use setTitle
+        builder.setTitle(R.string.storing_progress);
+        builder.setIcon(R.mipmap.db_storing); // this will be placed besides the title
+
+        final AlertDialog dlg = builder.create();
+        dlg.show();
+
+        // You CAN customize an AlertDialog but only AFTER it is shown. Apparently this can also be done
+        // with dialogs that are declared FINAL because they are being referenced to from another thread
+
+        // Get screen width and height in pixels
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        // The absolute width of the available display size in pixels.
+        int displayWidth = displayMetrics.widthPixels;
+        // The absolute height of the available display size in pixels.
+        int displayHeight = displayMetrics.heightPixels;
+
+        // Initialize a new window manager layout parameters
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+
+        // Copy the alert dialog window attributes to new layout parameter instance
+        layoutParams.copyFrom(dlg.getWindow().getAttributes());
+
+        // Set alert dialog width equal to screen width 70%. Use relative values for different screens
+        int dialogWindowWidth = (int) (displayWidth * 0.7f);
+        // Set alert dialog height equal to screen height 17%
+        int dialogWindowHeight = (int) (displayHeight * 0.17f);
+
+        // Set the width and height for the layout parameters
+        // This will be the width and height of alert dialog
+        layoutParams.width = dialogWindowWidth;
+        layoutParams.height = dialogWindowHeight;
+
+        // Apply the newly created layout parameters to the alert dialog window
+        dlg.getWindow().setAttributes(layoutParams);
+
+        // Launch a asynchronous task (that runs in it's own thread)
+        AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+
+                try {
+                    for (Point p: points_list) {
+                        Log.d("Point captured", String.valueOf(p.x) +  " " + String.valueOf(p.y));
+                    }
+                    Thread.sleep(1000); // Just so you can see the dialog (test purposes)
+                    sdb.setPoints(points_list);
+                    Log.d("Debug-DB", "Point saved to MySQL DB");
                 }
-                sdb.setPoints(points_list);
-        }
-        catch (Exception e){
-            Log.d("Debug-DB", "No point collected, object = null (" + e.getLocalizedMessage() + ")");
-            // do nothing
-        }
+                catch (Exception e){
+                    Log.d("Debug-DB", "No point collected, object = null (" + e.getLocalizedMessage() + ")");
+                    // do nothing
+                }
+                return null;
+            }
+
+            // this runs AFTER the code of 'doInBackground' has finished
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                dlg.dismiss();
+            }
+
+        };
+
+        asynctask.execute(); // You have to run the task after it's definition
     }
 }

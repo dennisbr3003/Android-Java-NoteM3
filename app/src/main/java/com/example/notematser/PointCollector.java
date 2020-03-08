@@ -19,7 +19,7 @@ public class PointCollector implements View.OnTouchListener {
     // The PointCollectorListener is set from outside this class (by another class). If it is
     // not set, it will be a null reference. This is checked when running the onTouchListener
     // in this class. If the refrence is not null it will execute the method and pass the
-    // collected points.
+    // collected points. Actually ImageActivity is passed to here (it implements the interface!).
     public void setPointCollectorListener(PointCollectorListener pointCollectorListener) {
         this.pointCollectorListener = pointCollectorListener;
     }
@@ -32,7 +32,8 @@ public class PointCollector implements View.OnTouchListener {
         Log.d("Debug-DB", "Array size = " + String.valueOf(points_array.size()));
         if(points_array.size() == 4) {
             if (pointCollectorListener != null) {
-                pointCollectorListener.pointsCollected(points_array);
+                pointCollectorListener.pointsCollected(points_array); // this method is actually an interface method overridden in ImageActivity
+                                                                      // Also check ImageActivity.java and PointCollectorListener.java (interface)
             }
             points_array.clear();
         }
