@@ -29,4 +29,6 @@
     <string name="btnPosCaption">Ok</string>
     <string name="DebugTCLabel">TouchCoordinates</string>
     <string name="storing_progress">Storing values...</string>
+    <string name="points_verify">Point already saved...verifying...</string>
+    <string name="points_saving">Point not saved yet...saving...</string>
 </resources>

@@ -159,7 +159,7 @@ public class FirstFragment extends Fragment {
                                 SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
                                 SharedPreferences.Editor prefsEdit = prefs.edit();
                                 prefsEdit.putInt("BackGroundColor", selectedColor);
-                                prefsEdit.commit();
+                                prefsEdit.apply(); // apply is background, commit is not
                                 setBackgroundColorUsingPrefs(view);
                             }
                         })

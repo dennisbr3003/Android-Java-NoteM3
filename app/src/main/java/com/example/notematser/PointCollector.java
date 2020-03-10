@@ -35,8 +35,15 @@ public class PointCollector implements View.OnTouchListener {
                 pointCollectorListener.pointsCollected(points_array); // this method is actually an interface method overridden in ImageActivity
                                                                       // Also check ImageActivity.java and PointCollectorListener.java (interface)
             }
-            points_array.clear();
+            //points_array.clear(); better practise to do this after the points are saved to the db. The save is asynchronous
+            // so the array if passed by reference may be emptied before it is saved (?). Anyway the array is passed as a final
+            // because it is used in a separate thread and in order to use it like that it ahs t obe passed as a final; so it
+            // cannot be altered. We have ti facilitate a public method here where it is not final. See below:
         }
         return false;
+    }
+
+    public void clearPoints() {
+        points_array.clear();
     }
 }
