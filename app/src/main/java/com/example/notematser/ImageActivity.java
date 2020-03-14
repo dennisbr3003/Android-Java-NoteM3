@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.AsyncTask;
@@ -14,12 +15,15 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.List;
 
 // this implementation launches the interface rendering it not null?
 public class ImageActivity extends AppCompatActivity implements PointCollectorListener {
 
+
+    private final int MAX_DEVIATION = 40;
     private PointCollector pointCollector = new PointCollector();
     private Database sdb = new Database(this);
 
@@ -84,8 +88,73 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         } else {
             Log.d("Debug-DB", getString(R.string.points_verify));
             // verify points to the ones we save earlier (from the db)
+            verifyPassPoints(points_list);
         }
     }
+
+    private void verifyPassPoints(final List<Point> points_list) {
+
+        // First show a dialog to be shown during verification
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Do not use setMessage if you want to use an icon; instead use setTitle
+        builder.setTitle(R.string.verify_values);
+        builder.setIcon(R.mipmap.db_storing); // this will be placed besides the title
+
+        final AlertDialog dlg = builder.create();
+        dlg.show();
+
+        resizeDialogDimensions(dlg);
+
+        @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Boolean> asynctask = new AsyncTask<Void, Void, Boolean>() {
+
+            @Override
+            protected Boolean doInBackground(Void... voids) {
+
+                List<Point> points_saved = sdb.getPoints();
+
+                Log.d("Debug-DB","Loaded points from DB " + String.valueOf(points_saved.size()));
+
+                try { // just to show the dialog
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    //do nothing
+                }
+                int i=0;
+                if(points_list.size() == points_saved.size()){
+                   for(Point p:points_list){
+                       //points_list
+                       if((Math.abs(p.x - points_saved.get(i).x) > 40) || (Math.abs(p.y - points_saved.get(i).y) > 40)) {
+                          return false;
+                       }
+                       i++;
+                   }
+                } else {
+                    return false; // no good to compare different sizes in a loop
+                }
+                // return value = passed to onPostExecute
+                return true;
+
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aBoolean) {
+                super.onPostExecute(aBoolean);
+                pointCollector.clearPoints(); // all ways clear for new attempt
+                dlg.dismiss();
+                if(aBoolean){
+                    Intent i = new Intent(ImageActivity.this, MainActivity.class); // next step = MainActivity ?
+                    startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
+                }
+                else {
+                    Toast.makeText(ImageActivity.this,"Access denied", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+        asynctask.execute();
+
+    }
+
 
     private void savePointsCollected(final List<Point> points_list) {
         // this code could hold up the UI thread so we should move this to a asynchronous thread of its own
@@ -102,32 +171,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         // You CAN customize an AlertDialog but only AFTER it is shown. Apparently this can also be done
         // with dialogs that are declared FINAL because they are being referenced to from another thread
 
-        // Get screen width and height in pixels
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        // The absolute width of the available display size in pixels.
-        int displayWidth = displayMetrics.widthPixels;
-        // The absolute height of the available display size in pixels.
-        int displayHeight = displayMetrics.heightPixels;
-
-        // Initialize a new window manager layout parameters
-        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
-
-        // Copy the alert dialog window attributes to new layout parameter instance
-        layoutParams.copyFrom(dlg.getWindow().getAttributes());
-
-        // Set alert dialog width equal to screen width 70%. Use relative values for different screens
-        int dialogWindowWidth = (int) (displayWidth * 0.7f);
-        // Set alert dialog height equal to screen height 17%, the dialog will be sort-of-centered
-        int dialogWindowHeight = (int) (displayHeight * 0.17f);
-
-        // Set the width and height for the layout parameters
-        // This will be the width and height of alert dialog
-        layoutParams.width = dialogWindowWidth;
-        layoutParams.height = dialogWindowHeight;
-
-        // Apply the newly created layout parameters to the alert dialog window
-        dlg.getWindow().setAttributes(layoutParams);
+        resizeDialogDimensions(dlg);
 
         // Launch a asynchronous task (that runs in it's own thread)
         @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
@@ -166,6 +210,37 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         };
 
         asynctask.execute(); // You have to run the task after it's definition
+    }
+
+    private void resizeDialogDimensions(AlertDialog dlg) {
+
+        // Get screen width and height in pixels
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        // The absolute width of the available display size in pixels.
+        int displayWidth = displayMetrics.widthPixels;
+        // The absolute height of the available display size in pixels.
+        int displayHeight = displayMetrics.heightPixels;
+
+        // Initialize a new window manager layout parameters
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+
+        // Copy the alert dialog window attributes to new layout parameter instance
+        layoutParams.copyFrom(dlg.getWindow().getAttributes());
+
+        // Set alert dialog width equal to screen width 70%. Use relative values for different screens
+        int dialogWindowWidth = (int) (displayWidth * 0.7f);
+        // Set alert dialog height equal to screen height 17%, the dialog will be sort-of-centered
+        int dialogWindowHeight = (int) (displayHeight * 0.17f);
+
+        // Set the width and height for the layout parameters
+        // This will be the width and height of alert dialog
+        layoutParams.width = dialogWindowWidth;
+        layoutParams.height = dialogWindowHeight;
+
+        // Apply the newly created layout parameters to the alert dialog window
+        dlg.getWindow().setAttributes(layoutParams);
+
     }
 
 }
