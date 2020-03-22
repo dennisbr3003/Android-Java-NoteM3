@@ -85,6 +85,9 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         if (!pointsSetInPrefs()) {
             Log.d("Debug-DB", getString(R.string.points_saving));
             savePointsCollected(points_list);
+            //give immediate access after storing the 4 points
+            Intent i = new Intent(ImageActivity.this, MainActivity.class); // next step = MainActivity ?
+            startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
         } else {
             Log.d("Debug-DB", getString(R.string.points_verify));
             // verify points to the ones we save earlier (from the db)

@@ -32,4 +32,8 @@
     <string name="points_verify">Point already saved...verifying...</string>
     <string name="points_saving">Point not saved yet...saving...</string>
     <string name="verify_values">Verifying values</string>
+    <string name="color">Color</string>
+    <string name="lock">lock</string>
+    <string name="save">Save</string>
+    <string name="select_editor_color">selcolor\\</string>
 </resources>

@@ -2,6 +2,7 @@ package com.example.notematser;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,7 +42,7 @@ public class FirstFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_first, container, false);
 
         /* read session */
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             getSavedFileOnStartup(view); //only load once on init of fragment (savedInstanceState = null)
         }
         setBackgroundColorUsingPrefs(view);
@@ -81,13 +82,14 @@ public class FirstFragment extends Fragment {
                 BufferedReader br = new BufferedReader(new InputStreamReader(new DataInputStream(fis)));
                 String line;
 
-                while(true){
+                while (true) {
                     try {
                         if (((line = br.readLine()) != null)) {
-                           updateTextObject(v, line);
-                           Log.i(getString(R.string.DefaultTag), line);
-                        }
-                        else {break;}  // avoid endless loop
+                            updateTextObject(v, line);
+                            Log.i(getString(R.string.DefaultTag), line);
+                        } else {
+                            break;
+                        }  // avoid endless loop
                     } catch (IOException e) {
                         Log.e(getString(R.string.IOException), getString(R.string.LineReadError));
                     }
@@ -109,7 +111,7 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    private void saveText(View v){
+    private void saveText(View v) {
         EditText et = (EditText) v.getRootView().findViewById(R.id.editText); //use getRootView to get correct view/container because we are in a thread
         try {
             FileOutputStream fos = getContext().openFileOutput(getString(R.string.fileName), getContext().MODE_PRIVATE);
@@ -134,48 +136,7 @@ public class FirstFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.button_first).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View view) {
-
-                Log.d(getString(R.string.DefaultTag), getString(R.string.ClickOnBtnNext));
-
-                ColorPickerDialogBuilder
-                        .with(getContext())
-                        .setTitle("Choose color")
-                        //.initialColor(currentBackgroundColor)
-                        .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
-                        .density(12)
-                        .setOnColorSelectedListener(new OnColorSelectedListener() {
-                            @Override
-                            public void onColorSelected(int selectedColor) {
-                                Log.d("onColorSelected: 0x" ,Integer.toHexString(selectedColor));
-                            }
-                        })
-                        .setPositiveButton("ok", new ColorPickerClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                                Log.d("onColorSelectedok" ,Integer.toHexString(selectedColor));
-                                SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
-                                SharedPreferences.Editor prefsEdit = prefs.edit();
-                                prefsEdit.putInt("BackGroundColor", selectedColor);
-                                prefsEdit.apply(); // apply is background, commit is not
-                                setBackgroundColorUsingPrefs(view);
-                            }
-                        })
-                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d("onColorSelectedCancel" , "cancel");
-                            }
-                        })
-                        .build()
-                        .show();
-
-            }
-        });
-
-        view.findViewById(R.id.btnSave).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.imgButtonSave).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
                 Log.d(getString(R.string.DefaultTag), getString(R.string.btnSave_Click));
@@ -188,10 +149,57 @@ public class FirstFragment extends Fragment {
                 t.start();
                 try {
                     t.join();
-                    Toast.makeText(getContext(),getString(R.string.ToastSaveSucces), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), getString(R.string.ToastSaveSucces), Toast.LENGTH_LONG).show();
                 } catch (InterruptedException e) {
-                    Toast.makeText(getContext(),getString(R.string.ToastSaveFailure), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), getString(R.string.ToastSaveFailure), Toast.LENGTH_LONG).show();
                 }
+            }
+        });
+        view.findViewById(R.id.imgButtonColor).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(getString(R.string.DefaultTag), getString(R.string.ClickOnBtnNext));
+
+                ColorPickerDialogBuilder
+                        .with(getContext())
+                        .setTitle("Choose color")
+                        //.initialColor(currentBackgroundColor)
+                        .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                        .density(12)
+                        .setOnColorSelectedListener(new OnColorSelectedListener() {
+                            @Override
+                            public void onColorSelected(int selectedColor) {
+                                Log.d("onColorSelected: 0x", Integer.toHexString(selectedColor));
+                            }
+                        })
+                        .setPositiveButton("ok", new ColorPickerClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                                Log.d("onColorSelectedok", Integer.toHexString(selectedColor));
+                                SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor prefsEdit = prefs.edit();
+                                prefsEdit.putInt("BackGroundColor", selectedColor);
+                                prefsEdit.apply(); // apply is background, commit is not
+                                setBackgroundColorUsingPrefs(view);
+                            }
+                        })
+                        .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.d("onColorSelectedCancel", "cancel");
+                            }
+                        })
+                        .build()
+                        .show();
+
+            }
+        });
+
+        view.findViewById(R.id.imgButtonLock).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getContext(), ImageActivity.class); // next step = MainActivity ?
+                startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
             }
         });
     }

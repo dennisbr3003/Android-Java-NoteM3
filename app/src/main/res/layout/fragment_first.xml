@@ -7,27 +7,6 @@
     android:orientation="vertical"
     tools:context=".FirstFragment">
 
-
-    <Button
-        android:id="@+id/button_first"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/next"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btnSaveCaption"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <EditText
         android:id="@+id/editText"
         android:layout_width="match_parent"
@@ -37,9 +16,47 @@
         android:gravity="start|center_horizontal|top"
         android:hint="@string/DefaultEditTextText"
         android:inputType="textMultiLine"
-        app:layout_constraintBottom_toTopOf="@+id/btnSave"
+        app:layout_constraintBottom_toTopOf="@+id/ButtonViewGroup"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <LinearLayout
+        android:id="@+id/ButtonViewGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_default"
+        android:orientation="horizontal"
+        android:weightSum="5"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageButton
+            android:id="@+id/imgButtonSave"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/save"
+            android:src="@mipmap/floppy_save" />
+
+        <ImageButton
+            android:id="@+id/imgButtonColor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/select_editor_color"
+            android:src="@mipmap/color_palette" />
+
+        <ImageButton
+            android:id="@+id/imgButtonLock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/lock"
+            android:src="@mipmap/padlock" />
+
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
