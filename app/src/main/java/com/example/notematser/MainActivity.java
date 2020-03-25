@@ -1,5 +1,6 @@
 package com.example.notematser;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +12,8 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
+
+    SharedResource sr = new SharedResource();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +37,27 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
+        EditText et = (EditText) findViewById(R.id.editText);
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id) {
+            case R.id.action_reset_passpoints:
+                Intent i = new Intent(this, ImageActivity.class);
+                i.putExtra(getString(R.string.ClearPassPoints), true); // = received in the activity as a bundle in onCreate of the target activity
+                startActivity(i);
+                return true;
+            case R.id.action_reset_backgroundcolor:
+                // No dialog needed here, can be easily reset
+                et.setBackgroundColor(-1);
+                sr.saveSharedBackgroundColor(-1, this);
+                return true;
+            case R.id.action_clear_notetext:
+                // Todo Add (standard) dialog to make sure the user is sure
+                et.setText("");
+                sr.saveNoteText(this, et.getText().toString().getBytes());
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

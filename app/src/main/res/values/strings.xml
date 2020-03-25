@@ -36,4 +36,6 @@
     <string name="lock">lock</string>
     <string name="save">Save</string>
     <string name="select_editor_color">selcolor\\</string>
+    <string name="reset_passpoints_caption">Reset passpoints</string>
+    <string name="ClearPassPoints">ClearPassPoints</string>
 </resources>

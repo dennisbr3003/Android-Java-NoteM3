@@ -3,8 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.notematser.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_reset_passpoints"
+        android:icon="@drawable/ic_mono_package_applications"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/reset_passpoints_caption"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_reset_backgroundcolor"
+        android:orderInCategory="110"
+        android:title="Reset background color"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_clear_notetext"
+        android:orderInCategory="120"
+        android:title="Clear notes"
         app:showAsAction="never" />
 </menu>

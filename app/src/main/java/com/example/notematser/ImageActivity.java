@@ -37,6 +37,25 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         // implements the PointCollectorListener interface and that is the requirement.
         pointCollector.setPointCollectorListener(this);
 
+        Bundle extras = getIntent().getExtras(); // retrieve any send data
+
+        Log.d("Debug", "Gaan we resetten ? " + String.valueOf((extras != null)));
+
+        if (extras != null){
+            // to get any sort of value use this:
+            Boolean resetPassPoints = extras.getBoolean(getString(R.string.ClearPassPoints), false);
+            if (resetPassPoints) {
+                // do not do this in a async task; the check will be reached before this is finished. We can't show the dialog
+                // from the onPostExecute because the dialog may have to be shown if the bundle = null
+                // clear shared prefs to force new passpoint entry
+                SharedPreferences prefs = getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
+                SharedPreferences.Editor prefsEdit = prefs.edit();
+                prefsEdit.putBoolean("PointsSet", false);
+                prefsEdit.apply(); // apply does it's work in the background, commit does not.
+            }
+
+        }
+
         if (!pointsSetInPrefs()) {
             showSetPassPointsDialog(); // this may change as the build progresses
         }

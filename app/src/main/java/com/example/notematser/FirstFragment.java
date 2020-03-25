@@ -30,7 +30,7 @@ import java.io.InputStreamReader;
 
 public class FirstFragment extends Fragment {
 
-    MainActivity ma = (MainActivity) getActivity();
+    SharedResource sr = new SharedResource();
 
     @Override
     public View onCreateView(
@@ -113,23 +113,12 @@ public class FirstFragment extends Fragment {
 
     private void saveText(View v) {
         EditText et = (EditText) v.getRootView().findViewById(R.id.editText); //use getRootView to get correct view/container because we are in a thread
-        try {
-            FileOutputStream fos = getContext().openFileOutput(getString(R.string.fileName), getContext().MODE_PRIVATE);
-            fos.write(et.getText().toString().getBytes());
-            fos.close();
-        } catch (FileNotFoundException e) {
-            Log.e(getString(R.string.FileNotFoundException), getString(R.string.FileOpsError));
-        } catch (IOException e) {
-            Log.e(getString(R.string.IOException), getString(R.string.FileOpsError));
-        }
+        sr.saveNoteText(getContext(), et.getText().toString().getBytes());
     }
 
     public void setBackgroundColorUsingPrefs(View view) {
-
-        SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
-        Log.d("prefcolor", String.valueOf(prefs.getInt("BackGroundColor", -1)));
         EditText et = (EditText) view.getRootView().findViewById(R.id.editText);
-        et.setBackgroundColor(prefs.getInt("BackGroundColor", -1));
+        et.setBackgroundColor(sr.getSharedBackgroundColor(getContext()));
     }
 
     public void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
@@ -175,11 +164,7 @@ public class FirstFragment extends Fragment {
                         .setPositiveButton("ok", new ColorPickerClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                                Log.d("onColorSelectedok", Integer.toHexString(selectedColor));
-                                SharedPreferences prefs = getContext().getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
-                                SharedPreferences.Editor prefsEdit = prefs.edit();
-                                prefsEdit.putInt("BackGroundColor", selectedColor);
-                                prefsEdit.apply(); // apply is background, commit is not
+                                sr.saveSharedBackgroundColor(selectedColor, getContext());
                                 setBackgroundColorUsingPrefs(view);
                             }
                         })
@@ -202,6 +187,7 @@ public class FirstFragment extends Fragment {
                 startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
             }
         });
+
     }
 
 }
