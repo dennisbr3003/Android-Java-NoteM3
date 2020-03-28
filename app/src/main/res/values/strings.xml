@@ -9,7 +9,7 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="DefaultEditTextText">Enter some text here</string>
     <string name="btnSaveCaption">Save</string>
-    <string name="DefaultTag">DB-Debug</string>
+    <string name="DefaultTag">Dennis_B</string>
     <string name="btnSave_Click">Click detected on btnSave</string>
     <string name="InterruptedException">InterruptedException</string>
     <string name="ThreadNotExceuted">Unable to execute thread</string>
@@ -38,4 +38,9 @@
     <string name="select_editor_color">selcolor\\</string>
     <string name="reset_passpoints_caption">Reset passpoints</string>
     <string name="ClearPassPoints">ClearPassPoints</string>
+    <string name="AreYouSure">Are you sure you want to do this? This can not be undone.</string>
+    <string name="ConfirmDialogTitle">Confirm action</string>
+    <string name="Yes">Yes</string>
+    <string name="No">No</string>
+    <string name="test">Dennis_B</string>
 </resources>

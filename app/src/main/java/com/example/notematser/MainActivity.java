@@ -11,7 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DialogAnswerListener {
 
     SharedResource sr = new SharedResource();
 
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        sr.setDialogAnswerListener(this);
     }
 
     @Override
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        EditText et = (EditText) findViewById(R.id.editText);
         //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.action_reset_passpoints:
@@ -47,13 +47,13 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_reset_backgroundcolor:
                 // No dialog needed here, can be easily reset
+                EditText et = (EditText) findViewById(R.id.editText);
                 et.setBackgroundColor(-1);
                 sr.saveSharedBackgroundColor(-1, this);
                 return true;
             case R.id.action_clear_notetext:
                 // Todo Add (standard) dialog to make sure the user is sure
-                et.setText("");
-                sr.saveNoteText(this, et.getText().toString().getBytes());
+                sr.askUserConfirmationDialog(this);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -80,4 +80,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void answerConfirmed(Boolean answer) {
+        EditText et = (EditText) findViewById(R.id.editText);
+        if(answer){
+            Log.d(getString(R.string.DefaultTag), "Confirmed");
+            et.setText("");
+            sr.saveNoteText(this, et.getText().toString().getBytes());
+        } else {
+            Log.d(getString(R.string.DefaultTag), "Not confirmed");
+        }
+    }
 }
