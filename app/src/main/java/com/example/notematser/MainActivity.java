@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 sr.saveSharedBackgroundColor(-1, this);
                 return true;
             case R.id.action_clear_notetext:
-                // Todo Add (standard) dialog to make sure the user is sure
                 sr.askUserConfirmationDialog(this);
                 return true;
             default:
@@ -64,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         String myString = savedInstanceState.getString("EditorText");
-        Log.i("debug", "Restored data: " + myString);
+        Log.i(getString(R.string.DefaultTag), "Restored data: " + myString);
         // assign texteditor value here -->
         EditText et = (EditText) findViewById(R.id.editText);
         et.setText(myString);

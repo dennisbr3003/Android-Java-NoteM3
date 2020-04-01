@@ -77,7 +77,7 @@ public class SharedResource {
         builder.setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                answer.setConfirmed(true);
+                answer.setConfirmed(false);
                 dialog.dismiss();
             }
         });

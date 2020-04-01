@@ -39,7 +39,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
 
         Bundle extras = getIntent().getExtras(); // retrieve any send data
 
-        Log.d("Debug", "Gaan we resetten ? " + String.valueOf((extras != null)));
+        Log.d("Debug", "Gaan we echt resetten ? " + String.valueOf((extras != null)));
 
         if (extras != null){
             // to get any sort of value use this:
