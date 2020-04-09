@@ -43,4 +43,13 @@
     <string name="Yes">Yes</string>
     <string name="No">No</string>
     <string name="test">Dennis_B</string>
+    <string name="exclamation">exclamation</string>
+    <string name="change_lock_screen_image">Change lock-screen image</string>
+    <string name="dialog_description_image">You can change the picture here that is used to register passpoints. You can do that in two ways:</string>
+    <string name="camera">Camera</string>
+    <string name="cancel">Cancel</string>
+    <string name="gallery">Gallery</string>
+    <string name="reset_background_color">Reset background color</string>
+    <string name="clear_notes">Clear notes</string>
+    <string name="change_passpoint_picture">Change passpoint picture</string>
 </resources>

@@ -9,6 +9,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener {
@@ -54,6 +55,9 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             case R.id.action_clear_notetext:
                 sr.askUserConfirmationDialog(this);
                 return true;
+            case R.id.action_change_passpoint_picture:
+                sr.selectPassPointImageCustomDialog(this);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -80,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
 
     @Override
-    public void answerConfirmed(Boolean answer) {
+    public void booleanAnswerConfirmed(Boolean answer) {
         EditText et = (EditText) findViewById(R.id.editText);
         if(answer){
             Log.d(getString(R.string.DefaultTag), "Confirmed");
@@ -89,5 +93,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         } else {
             Log.d(getString(R.string.DefaultTag), "Not confirmed");
         }
+
     }
 }

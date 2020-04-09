@@ -4,14 +4,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class SharedResource {
+public class SharedResource extends AppCompatActivity {
 
     private static final String BACKGROUND_COLOR = "BackGroundColor";
     private static final String SHAREDPREF_NAME = "TakeNote";
@@ -60,7 +64,7 @@ public class SharedResource {
 
     public void askUserConfirmationDialog(final Context context){
 
-        final AnswerObject answer = new AnswerObject();
+        final BooleanAnswerObject answer = new BooleanAnswerObject();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.ConfirmDialogTitle);
@@ -87,9 +91,9 @@ public class SharedResource {
             public void onDismiss(DialogInterface dialog) {
                 Log.d(context.getString(R.string.DefaultTag), "Is the listener actually listening? " + String.valueOf(dialogAnswerListener != null));
                 if (dialogAnswerListener != null) {
-                    dialogAnswerListener.answerConfirmed(answer.isConfirmed()); // this method is actually an interface method overridden in MainActivity
-                                                                                // Also check MainActivity.java and DialogAnswerListener.java (interface)
-                                                                                // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
+                    dialogAnswerListener.booleanAnswerConfirmed(answer.isConfirmed()); // this method is actually an interface method overridden in MainActivity
+                                                                                       // Also check MainActivity.java and DialogAnswerListener.java (interface)
+                                                                                       // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
                 }
             }
         });
@@ -97,13 +101,71 @@ public class SharedResource {
         AlertDialog dlg = builder.create();
         dlg.show();
 
+
     }
 
-    private class AnswerObject {
+    public void selectPassPointImageCustomDialog(Context context){
+
+        final IntegerAnswerObject answer = new IntegerAnswerObject();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+        // just do this...the photo_dialog.xml is in fact al layout that needs to be instantiated or inflated
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        // Getting the XML layout in...
+        assert inflater != null;
+        View v = inflater.inflate(R.layout.photo_dialog, null);
+
+        builder.setView(v); // <-- title is already set in layout
+
+        final AlertDialog dlg = builder.create();
+        dlg.show();
+
+        // set on-click-listeners on the buttons
+        Button btnCamera = (Button) dlg.findViewById(R.id.button_camera);
+        Button btnGallery = (Button) dlg.findViewById(R.id.button_gallery);
+        Button btnCancel = (Button) dlg.findViewById(R.id.button_cancel);
+
+        btnCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("CustomDialog","The camera button was clicked");
+                answer.setResponse(1);
+                dlg.dismiss();
+            }
+        });
+
+        btnGallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("CustomDialog","The gallery button was clicked");
+                answer.setResponse(2);
+                dlg.dismiss();
+            }
+        });
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("CustomDialog","The cancel button was clicked");
+                answer.setResponse(0);
+                dlg.dismiss();
+            }
+        });
+
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                // TODO this is where we send the answer back to the calling activity with a listener
+            }
+        });
+    }
+
+    private class BooleanAnswerObject {
 
         private boolean confirmed;
 
-        public AnswerObject() {
+        public BooleanAnswerObject() {
             this.setConfirmed(false);
         }
 
@@ -113,6 +175,27 @@ public class SharedResource {
 
         public void setConfirmed(boolean confirmed) {
             this.confirmed = confirmed;
+        }
+
+    }
+
+    private class IntegerAnswerObject {
+
+        private int response;
+
+        public IntegerAnswerObject() {
+        }
+
+        public IntegerAnswerObject(int response) {
+            this.response = response;
+        }
+
+        public int getResponse() {
+            return response;
+        }
+
+        public void setResponse(int response) {
+            this.response = response;
         }
 
     }
