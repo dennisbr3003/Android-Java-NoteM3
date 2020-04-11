@@ -1,4 +1,4 @@
-package com.example.notematser;
+package com.notemasterv10.takenote;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,8 +26,16 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
 
 
     private final int MAX_DEVIATION = 40;
+    private static final String SETTING_UNKNOWN = "Unknown";
+
     private PointCollector pointCollector = new PointCollector();
     private Database sdb = new Database(this);
+    private SharedResource sr = new SharedResource();
+
+    @Override
+    public void onBackPressed() {
+        // do nothing in lock screen with back button
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +64,20 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                 prefsEdit.apply(); // apply does it's work in the background, commit does not.
             }
 
+        }
+
+        // check for a user image file
+        String user_image = sr.getSharedPasspointPhoto(this);
+        Log.d("Test", user_image);
+
+        if (user_image != SETTING_UNKNOWN) {
+            // put the photo in the imageview
+            Bitmap bm = BitmapFactory.decodeFile(user_image); // should hold directory and filename (Attention this uses extra manifest permission)
+            if(bm != null){
+                // add bitmap to ImageView
+                ImageView im = findViewById(R.id.imageView);
+                im.setImageBitmap(bm);
+            }
         }
 
         if (!pointsSetInPrefs()) {

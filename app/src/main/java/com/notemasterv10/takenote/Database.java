@@ -1,4 +1,4 @@
-package com.example.notematser;
+package com.notemasterv10.takenote;
 
 import android.content.ContentValues;
 import android.content.Context;

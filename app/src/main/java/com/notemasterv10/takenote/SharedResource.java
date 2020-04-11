@@ -1,4 +1,4 @@
-package com.example.notematser;
+package com.notemasterv10.takenote;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,11 +7,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.PopupWindow;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,6 +20,8 @@ public class SharedResource extends AppCompatActivity {
     private static final String BACKGROUND_COLOR = "BackGroundColor";
     private static final String SHAREDPREF_NAME = "TakeNote";
     private static final String NOTE_FILENAME = "sometextfile";
+    private static final String PASSPOINT_IMAGE = "passpointImage";
+    private static final String SETTING_UNKNOWN = "Unknown";
 
     private DialogAnswerListener dialogAnswerListener;
 
@@ -46,10 +46,23 @@ public class SharedResource extends AppCompatActivity {
         prefsEdit.apply(); // apply is background, commit is not
     }
 
+    public void saveSharedPasspointPhoto(String filepath, Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putString(PASSPOINT_IMAGE, filepath);
+        prefsEdit.apply(); // apply is background, commit is not
+    }
+
     public int getSharedBackgroundColor(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         return prefs.getInt(BACKGROUND_COLOR, -1);
     }
+
+    public String getSharedPasspointPhoto(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(PASSPOINT_IMAGE, SETTING_UNKNOWN);
+    }
+
 
     public void saveNoteText(Context context, byte[] byteArray) {
         try {
@@ -72,6 +85,7 @@ public class SharedResource extends AppCompatActivity {
         builder.setTitle(R.string.ConfirmDialogTitle);
         builder.setMessage(R.string.AreYouSure);
         builder.setIcon(R.mipmap.dialog_orange_warning);
+        builder.setCancelable(false); // block back-button
 
         builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
@@ -122,6 +136,7 @@ public class SharedResource extends AppCompatActivity {
         builder.setView(v); // <-- title is already set in layout
 
         final AlertDialog dlg = builder.create();
+        dlg.setCancelable(false); // block back-button
         dlg.show();
 
         // set on-click-listeners on the buttons

@@ -1,19 +1,24 @@
-package com.example.notematser;
+package com.notemasterv10.takenote;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener {
+
+    private static final int REQUEST_ID = 263;
+    private static final String SETTING_UNKNOWN = "Unknown";
 
     SharedResource sr = new SharedResource();
 
@@ -43,9 +48,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         //noinspection SimplifiableIfStatement
         switch(id) {
             case R.id.action_reset_passpoints:
-                Intent i = new Intent(this, ImageActivity.class);
-                i.putExtra(getString(R.string.ClearPassPoints), true); // = received in the activity as a bundle in onCreate of the target activity
-                startActivity(i);
+                resetAndAquirePasspoints();
                 return true;
             case R.id.action_reset_backgroundcolor:
                 // No dialog needed here, can be easily reset
@@ -59,9 +62,19 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             case R.id.action_change_passpoint_picture:
                 sr.selectPassPointImageCustomDialog(this);
                 return true;
+            case R.id.action_reset_passpoint_picture:
+                sr.saveSharedPasspointPhoto(SETTING_UNKNOWN, this);
+                resetAndAquirePasspoints();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void resetAndAquirePasspoints(){
+        Intent i = new Intent(this, ImageActivity.class);
+        i.putExtra(getString(R.string.ClearPassPoints), true); // = received in the activity as a bundle in onCreate of the target activity
+        startActivity(i);
     }
 
     @Override
@@ -108,8 +121,8 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             case 1:
                 // take photo, start new intent
                 Log.d(getString(R.string.action_settings), getString(R.string.start_camera_wrapper));
-                Intent i = new Intent(this, CameraWrapper.class);
-                startActivity(i);
+                Intent i = new Intent(this, CameraWrapperActivity.class);
+                startActivityForResult(i, REQUEST_ID);
                 break;
             case 2:
                 // check gallery
@@ -121,4 +134,36 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data); // <-- the photo URL is in here
+
+        switch(requestCode) {
+            case REQUEST_ID:
+                if(resultCode == RESULT_OK) {
+                    // save filepath in prefs, reset pass points and launch ImageActivity to get new pass points for new photo.
+                    @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
+
+                        @Override
+                        protected Void doInBackground(Void... voids) {
+                            // put new file patch into shared prefs
+                            assert data != null;
+                            sr.saveSharedPasspointPhoto(data.getStringExtra("new_photo_filepath"), MainActivity.this);
+                            return null;
+                        }
+
+                        @Override
+                        protected void onPostExecute(Void aVoid) {
+                            super.onPostExecute(aVoid);
+                            resetAndAquirePasspoints();
+                        }
+                    };
+                    asynctask.execute();
+                }
+                break;
+            default:
+                Log.d(getString(R.string.DefaultTag), getString(R.string.activity_unknown));
+                break;
+        }
+    }
 }

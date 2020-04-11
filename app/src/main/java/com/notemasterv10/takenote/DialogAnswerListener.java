@@ -1,4 +1,4 @@
-package com.example.notematser;
+package com.notemasterv10.takenote;
 
 public interface DialogAnswerListener {
     public void booleanAnswerConfirmed(Boolean answer);

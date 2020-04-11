@@ -1,4 +1,4 @@
-package com.example.notematser;
+package com.notemasterv10.takenote;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,11 +24,13 @@ import android.widget.Toast;
 
 import java.io.File;
 
-public class CameraWrapper extends AppCompatActivity {
+public class CameraWrapperActivity extends AppCompatActivity {
 
-    private File picture_file;
+
     private static final int TAKE_PICTURE = 263;
     private static final String PHOTO_FILENAME = "passpoint_picture.jpg";
+
+    private File picture_file;
 
     // Variables for requesting permissions, API 25+
     private int requestCode;
@@ -48,9 +50,6 @@ public class CameraWrapper extends AppCompatActivity {
             onRequestPermissionsResult(requestCode, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, grantResults);
         }
 
-    }
-
-    private void addBtnUseClickListener() {
     }
 
     @Override // android recommended class to handle permissions
@@ -76,7 +75,7 @@ public class CameraWrapper extends AppCompatActivity {
                 return;
             }
 
-            // other 'case' line to check fosr other
+            // other 'case' line to check for other
             // permissions this app might request
         }
     }
@@ -93,6 +92,23 @@ public class CameraWrapper extends AppCompatActivity {
             }
         });
     }
+
+    private void addBtnUseClickListener() {
+        Button btn_use = (Button)findViewById(R.id.button_use_photo);
+        btn_use.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(getString(R.string.DefaultTag), getString(R.string.using_phote) + String.valueOf(picture_file.getAbsolutePath()));
+                // returning data from one activity to the calling activity. Make sure the calling activity uses startActivityForResult or it
+                // won't work. This intent will be in the 'data' parameter onActivityResult overridden method --> check MainActivity for this
+                Intent output = new Intent();
+                output.putExtra("new_photo_filepath", String.valueOf(picture_file.getAbsolutePath()));
+                setResult(RESULT_OK, output);
+                finish(); // close the activity
+            }
+        });
+    }
+
 
     private void addBtnPictureClickListener() {
         Button btn_picture = (Button) findViewById(R.id.button_picture);
@@ -116,10 +132,10 @@ public class CameraWrapper extends AppCompatActivity {
 
                 if(i.resolveActivity(getPackageManager())!= null) { // <-- this is to avoid a crash of the app
                     // let the intent know we want to save to photo to that location with that filename -->
-                    Toast.makeText(CameraWrapper.this,  String.valueOf(picture_file != null),Toast.LENGTH_LONG).show();
+                    Toast.makeText(CameraWrapperActivity.this,  String.valueOf(picture_file != null),Toast.LENGTH_LONG).show();
                     if (picture_file != null) {
-                        Uri photoURI = FileProvider.getUriForFile(CameraWrapper.this,
-                                "com.example.android.fileprovider",
+                        Uri photoURI = FileProvider.getUriForFile(CameraWrapperActivity.this,
+                                "com.notemasterv10.android.fileprovider",
                                 picture_file);
                         i.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);  // <-- dit ging fout, nu niet meer door gebruik van de fileprovider
                         startActivityForResult(i, TAKE_PICTURE); // use startActivityForResult to retrieve a photo

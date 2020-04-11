@@ -66,6 +66,10 @@
     <string name="activity_unknown">Unknown activity request code</string>
     <string name="req_unknown">Request code is unknown</string>
     <string name="req_is">Request code is</string>
+    <string name="param_values">Parameter values</string>
     <string name="tempfile_successfully_created">Temporary file successfully created</string>
     <string name="start_camera_wrapper">Trying to start camera wrapper</string>
+    <string name="using_phote">\"Using new photo \"</string>
+    <string name="unkown">unknown</string>
+    <string name="reset_passpoint_picture">Reset passpoint picture</string>
 </resources>

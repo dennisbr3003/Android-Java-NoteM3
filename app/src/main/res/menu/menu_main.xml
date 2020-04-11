@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.notematser.MainActivity">
+    tools:context="com.notemasterv10.takenote.MainActivity">
     <item
         android:id="@+id/action_reset_passpoints"
         android:icon="@drawable/ic_mono_package_applications"
@@ -23,4 +23,8 @@
         android:icon="@mipmap/question_mark"
         android:orderInCategory="115"
         android:title="@string/change_passpoint_picture" />
+    <item
+        android:id="@+id/action_reset_passpoint_picture"
+        android:orderInCategory="118"
+        android:title="@string/reset_passpoint_picture" />
 </menu>
