@@ -52,4 +52,20 @@
     <string name="reset_background_color">Reset background color</string>
     <string name="clear_notes">Clear notes</string>
     <string name="change_passpoint_picture">Change passpoint picture</string>
+    <string name="camera_button_dlg">The camera button was clicked</string>
+    <string name="gallery_button_dlg">The gallery button was clicked</string>
+    <string name="cancel_button_dlg">The cancel button was clicked</string>
+    <string name="debug_dialog_listener">\"Is the listener actually listening? \"</string>
+    <string name="unknown_from_dlg">Unknown value returned from dialog</string>
+    <string name="camera_icon">camera icon</string>
+    <string name="photo_container">photo container</string>
+    <string name="button_picture_caption">Picture</string>
+    <string name="button_use_caption">Use</string>
+    <string name="cancel_button_clicked">Cancel button was clicked</string>
+    <string name="picture_error">Picture could not be resolved</string>
+    <string name="activity_unknown">Unknown activity request code</string>
+    <string name="req_unknown">Request code is unknown</string>
+    <string name="req_is">Request code is</string>
+    <string name="tempfile_successfully_created">Temporary file successfully created</string>
+    <string name="start_camera_wrapper">Trying to start camera wrapper</string>
 </resources>

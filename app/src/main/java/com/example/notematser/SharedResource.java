@@ -7,9 +7,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.PopupWindow;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -74,14 +76,14 @@ public class SharedResource extends AppCompatActivity {
         builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                answer.setConfirmed(true);
+                answer.setAnswer(true);
                 dialog.dismiss();
             }
         });
         builder.setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                answer.setConfirmed(false);
+                answer.setAnswer(false);
                 dialog.dismiss();
             }
         });
@@ -89,11 +91,12 @@ public class SharedResource extends AppCompatActivity {
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                Log.d(context.getString(R.string.DefaultTag), "Is the listener actually listening? " + String.valueOf(dialogAnswerListener != null));
+                Log.d(context.getString(R.string.DefaultTag), context.getString(R.string.debug_dialog_listener)  + String.valueOf(dialogAnswerListener != null));
                 if (dialogAnswerListener != null) {
-                    dialogAnswerListener.booleanAnswerConfirmed(answer.isConfirmed()); // this method is actually an interface method overridden in MainActivity
-                                                                                       // Also check MainActivity.java and DialogAnswerListener.java (interface)
-                                                                                       // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
+                    dialogAnswerListener.booleanAnswerConfirmed(answer.isAnswer());
+                    // this method is actually an interface method overridden in MainActivity
+                    // Also check MainActivity.java and DialogAnswerListener.java (interface)
+                    // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
                 }
             }
         });
@@ -104,7 +107,7 @@ public class SharedResource extends AppCompatActivity {
 
     }
 
-    public void selectPassPointImageCustomDialog(Context context){
+    public void selectPassPointImageCustomDialog(final Context context){
 
         final IntegerAnswerObject answer = new IntegerAnswerObject();
 
@@ -129,17 +132,17 @@ public class SharedResource extends AppCompatActivity {
         btnCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("CustomDialog","The camera button was clicked");
-                answer.setResponse(1);
+                Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.camera_button_dlg));
+                answer.setAnswer(1);
                 dlg.dismiss();
             }
         });
 
         btnGallery.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Log.d("CustomDialog","The gallery button was clicked");
-                answer.setResponse(2);
+            public void onClick(View v) { // leave out 'context' to get null pointer exception
+                Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.gallery_button_dlg));
+                answer.setAnswer(2);
                 dlg.dismiss();
             }
         });
@@ -147,55 +150,63 @@ public class SharedResource extends AppCompatActivity {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("CustomDialog","The cancel button was clicked");
-                answer.setResponse(0);
+                Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.cancel_button_dlg));
+                answer.setAnswer(0);
                 dlg.dismiss();
             }
         });
 
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        // custom dialogs (using their own xml) own the onDismiss event so you need to bind it to the object itself, not the builder
+        dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                // TODO this is where we send the answer back to the calling activity with a listener
+                Log.d(context.getString(R.string.DefaultTag), context.getString(R.string.debug_dialog_listener) + String.valueOf(dialogAnswerListener != null));
+                if (dialogAnswerListener != null) {
+                    dialogAnswerListener.integerAnswerConfirmed(answer.getAnswer());
+                    // this method is actually an interface method overridden in MainActivity
+                    // Also check MainActivity.java and DialogAnswerListener.java (interface)
+                    // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
+                }
             }
         });
+
     }
 
     private class BooleanAnswerObject {
 
-        private boolean confirmed;
+        private boolean answer;
 
         public BooleanAnswerObject() {
-            this.setConfirmed(false);
+            this.setAnswer(false);
         }
 
-        public boolean isConfirmed() {
-            return confirmed;
+        public boolean isAnswer() {
+            return answer;
         }
 
-        public void setConfirmed(boolean confirmed) {
-            this.confirmed = confirmed;
+        public void setAnswer(boolean answer) {
+            this.answer = answer;
         }
 
     }
 
     private class IntegerAnswerObject {
 
-        private int response;
+        private int answer;
 
         public IntegerAnswerObject() {
         }
 
-        public IntegerAnswerObject(int response) {
-            this.response = response;
+        public IntegerAnswerObject(int answer) {
+            this.answer = answer;
         }
 
-        public int getResponse() {
-            return response;
+        public int getAnswer() {
+            return answer;
         }
 
-        public void setResponse(int response) {
-            this.response = response;
+        public void setAnswer(int answer) {
+            this.answer = answer;
         }
 
     }

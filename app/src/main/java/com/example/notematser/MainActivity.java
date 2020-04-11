@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener {
 
@@ -93,6 +94,31 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         } else {
             Log.d(getString(R.string.DefaultTag), "Not confirmed");
         }
-
     }
+
+    @Override
+    public void integerAnswerConfirmed(int answer) {
+
+        Log.d(getString(R.string.DefaultTag), "method integeranswerconfirmed");
+
+        switch(answer){
+            case 0:
+                // cancel, do nothing
+                break;
+            case 1:
+                // take photo, start new intent
+                Log.d(getString(R.string.action_settings), getString(R.string.start_camera_wrapper));
+                Intent i = new Intent(this, CameraWrapper.class);
+                startActivity(i);
+                break;
+            case 2:
+                // check gallery
+                break;
+            default:
+                // unknown parameter, show error
+                Toast.makeText(this, R.string.unknown_from_dlg,Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
 }
