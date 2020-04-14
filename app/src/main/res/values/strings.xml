@@ -1,19 +1,12 @@
 <resources>
     <string name="app_name">TakeNote</string>
-    <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">TakeNote (draft)</string>
-    <string name="StartupActivityCaption">TakeNote Passpoints</string>
-    <string name="next">Color</string>
-    <string name="previous">Previous</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="DefaultEditTextText">Enter some text here</string>
-    <string name="btnSaveCaption">Save</string>
     <string name="DefaultTag">Dennis_B</string>
     <string name="btnSave_Click">Click detected on btnSave</string>
     <string name="InterruptedException">InterruptedException</string>
     <string name="ThreadNotExceuted">Unable to execute thread</string>
-    <string name="FoundValue">Found value</string>
     <string name="FileNotFoundException">FileNotFoundException</string>
     <string name="FileOpsError">File operation error</string>
     <string name="IOException">IOException</string>
@@ -21,18 +14,16 @@
     <string name="LineReadError">Line could not be read</string>
     <string name="fileName">sometextfile</string>
     <string name="ClickOnBtnNext">Click detected on btnNext</string>
-    <string name="ToastSaveSucces">Note saved succesfully</string>
+    <string name="ToastSaveSucces">Note saved successfully</string>
     <string name="ToastSaveFailure">Note could not be saved</string>
     <string name="passwordimage">PasspointImage</string>
     <string name="DialogMessage">Touch four points on the image to set an access code. You will need these points to gain access to your notes in the future.</string>
     <string name="DialogTitle">Create Access Passpoints</string>
-    <string name="btnPosCaption">Ok</string>
-    <string name="DebugTCLabel">TouchCoordinates</string>
-    <string name="storing_progress">Storing values...</string>
-    <string name="points_verify">Point already saved...verifying...</string>
-    <string name="points_saving">Point not saved yet...saving...</string>
+    <string name="btnPosCaption">OK</string>
+    <string name="storing_progress">Storing values…</string>
+    <string name="points_verify">Point already saved…verifying…</string>
+    <string name="points_saving">Point not saved yet…saving…</string>
     <string name="verify_values">Verifying values</string>
-    <string name="color">Color</string>
     <string name="lock">lock</string>
     <string name="save">Save</string>
     <string name="select_editor_color">selcolor\\</string>
@@ -42,7 +33,6 @@
     <string name="ConfirmDialogTitle">Confirm action</string>
     <string name="Yes">Yes</string>
     <string name="No">No</string>
-    <string name="test">Dennis_B</string>
     <string name="exclamation">exclamation</string>
     <string name="change_lock_screen_image">Change lock-screen image</string>
     <string name="dialog_description_image">You can change the picture here that is used to register passpoints. You can do that in two ways:</string>
@@ -56,7 +46,6 @@
     <string name="gallery_button_dlg">The gallery button was clicked</string>
     <string name="cancel_button_dlg">The cancel button was clicked</string>
     <string name="debug_dialog_listener">\"Is the listener actually listening? \"</string>
-    <string name="unknown_from_dlg">Unknown value returned from dialog</string>
     <string name="camera_icon">camera icon</string>
     <string name="photo_container">photo container</string>
     <string name="button_picture_caption">Picture</string>
@@ -64,12 +53,8 @@
     <string name="cancel_button_clicked">Cancel button was clicked</string>
     <string name="picture_error">Picture could not be resolved</string>
     <string name="activity_unknown">Unknown activity request code</string>
-    <string name="req_unknown">Request code is unknown</string>
-    <string name="req_is">Request code is</string>
-    <string name="param_values">Parameter values</string>
     <string name="tempfile_successfully_created">Temporary file successfully created</string>
-    <string name="start_camera_wrapper">Trying to start camera wrapper</string>
-    <string name="using_phote">\"Using new photo \"</string>
-    <string name="unkown">unknown</string>
+    <string name="using_phote">Using new photo</string>
     <string name="reset_passpoint_picture">Reset passpoint picture</string>
+    <string name="takenote_errortag">TakeNote_Error</string>
 </resources>

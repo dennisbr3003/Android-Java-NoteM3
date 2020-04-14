@@ -9,16 +9,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements DialogAnswerListener {
-
-    private static final int REQUEST_ID = 263;
-    private static final String SETTING_UNKNOWN = "Unknown";
+public class MainActivity extends AppCompatActivity implements DialogAnswerListener,Constants {
 
     SharedResource sr = new SharedResource();
 
@@ -30,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         sr.setDialogAnswerListener(this);
+
     }
 
     @Override
@@ -45,33 +43,40 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
         switch(id) {
+
             case R.id.action_reset_passpoints:
                 resetAndAquirePasspoints();
                 return true;
+
             case R.id.action_reset_backgroundcolor:
-                // No dialog needed here, can be easily reset
+                // No dialog needed here, can be easily reset -->
                 EditText et = (EditText) findViewById(R.id.editText);
-                et.setBackgroundColor(-1);
-                sr.saveSharedBackgroundColor(-1, this);
+                et.setBackgroundColor(DEFAULT_EDITOR_BACKGROUND_COLOR);
+                sr.saveSharedBackgroundColor(DEFAULT_EDITOR_BACKGROUND_COLOR, this);
                 return true;
+
             case R.id.action_clear_notetext:
                 sr.askUserConfirmationDialog(this);
                 return true;
+
             case R.id.action_change_passpoint_picture:
                 sr.selectPassPointImageCustomDialog(this);
                 return true;
+
             case R.id.action_reset_passpoint_picture:
                 sr.saveSharedPasspointPhoto(SETTING_UNKNOWN, this);
                 resetAndAquirePasspoints();
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
+                
         }
     }
 
     private void resetAndAquirePasspoints(){
+
         Intent i = new Intent(this, ImageActivity.class);
         i.putExtra(getString(R.string.ClearPassPoints), true); // = received in the activity as a bundle in onCreate of the target activity
         startActivity(i);
@@ -79,20 +84,22 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
+
         super.onRestoreInstanceState(savedInstanceState);
-        String myString = savedInstanceState.getString("EditorText");
-        Log.i(getString(R.string.DefaultTag), "Restored data: " + myString);
+
+        String myString = savedInstanceState.getString(SAVED_INSTANCE_EDITORTEXT_TAG);
+
         // assign texteditor value here -->
         EditText et = (EditText) findViewById(R.id.editText);
         et.setText(myString);
+
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         EditText et = (EditText) findViewById(R.id.editText);
-        Log.d(getString(R.string.DefaultTag), getString(R.string.FoundValue) + et.getText().toString());
         String x = et.getText().toString();
-        savedInstanceState.putString("EditorText", x);
+        savedInstanceState.putString(SAVED_INSTANCE_EDITORTEXT_TAG, x);
         super.onSaveInstanceState(savedInstanceState);
     }
 
@@ -101,68 +108,139 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     public void booleanAnswerConfirmed(Boolean answer) {
         EditText et = (EditText) findViewById(R.id.editText);
         if(answer){
-            Log.d(getString(R.string.DefaultTag), "Confirmed");
             et.setText("");
             sr.saveNoteText(this, et.getText().toString().getBytes());
-        } else {
-            Log.d(getString(R.string.DefaultTag), "Not confirmed");
         }
     }
 
     @Override
     public void integerAnswerConfirmed(int answer) {
 
-        Log.d(getString(R.string.DefaultTag), "method integeranswerconfirmed");
-
         switch(answer){
-            case 0:
-                // cancel, do nothing
+
+            case CANCEL_CLICKED:
+                // cancel, do nothing -->
                 break;
-            case 1:
-                // take photo, start new intent
-                Log.d(getString(R.string.action_settings), getString(R.string.start_camera_wrapper));
-                Intent i = new Intent(this, CameraWrapperActivity.class);
-                startActivityForResult(i, REQUEST_ID);
+
+            case CAMERA_CLICKED:
+                // take photo, start new intent -->
+                Intent intent_camera = new Intent(this, CameraWrapperActivity.class);
+                startActivityForResult(intent_camera, REQUEST_ID_CAMERA);
                 break;
-            case 2:
-                // check gallery
+
+            case GALLERY_CLICKED:
+                // check gallery for photo -->
+                Intent intent_gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent_gallery, REQUEST_ID_GALLERY);
                 break;
+
             default:
-                // unknown parameter, show error
-                Toast.makeText(this, R.string.unknown_from_dlg,Toast.LENGTH_SHORT).show();
+                // unknown parameter, log error -->
+                Log.e(getString(R.string.takenote_errortag), getString(R.string.activity_unknown));
                 break;
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable final Intent data) {
+
         super.onActivityResult(requestCode, resultCode, data); // <-- the photo URL is in here
 
         switch(requestCode) {
-            case REQUEST_ID:
+
+            case REQUEST_ID_CAMERA:
+
                 if(resultCode == RESULT_OK) {
-                    // save filepath in prefs, reset pass points and launch ImageActivity to get new pass points for new photo.
-                    @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
+                    // save filepath in prefs, reset pass points and launch ImageActivity to get new pass points for new photo -->
+                    @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Integer> asynctask = new AsyncTask<Void, Void, Integer>() {
 
                         @Override
-                        protected Void doInBackground(Void... voids) {
-                            // put new file patch into shared prefs
-                            assert data != null;
-                            sr.saveSharedPasspointPhoto(data.getStringExtra("new_photo_filepath"), MainActivity.this);
-                            return null;
+                        protected Integer doInBackground(Void... voids) {
+
+                            // put new file path into shared prefs -->
+                            if(data != null) {
+                                try {
+                                    sr.saveSharedPasspointPhoto(data.getStringExtra(CAMERA_ABSOLUTE_FILEPATH), MainActivity.this);
+                                } catch(Exception e){
+                                    return 0; // didn't work, do nothing and leave everything the same
+                                }
+                            }
+                            else {
+                                return 0; // didn't work, do nothing and leave everything the same
+                            }
+                            return 1; // Selected and USED a picture so reset the passpoints
                         }
 
                         @Override
-                        protected void onPostExecute(Void aVoid) {
-                            super.onPostExecute(aVoid);
-                            resetAndAquirePasspoints();
+                        protected void onPostExecute(Integer aInteger) {
+                            super.onPostExecute(aInteger);
+                            if (aInteger == 1) {
+
+                                // New picture successfully selected so change the passpoints (also in a asynchronous task) -->
+                                @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground(Void... voids) {
+                                        resetAndAquirePasspoints();
+                                        return null;
+                                    }
+                                };
+                                asynctask.execute();
+
+                            }
                         }
                     };
                     asynctask.execute();
                 }
-                break;
+                break; // Ends REQUEST_ID_CAMERA
+
+            case REQUEST_ID_GALLERY:
+
+                if(resultCode == RESULT_OK){
+                    // save filepath in prefs, reset pass points and launch ImageActivity to get new pass points for new photo -->
+                    @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Integer> asynctask = new AsyncTask<Void, Void, Integer>() {
+
+                        @Override
+                        protected Integer doInBackground(Void... voids) {
+                            // put new file patch into shared prefs -->
+                            if(data != null) {
+                                try {
+                                    // Uri is passed back through the data object but it's not an absolute path...it's through an UriWrapper -->
+                                    sr.saveSharedPasspointPhoto(MediaUriWrapper.getRealPath(MainActivity.this, data.getData()), MainActivity.this);
+                                } catch(Exception e){
+                                    return 0; // didn't work, do nothing and leave everything the same
+                                }
+                            }
+                            else {
+                                return 0; // didn't work, do nothing and leave everything the same
+                            }
+                            return 1; // Selected and USED a picture from the gallery so reset the passpoints
+                        }
+
+                        @Override
+                        protected void onPostExecute(Integer aInteger) {
+                            super.onPostExecute(aInteger);
+                            if (aInteger == 1) {
+
+                                // New picture successfully selected so change the passpoints (also in a asynchronous task) -->
+                                @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground(Void... voids) {
+                                        resetAndAquirePasspoints();
+                                        return null;
+                                    }
+                                };
+                                asynctask.execute();
+
+                            }
+                        }
+                    };
+                    asynctask.execute();
+                }
+                break; // Ends REQUEST_ID_GALLERY
+
             default:
-                Log.d(getString(R.string.DefaultTag), getString(R.string.activity_unknown));
+                // unknown parameter, log error -->
+                Log.e(getString(R.string.takenote_errortag), getString(R.string.activity_unknown));
                 break;
         }
     }

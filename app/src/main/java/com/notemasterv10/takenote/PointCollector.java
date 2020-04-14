@@ -25,6 +25,9 @@ public class PointCollector implements View.OnTouchListener {
     }
 
     public boolean onTouch(View v, MotionEvent event) {
+
+        // TODU get some graphic acknowledgement of the point being pressed
+
         float x = event.getX();
         float y = event.getY();
         Log.d("Dubug-DB", "X " + String.valueOf(x) + " Y " + String.valueOf(y));

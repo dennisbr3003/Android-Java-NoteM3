@@ -1,12 +1,17 @@
 package com.notemasterv10.takenote;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,15 +20,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class SharedResource extends AppCompatActivity {
-
-    private static final String BACKGROUND_COLOR = "BackGroundColor";
-    private static final String SHAREDPREF_NAME = "TakeNote";
-    private static final String NOTE_FILENAME = "sometextfile";
-    private static final String PASSPOINT_IMAGE = "passpointImage";
-    private static final String SETTING_UNKNOWN = "Unknown";
+public class SharedResource extends AppCompatActivity implements Constants{
 
     private DialogAnswerListener dialogAnswerListener;
+    // Variables for requesting permissions, API 25+
+    private int requestCode;
+    private int grantResults[]; // used because the variable needs to be final, therefor you
+    // cannot update it in code. But you CAN assign a value to an array element
 
     public DialogAnswerListener getDialogAnswerListener() {
         return dialogAnswerListener;
@@ -53,6 +56,10 @@ public class SharedResource extends AppCompatActivity {
         prefsEdit.apply(); // apply is background, commit is not
     }
 
+    public void setImageviewBitmapFromAbsolutePath(ImageView im, String absoluteFilePath){
+        im.setImageBitmap(createBitmapFromOSFile(absoluteFilePath));
+    }
+
     public int getSharedBackgroundColor(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         return prefs.getInt(BACKGROUND_COLOR, -1);
@@ -63,6 +70,31 @@ public class SharedResource extends AppCompatActivity {
         return prefs.getString(PASSPOINT_IMAGE, SETTING_UNKNOWN);
     }
 
+    public boolean pointsSetInSharedPrefs(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(PASSPOINTS_SET, false);
+    }
+
+    public void setSharedPasspointsSet(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putBoolean(PASSPOINTS_SET, true);
+        prefsEdit.apply(); // apply does it's work in th ebackground, commit does not.
+    }
+
+    public void resetSharedPasspointsSet(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putBoolean(PASSPOINTS_SET, false);
+        prefsEdit.apply(); // apply does it's work in the background, commit does not.
+    }
+
+    public void resetSharedPasspointPhoto(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putString(PASSPOINT_IMAGE, SETTING_UNKNOWN);
+        prefsEdit.apply(); // apply is background, commit is not
+    }
 
     public void saveNoteText(Context context, byte[] byteArray) {
         try {
@@ -76,6 +108,14 @@ public class SharedResource extends AppCompatActivity {
         }
     }
 
+    public Bitmap createBitmapFromOSFile(String absoluteFilePath) {
+        Log.d("Test", absoluteFilePath);
+        Bitmap bm = BitmapFactory.decodeFile(absoluteFilePath); // should hold directory and filename (Attention this uses extra manifest permission)
+        if(bm != null){
+           return bm;
+        }
+        return null;
+    }
 
     public void askUserConfirmationDialog(final Context context){
 
@@ -148,7 +188,7 @@ public class SharedResource extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.camera_button_dlg));
-                answer.setAnswer(1);
+                answer.setAnswer(CAMERA_CLICKED);
                 dlg.dismiss();
             }
         });
@@ -157,7 +197,7 @@ public class SharedResource extends AppCompatActivity {
             @Override
             public void onClick(View v) { // leave out 'context' to get null pointer exception
                 Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.gallery_button_dlg));
-                answer.setAnswer(2);
+                answer.setAnswer(GALLERY_CLICKED);
                 dlg.dismiss();
             }
         });
@@ -166,7 +206,7 @@ public class SharedResource extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.cancel_button_dlg));
-                answer.setAnswer(0);
+                answer.setAnswer(CANCEL_CLICKED);
                 dlg.dismiss();
             }
         });

@@ -25,7 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class FirstFragment extends Fragment {
+public class FirstFragment extends Fragment implements Constants {
 
     SharedResource sr = new SharedResource();
 
@@ -106,6 +106,12 @@ public class FirstFragment extends Fragment {
         } catch (InterruptedException e) {
             Log.e(getString(R.string.InterruptedException), getString(R.string.ThreadNotExceuted));
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // save something here
     }
 
     private void saveText(View v) {

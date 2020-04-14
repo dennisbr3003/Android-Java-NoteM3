@@ -1,15 +1,18 @@
 package com.notemasterv10.takenote;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,19 +25,46 @@ import android.widget.Toast;
 import java.util.List;
 
 // this implementation launches the interface rendering it not null?
-public class ImageActivity extends AppCompatActivity implements PointCollectorListener {
+public class ImageActivity extends AppCompatActivity implements PointCollectorListener, Constants {
 
-
-    private final int MAX_DEVIATION = 40;
-    private static final String SETTING_UNKNOWN = "Unknown";
+    SharedResource sr = new SharedResource();
 
     private PointCollector pointCollector = new PointCollector();
     private Database sdb = new Database(this);
-    private SharedResource sr = new SharedResource();
+
+    // Variables for requesting permissions, API 25+
+    private int requestCode;
+    private int grantResults[]; // used because the variable needs to be final, therefor you
+    // cannot update it in code. But you CAN assign a value to an array element
 
     @Override
     public void onBackPressed() {
         // do nothing in lock screen with back button
+    }
+
+    // this method is the call back method for requesting permission(s). If it is granted (or not) this will execute
+    // we have to put it here because the request itself is a asynchronous request and the activity may have been
+    // loaded with a missing picture which will make it impossible to set valid passpoints -->
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // TODO needs refactoring -->
+
+        try {
+            ImageView im = findViewById(R.id.imageView);
+            sr.setImageviewBitmapFromAbsolutePath(im, sr.getSharedPasspointPhoto(this));
+        }catch(Exception e) {
+            try {
+                ImageView im = findViewById(R.id.imageView);
+                im.setImageBitmap(sr.createBitmapFromOSFile(sr.getSharedPasspointPhoto(this)));
+            } catch (Exception ex) {
+                Log.d(getString(R.string.DefaultTag), getString(R.string.picture_error));
+                sr.resetSharedPasspointPhoto(this);
+            }
+        }
+        if (!sr.pointsSetInSharedPrefs(this)) {
+            showSetPassPointsDialog(); // this may change as the build progresses
+        }
     }
 
     @Override
@@ -42,6 +72,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image);
         addTouchListener();
+
         // This sets the pointCollectorlistener in the PointCollector class with this object
         // rendering the listener not null. This object can be used as a parameter because it
         // implements the PointCollectorListener interface and that is the requirement.
@@ -58,31 +89,48 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                 // do not do this in a async task; the check will be reached before this is finished. We can't show the dialog
                 // from the onPostExecute because the dialog may have to be shown if the bundle = null
                 // clear shared prefs to force new passpoint entry
-                SharedPreferences prefs = getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
-                SharedPreferences.Editor prefsEdit = prefs.edit();
-                prefsEdit.putBoolean("PointsSet", false);
-                prefsEdit.apply(); // apply does it's work in the background, commit does not.
+                sr.resetSharedPasspointsSet(this);
             }
 
         }
 
-        // check for a user image file
-        String user_image = sr.getSharedPasspointPhoto(this);
-        Log.d("Test", user_image);
+        if (sr.getSharedPasspointPhoto(this) != SETTING_UNKNOWN) {
 
-        if (user_image != SETTING_UNKNOWN) {
-            // put the photo in the imageview
-            Bitmap bm = BitmapFactory.decodeFile(user_image); // should hold directory and filename (Attention this uses extra manifest permission)
-            if(bm != null){
-                // add bitmap to ImageView
-                ImageView im = findViewById(R.id.imageView);
-                im.setImageBitmap(bm);
+            Log.d("Test", "shared passpoint photo <> unknown");
+
+            // asynchronous --> if input is required goto callback procedure
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+                //if you dont have required permissions ask for it (only required for API 23+)
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
+                // If the permission dialog appears we will load the picture from the callback method (onRequestPermissionsResult).
+            } else { // rights are ALREADY granted so go for it -->
+
+                // TODO needs refactoring -->
+                try {
+                    ImageView im = findViewById(R.id.imageView);
+                    sr.setImageviewBitmapFromAbsolutePath(im, sr.getSharedPasspointPhoto(this));
+                }catch(Exception e) {
+                    try {
+                        ImageView im = findViewById(R.id.imageView);
+                        im.setImageBitmap(sr.createBitmapFromOSFile(sr.getSharedPasspointPhoto(this)));
+                    } catch (Exception ex) {
+                        Log.d(getString(R.string.DefaultTag), getString(R.string.picture_error));
+                        sr.resetSharedPasspointPhoto(this);
+                    }
+                }
+
+                if (!sr.pointsSetInSharedPrefs(this)) {
+                    showSetPassPointsDialog(); // this may change as the build progresses
+                }
+            }
+        }
+        else{
+            Log.d("Test if points are set", String.valueOf(!sr.pointsSetInSharedPrefs(this)));
+            if (!sr.pointsSetInSharedPrefs(this)) {
+                showSetPassPointsDialog(); // this may change as the build progresses
             }
         }
 
-        if (!pointsSetInPrefs()) {
-            showSetPassPointsDialog(); // this may change as the build progresses
-        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -107,17 +155,11 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // do nothing there is only information in this dialog
+                dialog.dismiss();
             }
         });
         AlertDialog dlg = builder.create();
         dlg.show();
-    }
-
-    private boolean pointsSetInPrefs() {
-
-        SharedPreferences prefs = getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
-        return prefs.getBoolean("PointsSet", false);
-
     }
 
     // This method is overridden from the PointCollectorListener interface and will be called from
@@ -125,7 +167,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
     // have added code to check the contents and send them to to the log subsequently.
     @Override
     public void pointsCollected(final List<Point> points_list) {
-        if (!pointsSetInPrefs()) {
+        if (!sr.pointsSetInSharedPrefs(this)) {
             Log.d("Debug-DB", getString(R.string.points_saving));
             savePointsCollected(points_list);
             //give immediate access after storing the 4 points
@@ -244,12 +286,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                 super.onPostExecute(aVoid);
                 pointCollector.clearPoints(); //empty after save in "on completion" event of async task.
                 //save the action to a startup preference we can check on startup
-
-                SharedPreferences prefs = getSharedPreferences("TakeNote", Context.MODE_PRIVATE);
-                SharedPreferences.Editor prefsEdit = prefs.edit();
-                prefsEdit.putBoolean("PointsSet", true);
-                prefsEdit.apply(); // apply does it's work in th ebackground, commit does not.
-
+                sr.setSharedPasspointsSet(ImageActivity.this);
                 dlg.dismiss();
             }
 

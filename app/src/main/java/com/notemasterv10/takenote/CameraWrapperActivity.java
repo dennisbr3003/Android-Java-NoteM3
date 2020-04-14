@@ -10,8 +10,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,11 +22,12 @@ import android.widget.Toast;
 
 import java.io.File;
 
-public class CameraWrapperActivity extends AppCompatActivity {
+public class CameraWrapperActivity extends AppCompatActivity implements Constants {
 
+    SharedResource sr = new SharedResource();
 
-    private static final int TAKE_PICTURE = 263;
-    private static final String PHOTO_FILENAME = "passpoint_picture.jpg";
+    private static final int TAKE_PICTURE = 263; //This constant dedicated to this class
+    private static final String PHOTO_FILENAME = "passpoint_picture.jpg"; //This constant dedicated to this class
 
     private File picture_file;
 
@@ -102,7 +101,7 @@ public class CameraWrapperActivity extends AppCompatActivity {
                 // returning data from one activity to the calling activity. Make sure the calling activity uses startActivityForResult or it
                 // won't work. This intent will be in the 'data' parameter onActivityResult overridden method --> check MainActivity for this
                 Intent output = new Intent();
-                output.putExtra("new_photo_filepath", String.valueOf(picture_file.getAbsolutePath()));
+                output.putExtra(CAMERA_ABSOLUTE_FILEPATH, String.valueOf(picture_file.getAbsolutePath()));
                 setResult(RESULT_OK, output);
                 finish(); // close the activity
             }
@@ -132,7 +131,6 @@ public class CameraWrapperActivity extends AppCompatActivity {
 
                 if(i.resolveActivity(getPackageManager())!= null) { // <-- this is to avoid a crash of the app
                     // let the intent know we want to save to photo to that location with that filename -->
-                    Toast.makeText(CameraWrapperActivity.this,  String.valueOf(picture_file != null),Toast.LENGTH_LONG).show();
                     if (picture_file != null) {
                         Uri photoURI = FileProvider.getUriForFile(CameraWrapperActivity.this,
                                 "com.notemasterv10.android.fileprovider",
@@ -158,15 +156,21 @@ public class CameraWrapperActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data); // data holds the thumbnail
         switch(requestCode){
             case TAKE_PICTURE:
-                // The activity of taking and saving a picture is ended so get the bitmap (that should be save in picture_file)
-                Bitmap bm = BitmapFactory.decodeFile(picture_file.getAbsolutePath()); // should hold directory and filename (Attention this uses extra manifest permission)
-                if(bm != null){
-                    // add bitmap to ImageView
+                // The activity of taking and saving a picture is ended so get the bitmap (that should be saved in picture_file)
+                // TODO needs refactoring -->
+                try{
+                    Log.d("Test", "Ok nieuwe versie");
                     ImageView im = findViewById(R.id.imageview_photo);
-                    im.setImageBitmap(bm);
-                } else{
-                    Log.d(getString(R.string.DefaultTag), getString(R.string.picture_error));
-                    break;
+                    sr.setImageviewBitmapFromAbsolutePath(im, picture_file.getAbsolutePath());
+
+                }catch (Exception e) {
+                    try {
+                        ImageView im = findViewById(R.id.imageview_photo);
+                        im.setImageBitmap(sr.createBitmapFromOSFile(picture_file.getAbsolutePath()));
+                    } catch (Exception ex) {
+                        Log.d(getString(R.string.DefaultTag), getString(R.string.picture_error));
+                        // do nothing
+                    }
                 }
                 return;
             default:
