@@ -57,4 +57,5 @@
     <string name="using_phote">Using new photo</string>
     <string name="reset_passpoint_picture">Reset passpoint picture</string>
     <string name="takenote_errortag">TakeNote_Error</string>
+    <string name="access_ext_storage_denied">Permission denied to read or write to external storage</string>
 </resources>

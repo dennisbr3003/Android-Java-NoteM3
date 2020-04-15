@@ -9,9 +9,11 @@ public interface Constants {
     String SETTING_UNKNOWN = "Unknown";
     String PASSPOINTS_SET = "PointsSet";
     String CAMERA_ABSOLUTE_FILEPATH = "New_Photo_Filepath";
+    String SAVED_INSTANCE_EDITORTEXT_TAG = "EditorText";
+    String CAMERA_PHOTO_FILENAME = "passpoint_picture.jpg";
+
     int REQUEST_ID_CAMERA = 263;
     int REQUEST_ID_GALLERY = 264;
-    String SAVED_INSTANCE_EDITORTEXT_TAG = "EditorText";
     int DEFAULT_EDITOR_BACKGROUND_COLOR = -1;
 
     // PointCollector

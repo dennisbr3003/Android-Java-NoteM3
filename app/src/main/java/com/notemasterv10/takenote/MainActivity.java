@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
             default:
                 return super.onOptionsItemSelected(item);
-                
+
         }
     }
 
@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             case REQUEST_ID_CAMERA:
 
                 if(resultCode == RESULT_OK) {
+
                     // save filepath in prefs, reset pass points and launch ImageActivity to get new pass points for new photo -->
                     @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Integer> asynctask = new AsyncTask<Void, Void, Integer>() {
 
@@ -185,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                                     }
                                 };
                                 asynctask.execute();
-
                             }
                         }
                     };
@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             case REQUEST_ID_GALLERY:
 
                 if(resultCode == RESULT_OK){
+
                     // save filepath in prefs, reset pass points and launch ImageActivity to get new pass points for new photo -->
                     @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Integer> asynctask = new AsyncTask<Void, Void, Integer>() {
 
@@ -230,7 +231,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                                     }
                                 };
                                 asynctask.execute();
-
                             }
                         }
                     };

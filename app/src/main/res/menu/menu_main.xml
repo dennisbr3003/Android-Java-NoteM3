@@ -4,7 +4,6 @@
     tools:context="com.notemasterv10.takenote.MainActivity">
     <item
         android:id="@+id/action_reset_passpoints"
-        android:icon="@drawable/ic_mono_package_applications"
         android:orderInCategory="100"
         android:title="@string/reset_passpoints_caption"
         app:showAsAction="never" />
@@ -20,11 +19,18 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_change_passpoint_picture"
-        android:icon="@mipmap/question_mark"
         android:orderInCategory="115"
-        android:title="@string/change_passpoint_picture" />
+        android:title="@string/change_passpoint_picture"
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_reset_passpoint_picture"
         android:orderInCategory="118"
         android:title="@string/reset_passpoint_picture" />
+    <!-- Action bar icons -->
+    <item
+        android:id="@+id/action_open_note"
+        android:orderInCategory="0"
+        android:title="Find notes..."
+        android:icon="@mipmap/note_find"
+        app:showAsAction="always" />
 </menu>

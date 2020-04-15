@@ -23,14 +23,11 @@ import java.io.IOException;
 public class SharedResource extends AppCompatActivity implements Constants{
 
     private DialogAnswerListener dialogAnswerListener;
-    // Variables for requesting permissions, API 25+
-    private int requestCode;
-    private int grantResults[]; // used because the variable needs to be final, therefor you
-    // cannot update it in code. But you CAN assign a value to an array element
 
     public DialogAnswerListener getDialogAnswerListener() {
         return dialogAnswerListener;
     }
+
     // The PointCollectorListener is set from outside this class (by another class). If it is
     // not set, it will be a null reference. This is checked when running the onTouchListener
     // in this class. If the refrence is not null it will execute the method and pass the
@@ -58,6 +55,10 @@ public class SharedResource extends AppCompatActivity implements Constants{
 
     public void setImageviewBitmapFromAbsolutePath(ImageView im, String absoluteFilePath){
         im.setImageBitmap(createBitmapFromOSFile(absoluteFilePath));
+    }
+
+    public Bitmap getImageviewBitmapFromAbsolutePath (String absoluteFilePath){
+        return createBitmapFromOSFile(absoluteFilePath);
     }
 
     public int getSharedBackgroundColor(Context context){
@@ -109,7 +110,6 @@ public class SharedResource extends AppCompatActivity implements Constants{
     }
 
     public Bitmap createBitmapFromOSFile(String absoluteFilePath) {
-        Log.d("Test", absoluteFilePath);
         Bitmap bm = BitmapFactory.decodeFile(absoluteFilePath); // should hold directory and filename (Attention this uses extra manifest permission)
         if(bm != null){
            return bm;
@@ -145,7 +145,6 @@ public class SharedResource extends AppCompatActivity implements Constants{
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                Log.d(context.getString(R.string.DefaultTag), context.getString(R.string.debug_dialog_listener)  + String.valueOf(dialogAnswerListener != null));
                 if (dialogAnswerListener != null) {
                     dialogAnswerListener.booleanAnswerConfirmed(answer.isAnswer());
                     // this method is actually an interface method overridden in MainActivity
@@ -187,7 +186,6 @@ public class SharedResource extends AppCompatActivity implements Constants{
         btnCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.camera_button_dlg));
                 answer.setAnswer(CAMERA_CLICKED);
                 dlg.dismiss();
             }
@@ -196,7 +194,6 @@ public class SharedResource extends AppCompatActivity implements Constants{
         btnGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) { // leave out 'context' to get null pointer exception
-                Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.gallery_button_dlg));
                 answer.setAnswer(GALLERY_CLICKED);
                 dlg.dismiss();
             }
@@ -205,7 +202,6 @@ public class SharedResource extends AppCompatActivity implements Constants{
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(context.getString(R.string.DefaultTag),context.getString(R.string.cancel_button_dlg));
                 answer.setAnswer(CANCEL_CLICKED);
                 dlg.dismiss();
             }
@@ -215,7 +211,6 @@ public class SharedResource extends AppCompatActivity implements Constants{
         dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                Log.d(context.getString(R.string.DefaultTag), context.getString(R.string.debug_dialog_listener) + String.valueOf(dialogAnswerListener != null));
                 if (dialogAnswerListener != null) {
                     dialogAnswerListener.integerAnswerConfirmed(answer.getAnswer());
                     // this method is actually an interface method overridden in MainActivity
