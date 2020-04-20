@@ -9,4 +9,5 @@
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#696969</color>
     <color name="dialog_background">#eee8dc</color>
+    <color name="toaster_red">#ff0000</color>
 </resources>

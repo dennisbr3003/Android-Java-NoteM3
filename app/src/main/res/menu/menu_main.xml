@@ -13,11 +13,6 @@
         android:title="@string/reset_background_color"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_clear_notetext"
-        android:orderInCategory="120"
-        android:title="@string/clear_notes"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_change_passpoint_picture"
         android:orderInCategory="115"
         android:title="@string/change_passpoint_picture"
@@ -26,11 +21,16 @@
         android:id="@+id/action_reset_passpoint_picture"
         android:orderInCategory="118"
         android:title="@string/reset_passpoint_picture" />
+    <item
+        android:id="@+id/action_clear_notetext"
+        android:orderInCategory="120"
+        android:title="@string/clear_notes"
+        app:showAsAction="never" />
     <!-- Action bar icons -->
     <item
-        android:id="@+id/action_open_note"
-        android:orderInCategory="0"
-        android:title="Find notes..."
+        android:id="@+id/action_find_notes"
         android:icon="@mipmap/note_find"
-        app:showAsAction="always" />
+        android:orderInCategory="0"
+        android:title="@string/find_notes"
+        app:showAsAction="ifRoom" />
 </menu>

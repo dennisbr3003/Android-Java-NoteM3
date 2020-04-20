@@ -21,42 +21,46 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/ButtonViewGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_default"
-        android:orientation="horizontal"
-        android:weightSum="5"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
             android:id="@+id/imgButtonSave"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_marginBottom="0dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/save"
             android:src="@mipmap/floppy_save" />
 
         <ImageButton
             android:id="@+id/imgButtonColor"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_marginLeft="15dp"
+            android:layout_marginEnd="77dp"
+            android:layout_marginRight="0dp"
+            android:layout_toEndOf="@id/imgButtonSave"
+            android:layout_toRightOf="@id/imgButtonSave"
             android:background="@android:color/transparent"
             android:contentDescription="@string/select_editor_color"
-            android:src="@mipmap/color_palette" />
+            android:src="@mipmap/color_palette"
+            android:layout_marginStart="15dp" />
 
         <ImageButton
             android:id="@+id/imgButtonLock"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_alignParentRight="true"
             android:background="@android:color/transparent"
             android:contentDescription="@string/lock"
-            android:src="@mipmap/padlock" />
+            android:src="@mipmap/padlock"
+            android:layout_alignParentEnd="true" />
 
 
-    </LinearLayout>
+    </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -168,8 +168,7 @@ public class CameraWrapperActivity extends AppCompatActivity implements Constant
                            }
                            return null;
                         }
-                    };
-                    asynctask.execute();
+                    }.execute(); // <-- short notation
                 }
             break;
 

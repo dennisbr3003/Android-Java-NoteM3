@@ -27,7 +27,7 @@
     <string name="lock">lock</string>
     <string name="save">Save</string>
     <string name="select_editor_color">selcolor\\</string>
-    <string name="reset_passpoints_caption">Reset passpoints</string>
+    <string name="reset_passpoints_caption">Reset passpoint sequence</string>
     <string name="ClearPassPoints">ClearPassPoints</string>
     <string name="AreYouSure">Are you sure you want to do this? This can not be undone.</string>
     <string name="ConfirmDialogTitle">Confirm action</string>
@@ -41,21 +41,18 @@
     <string name="gallery">Gallery</string>
     <string name="reset_background_color">Reset background color</string>
     <string name="clear_notes">Clear notes</string>
-    <string name="change_passpoint_picture">Change passpoint picture</string>
-    <string name="camera_button_dlg">The camera button was clicked</string>
-    <string name="gallery_button_dlg">The gallery button was clicked</string>
-    <string name="cancel_button_dlg">The cancel button was clicked</string>
-    <string name="debug_dialog_listener">\"Is the listener actually listening? \"</string>
+    <string name="change_passpoint_picture">Set lock-screen image</string>
     <string name="camera_icon">camera icon</string>
     <string name="photo_container">photo container</string>
     <string name="button_picture_caption">Picture</string>
     <string name="button_use_caption">Use</string>
-    <string name="cancel_button_clicked">Cancel button was clicked</string>
     <string name="picture_error">Picture could not be resolved</string>
     <string name="activity_unknown">Unknown activity request code</string>
-    <string name="tempfile_successfully_created">Temporary file successfully created</string>
-    <string name="using_phote">Using new photo</string>
-    <string name="reset_passpoint_picture">Reset passpoint picture</string>
+    <string name="reset_passpoint_picture">Reset lock-screen image</string>
     <string name="takenote_errortag">TakeNote_Error</string>
+    <string name="takenote_infotag">TakeNote_Info</string>
     <string name="access_ext_storage_denied">Permission denied to read or write to external storage</string>
+    <string name="find_notes">Find notes...</string>
+    <string name="test">Test</string>
 </resources>
+ 

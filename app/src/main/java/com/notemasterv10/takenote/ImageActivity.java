@@ -5,19 +5,20 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -211,7 +212,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                 if(points_list.size() == points_saved.size()){
                    for(Point p:points_list){
                        //points_list
-                       if((Math.abs(p.x - points_saved.get(i).x) > 40) || (Math.abs(p.y - points_saved.get(i).y) > 40)) {
+                       if((Math.abs(p.x - points_saved.get(i).x) > MAX_DEVIATION) || (Math.abs(p.y - points_saved.get(i).y) > MAX_DEVIATION)) {
                           return false;
                        }
                        i++;
@@ -234,7 +235,12 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                     startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
                 }
                 else {
-                    Toast.makeText(ImageActivity.this,"Access denied", Toast.LENGTH_LONG).show();
+                    Toast toast = Toast.makeText(ImageActivity.this,"Access denied", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+                    // Set the background color like this or lose the rounded edges of the toaster message (it becomes square) -->
+                    int backgroundColor = ResourcesCompat.getColor(toast.getView().getResources(), R.color.toaster_red, null);
+                    toast.getView().getBackground().setColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN);
+                    toast.show();
                 }
             }
         };

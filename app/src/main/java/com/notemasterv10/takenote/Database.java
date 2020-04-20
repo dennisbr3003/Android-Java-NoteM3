@@ -14,18 +14,19 @@ import java.util.List;
 
 public class Database extends SQLiteOpenHelper {
 
+    private static final String DB_NAME = "takenote.db";
+    private static final int DB_VERSION = 1;
     private static final String TABLE_NAME = "POINTS";
     private static final String COL_ID = "ID";
     private static final String COL_X = "X";
     private static final String COL_Y = "Y";
 
     public Database(@Nullable Context context) {
-        super(context, "takenote.db", null, 1);
+        super(context, DB_NAME, null, DB_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // What if the table already exists?
         String sql = String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s INTEGER NOT NULL, %s INTEGER NOT NULL)", TABLE_NAME, COL_ID, COL_X, COL_Y);
         db.execSQL(sql);
     }
@@ -38,7 +39,7 @@ public class Database extends SQLiteOpenHelper {
     public void setPoints(List<Point> points) {
         SQLiteDatabase sdb = getWritableDatabase();
         //First clear the table
-        sdb.delete("POINTS",null, null); // delete all so no arguments
+        sdb.delete(TABLE_NAME,null, null); // delete all so no arguments
         int i=0;
         for(Point p: points){
             ContentValues values = new ContentValues();
@@ -50,6 +51,7 @@ public class Database extends SQLiteOpenHelper {
         }
         sdb.close();
     }
+
     public List<Point> getPoints(){
 
         List<Point> points = new ArrayList<Point>();
