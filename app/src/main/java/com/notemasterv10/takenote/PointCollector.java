@@ -59,6 +59,11 @@ public class PointCollector implements View.OnTouchListener {
 
         if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
             // touch release, set return value to true to be able to manipulate actions -->
+            try { //delay disappearance of image a little bit so it lingers
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             image.setVisibility(View.INVISIBLE);
             return true;
         }
