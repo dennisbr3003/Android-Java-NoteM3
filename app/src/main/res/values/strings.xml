@@ -54,5 +54,6 @@
     <string name="access_ext_storage_denied">Permission denied to read or write to external storage</string>
     <string name="find_notes">Find notes...</string>
     <string name="test">Test</string>
+    <string name="status">Status</string>
 </resources>
  

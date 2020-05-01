@@ -16,7 +16,7 @@
         android:gravity="start|center_horizontal|top"
         android:hint="@string/DefaultEditTextText"
         android:inputType="textMultiLine"
-        app:layout_constraintBottom_toTopOf="@+id/ButtonViewGroup"
+        app:layout_constraintBottom_toTopOf="@id/StatusViewGroup"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -26,7 +26,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_default"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/StatusViewGroup">
 
         <ImageButton
             android:id="@+id/imgButtonSave"
@@ -41,6 +42,7 @@
             android:id="@+id/imgButtonColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
             android:layout_marginLeft="15dp"
             android:layout_marginEnd="77dp"
             android:layout_marginRight="0dp"
@@ -48,19 +50,42 @@
             android:layout_toRightOf="@id/imgButtonSave"
             android:background="@android:color/transparent"
             android:contentDescription="@string/select_editor_color"
-            android:src="@mipmap/color_palette"
-            android:layout_marginStart="15dp" />
+            android:src="@mipmap/color_palette" />
 
         <ImageButton
             android:id="@+id/imgButtonLock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:background="@android:color/transparent"
             android:contentDescription="@string/lock"
-            android:src="@mipmap/padlock"
-            android:layout_alignParentEnd="true" />
+            android:src="@mipmap/padlock" />
 
 
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/StatusViewGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/ButtonViewGroup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editText">
+
+        <ImageView
+            android:id="@+id/imgStatus"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="3dp"
+            android:contentDescription="@string/status"
+            android:src="@mipmap/webservice_online"
+            app:srcCompat="@mipmap/webservice_offline"
+            tools:srcCompat="@mipmap/webservice_offline" />
     </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,21 +1,16 @@
 package com.notemasterv10.takenote;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.flask.colorpicker.ColorPickerView;
@@ -53,31 +48,12 @@ public class FirstFragment extends Fragment implements Constants {
         }
         setBackgroundColorUsingPrefs(view);
 
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.INTERNET) == PackageManager.PERMISSION_DENIED) {
-            //if you dont have required permissions ask for it (only required for API 23+)
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.INTERNET}, requestCode);
-        } else {
-            Log.d("DB", "check webservice");
-            ws.checkForWebService();
-        }
+        Log.d("DB", "check webservice");
+        ws.checkForWebService(getContext(), view);
 
         return view;
 
     }
-
-    // this method is the call back method for requesting permission(s). If it is granted (or not) this will execute
-    // we have to put it here because the request itself is a asynchronous request and the activity may have been
-    // loaded with a missing picture which will make it impossible to set valid passpoints -->
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        try {
-          ws.checkForWebService();
-        }catch(Exception e) {
-            // do nothing...
-        }
-    }
-
 
     private void updateTextObject(View v, final String msg) {
         final String str = msg;
