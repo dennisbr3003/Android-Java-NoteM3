@@ -55,5 +55,8 @@
     <string name="find_notes">Find notes...</string>
     <string name="test">Test</string>
     <string name="status">Status</string>
+    <string name="ws_avail">Webservice available</string>
+    <string name="ws_unavail">Webservice unavailable</string>
+    <string name="upload_preferences">upload preferences</string>
 </resources>
  

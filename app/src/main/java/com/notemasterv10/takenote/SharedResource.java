@@ -1,13 +1,10 @@
 package com.notemasterv10.takenote;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -42,7 +39,8 @@ public class SharedResource extends AppCompatActivity implements Constants{
     public void saveSharedBackgroundColor(int iColor, Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putInt(BACKGROUND_COLOR, iColor);
+        //prefsEdit.putInt(BACKGROUND_COLOR, iColor);
+        prefsEdit.putString(BACKGROUND_COLOR, String.valueOf(iColor));
         prefsEdit.apply(); // apply is background, commit is not
     }
 
@@ -63,7 +61,8 @@ public class SharedResource extends AppCompatActivity implements Constants{
 
     public int getSharedBackgroundColor(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getInt(BACKGROUND_COLOR, -1);
+        //return prefs.getInt(BACKGROUND_COLOR, -1);
+        return Integer.valueOf(prefs.getString(BACKGROUND_COLOR, "-1"));
     }
 
     public String getSharedPasspointPhoto(Context context){
@@ -73,20 +72,23 @@ public class SharedResource extends AppCompatActivity implements Constants{
 
     public boolean pointsSetInSharedPrefs(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getBoolean(PASSPOINTS_SET, false);
+        //return prefs.getBoolean(PASSPOINTS_SET, false);
+        return Boolean.valueOf(prefs.getString(PASSPOINTS_SET, "false"));
     }
 
     public void setSharedPasspointsSet(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putBoolean(PASSPOINTS_SET, true);
+        //prefsEdit.putBoolean(PASSPOINTS_SET, true);
+        prefsEdit.putString(PASSPOINTS_SET, String.valueOf(true));
         prefsEdit.apply(); // apply does it's work in th ebackground, commit does not.
     }
 
     public void resetSharedPasspointsSet(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putBoolean(PASSPOINTS_SET, false);
+        //prefsEdit.putBoolean(PASSPOINTS_SET, false);
+        prefsEdit.putString(PASSPOINTS_SET, String.valueOf(false));
         prefsEdit.apply(); // apply does it's work in the background, commit does not.
     }
 

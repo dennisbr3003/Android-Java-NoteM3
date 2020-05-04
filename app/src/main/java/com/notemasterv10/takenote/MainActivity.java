@@ -18,6 +18,7 @@ import android.widget.EditText;
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener,Constants {
 
     SharedResource sr = new SharedResource();
+    WebService ws = new WebService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             case R.id.action_reset_passpoint_picture:
                 sr.saveSharedPasspointPhoto(SETTING_UNKNOWN, this);
                 resetAndAquirePasspoints();
+                return true;
+
+            case R.id.action_upload_preferences:
+                ws.createSharedPreferenceObject(this);
                 return true;
 
             default:

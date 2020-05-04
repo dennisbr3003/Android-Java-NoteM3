@@ -76,16 +76,26 @@
 
         <ImageView
             android:id="@+id/imgStatus"
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="20dp"
+            android:layout_height="13dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="2dp"
             android:layout_marginBottom="3dp"
             android:contentDescription="@string/status"
-            android:src="@mipmap/webservice_online"
+            android:src="@mipmap/webservice_offline"
             app:srcCompat="@mipmap/webservice_offline"
             tools:srcCompat="@mipmap/webservice_offline" />
+
+        <TextView
+            android:id="@+id/textview_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="2dp"
+            android:layout_toRightOf="@id/imgStatus"
+            android:text="Webservice unavailable"
+            android:textSize="9sp" />
     </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

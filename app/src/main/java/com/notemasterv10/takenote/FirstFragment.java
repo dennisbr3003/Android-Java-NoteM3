@@ -50,7 +50,7 @@ public class FirstFragment extends Fragment implements Constants {
 
         Log.d("DB", "check webservice");
         ws.checkForWebService(getContext(), view);
-
+        //ws.createSharedPreferenceObject(getContext());
         return view;
 
     }
