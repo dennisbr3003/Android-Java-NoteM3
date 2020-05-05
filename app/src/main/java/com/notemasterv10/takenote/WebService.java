@@ -59,7 +59,6 @@ public class WebService extends AppCompatActivity implements Constants {
                 try {
                     response = client.newCall(request).execute(); // <-- actual call to the server
                     json_response = response.body().string(); //<-- this is closable or read once and then never again
-                    Log.d("DB", json_response);
                     JSONObject j_object = new JSONObject(json_response);
                     if(j_object.has("status")){
                         if(((String) j_object.get("status")).equalsIgnoreCase("1")){
@@ -77,7 +76,6 @@ public class WebService extends AppCompatActivity implements Constants {
                 TextView tv = (TextView) view.findViewById(R.id.textview_status);
                 try {
                     if (aBoolean) {
-                        Log.d("DB", "online");
                         webservice_online = true; // this method is the only method that can set this value
                         im.setImageResource(R.mipmap.webservice_online);
                         tv.setText(R.string.ws_avail);
@@ -88,7 +86,6 @@ public class WebService extends AppCompatActivity implements Constants {
                         tv.setText(R.string.ws_unavail);
                     }
                 } catch(Exception e){
-                    Log.d("DB", "offline");
                     webservice_online = false;
                     im.setImageResource(R.mipmap.webservice_offline);
                     tv.setText(R.string.ws_unavail);
@@ -107,21 +104,14 @@ public class WebService extends AppCompatActivity implements Constants {
 
         String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        Log.d("DB", android_id);
-
         SharedPreferencePayload spp = new SharedPreferencePayload(android_id);
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
 
         Map<String, ?> keys = prefs.getAll();
 
         for (Map.Entry<String, ?> entry : keys.entrySet()) {
-            Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
-
             spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), "dennisbr");
-
         }
-
-        Log.d("DB", spp.toString());
 
         uploadSharedPreferencePayload(spp, "sharedpreference");
 
@@ -129,23 +119,21 @@ public class WebService extends AppCompatActivity implements Constants {
 
     public void uploadSharedPreferencePayload(final SharedPreferencePayload spp, final String action){
 
-        @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Boolean> asynctask = new AsyncTask<Void, Void, Boolean>(){
+        final Callresult cr = new Callresult();
+
+        @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>(){
 
             @Override
-            protected Boolean doInBackground(Void... voids) {
-
-                final Callresult cr = new Callresult();
+            protected Void doInBackground(Void... voids) {
 
                 String json_payload = "";
                 ObjectMapper objectMapper = new ObjectMapper();
 
-
                 try {
                     json_payload = objectMapper.writeValueAsString(spp);
-                    Log.d("DB-----12416", json_payload);
                 } catch (JsonProcessingException e) {
-                    e.printStackTrace();
                     cr.setAnswer(false);
+                    cr.setMessage(e.getMessage());
                 }
 
                 OkHttpClient client = new OkHttpClient().newBuilder()
@@ -159,55 +147,65 @@ public class WebService extends AppCompatActivity implements Constants {
 
                 Response response = null;
 
-                try{
+                try {
                     client.newCall(request).enqueue(new Callback() {
+
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                            Log.d("DB", "Call failed " + e.getMessage());
                             cr.setAnswer(false);
+                            cr.setMessage(e.getMessage());
                         }
 
+                        // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
                         @Override
                         public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
                             JSONObject j_object = null;
                             try {
                                 j_object = new JSONObject(response.body().string());
-                                if(j_object.has("status")) {
-                                   if (((String) j_object.get("status")).equalsIgnoreCase("1")){
-                                      Log.d("DB", "Call success; correct answer");
-                                       cr.setAnswer(true);
-                                   } else {
-                                       Log.d("DB", "Call success; but wrong answer");
-                                       cr.setAnswer(false);
-                                   }
+                                if (j_object.has("status")) {
+                                    if ((j_object.getString("status")).equalsIgnoreCase("1")) {
+                                        cr.setAnswer(true);
+                                        cr.setMessage(getString(R.string.upload_success));
+                                        readAnswer(cr);
+                                    } else {
+                                        cr.setAnswer(false);
+                                        if (j_object.has("message")) {
+                                            cr.setMessage(j_object.getString("message"));
+                                        }
+                                        readAnswer(cr);
+                                    }
                                 } else {
-                                    Log.d("DB", "Call success; but wrong answer");
                                     cr.setAnswer(false);
+                                    if (j_object.has("message")) {
+                                        cr.setMessage(j_object.getString("message"));
+                                    }
+                                    readAnswer(cr);
                                 }
                             } catch (JSONException e) {
-                                e.printStackTrace();
                                 cr.setAnswer(false);
+                                cr.setMessage(e.getMessage());
+                                readAnswer(cr);
                             }
                         }
                     });
-                }catch (Exception e) {
+                } catch (Exception e) {
                     cr.setAnswer(false);
+                    cr.setMessage(e.getMessage());
+                    readAnswer(cr);
                 }
-                return cr.getAnswer();
-
+                return null;
             }
-
-            @Override
-            protected void onPostExecute(Boolean aBoolean) {
-                super.onPostExecute(aBoolean);
-            }
-
         }.execute();
+    }
 
+    private void readAnswer(Callresult cr){
+        Log.d(getString(R.string.takenote_infotag), String.valueOf(cr.getAnswer()));
+        Log.d(getString(R.string.takenote_infotag), cr.getMessage());
     }
 
     private class Callresult{
-        private Boolean answer;
+        private Boolean answer = false;
+        private String message = "";
 
         public Callresult() {
         }
@@ -219,6 +217,16 @@ public class WebService extends AppCompatActivity implements Constants {
         public void setAnswer(Boolean answer) {
             this.answer = answer;
         }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+
     }
 
 }
