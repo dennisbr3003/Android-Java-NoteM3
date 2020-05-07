@@ -17,6 +17,8 @@ import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.OnColorSelectedListener;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
+import com.notemasterv10.takenote.library.SharedResource;
+import com.notemasterv10.takenote.webservice.WebService;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -49,7 +51,11 @@ public class FirstFragment extends Fragment implements Constants {
         setBackgroundColorUsingPrefs(view);
 
         Log.d("DB", "check webservice");
-        ws.checkForWebService(getContext(), view);
+        //ws.setWebEventListener(this);
+
+        //TODO nog refactoren moet nu ff vlug werken-->
+
+        //ws.checkForWebService(getContext());
         //ws.createSharedPreferenceObject(getContext());
         return view;
 

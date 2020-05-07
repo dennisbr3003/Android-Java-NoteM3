@@ -1,4 +1,4 @@
-package com.notemasterv10.takenote;
+package com.notemasterv10.takenote.webservice;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -6,14 +6,14 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.notemasterv10.takenote.Constants;
+import com.notemasterv10.takenote.R;
+import com.notemasterv10.takenote.listeners.WebEventListener;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -38,12 +38,24 @@ public class WebService extends AppCompatActivity implements Constants {
     private String json_response;
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    public void checkForWebService(final Context context, final View view){
+    private WebEventListener webEventListener;
+
+    public WebEventListener getWebEventListener() {
+        return webEventListener;
+    }
+
+    public void setWebEventListener(WebEventListener webEventListener) {
+        this.webEventListener = webEventListener;
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    //public void checkForWebService(final Context context, final View view){
+    public void checkForWebService(final Context context){
 
         final String action = "test"; // <-- This action is used to test the webservice. It only checks if the
                                       //      the webservice is online and if the database can be connected.
 
-        @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Boolean> asynctask = new AsyncTask<Void, Void, Boolean>() {
+        new AsyncTask<Void, Void, Boolean> () {
 
             @Override
             protected Boolean doInBackground(Void... voids) {
@@ -72,24 +84,22 @@ public class WebService extends AppCompatActivity implements Constants {
             @Override
             protected void onPostExecute(final Boolean aBoolean) {
                 super.onPostExecute(aBoolean);
-                ImageView im = (ImageView) view.findViewById(R.id.imgStatus);
-                TextView tv = (TextView) view.findViewById(R.id.textview_status);
                 try {
-                    if (aBoolean) {
-                        webservice_online = true; // this method is the only method that can set this value
-                        im.setImageResource(R.mipmap.webservice_online);
-                        tv.setText(R.string.ws_avail);
+                    webservice_online = aBoolean; // this method is the only method that can set this value
+                    Log.d("DB", "Is de eventlistener online ? " + String.valueOf(webEventListener != null));
+                    Log.d("DB", "en de webservice ? " + String.valueOf(aBoolean));
+                    if (webEventListener != null) {
+                        if(aBoolean) {
+                            webEventListener.showHideMenuItem(WebEventListener.Action.SHOW_UPLOAD);
                         } else {
-                        Log.d("DB", "offline");
-                        webservice_online = false;
-                        im.setImageResource(R.mipmap.webservice_offline);
-                        tv.setText(R.string.ws_unavail);
+                            webEventListener.showHideMenuItem(WebEventListener.Action.HIDE_UPLOAD);
+                        }
                     }
                 } catch(Exception e){
                     webservice_online = false;
-                    im.setImageResource(R.mipmap.webservice_offline);
-                    tv.setText(R.string.ws_unavail);
-                    // do nothing
+                    if (webEventListener != null) {
+                        webEventListener.showHideMenuItem(WebEventListener.Action.HIDE_UPLOAD);
+                    }
                 }
             }
         }.execute();
@@ -117,13 +127,13 @@ public class WebService extends AppCompatActivity implements Constants {
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     public void uploadSharedPreferencePayload(final SharedPreferencePayload spp, final String action){
 
         final Callresult cr = new Callresult();
 
-        @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>(){
+        new AsyncTask<Void, Void, Void>(){
 
-            @Override
             protected Void doInBackground(Void... voids) {
 
                 String json_payload = "";

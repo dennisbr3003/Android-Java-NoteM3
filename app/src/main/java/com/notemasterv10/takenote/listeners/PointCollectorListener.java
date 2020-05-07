@@ -1,4 +1,4 @@
-package com.notemasterv10.takenote;
+package com.notemasterv10.takenote.listeners;
 
 import android.graphics.Point;
 import java.util.List;

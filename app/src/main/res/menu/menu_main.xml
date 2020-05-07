@@ -30,6 +30,7 @@
         android:id="@+id/action_upload_preferences"
         android:orderInCategory="130"
         android:title="@string/upload_preferences"
+        android:visible="false"
         app:showAsAction="never" />
 
     <!-- Action bar icons -->

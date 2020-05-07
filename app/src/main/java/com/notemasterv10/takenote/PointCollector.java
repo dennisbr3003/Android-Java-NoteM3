@@ -1,13 +1,13 @@
 package com.notemasterv10.takenote;
 
 import android.graphics.Point;
-import android.media.Image;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+
+import com.notemasterv10.takenote.listeners.PointCollectorListener;
 
 import java.util.ArrayList;
 import java.util.List;

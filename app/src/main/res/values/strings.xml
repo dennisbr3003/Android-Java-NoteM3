@@ -57,7 +57,7 @@
     <string name="status">Status</string>
     <string name="ws_avail">Webservice available</string>
     <string name="ws_unavail">Webservice unavailable</string>
-    <string name="upload_preferences">upload preferences</string>
+    <string name="upload_preferences">Upload preferences</string>
     <string name="upload_success">Upload to webservice completed successfully</string>
 </resources>
  

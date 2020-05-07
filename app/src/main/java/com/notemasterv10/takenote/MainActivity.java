@@ -14,9 +14,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements DialogAnswerListener,Constants {
+import com.notemasterv10.takenote.library.SharedResource;
+import com.notemasterv10.takenote.listeners.DialogAnswerListener;
+import com.notemasterv10.takenote.listeners.WebEventListener;
+import com.notemasterv10.takenote.webservice.WebService;
 
+public class MainActivity extends AppCompatActivity implements DialogAnswerListener, WebEventListener, Constants {
+
+    private Boolean showOptionsItemUpload = false;
     SharedResource sr = new SharedResource();
     WebService ws = new WebService();
 
@@ -28,7 +36,9 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         sr.setDialogAnswerListener(this);
-
+        ws.setWebEventListener(this);
+        ws.checkForWebService(this);
+        supportInvalidateOptionsMenu();
     }
 
     @Override
@@ -37,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -81,15 +93,25 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     }
 
     private void resetAndAquirePasspoints(){
-
         Intent i = new Intent(this, ImageActivity.class);
         i.putExtra(getString(R.string.ClearPassPoints), true); // = received in the activity as a bundle in onCreate of the target activity
         startActivity(i);
     }
 
     @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_upload_preferences);
+        if (showOptionsItemUpload) {
+            item.setVisible(true);
+        } else {
+            item.setVisible(false);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
 
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
         String myString = savedInstanceState.getString(SAVED_INSTANCE_EDITORTEXT_TAG);
@@ -248,5 +270,23 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 Log.e(getString(R.string.takenote_errortag), getString(R.string.activity_unknown));
                 break;
         }
+    }
+
+    @Override
+    public void showHideMenuItem(Action action) {
+
+        showOptionsItemUpload = (action == Action.SHOW_UPLOAD);
+
+        ImageView im = (ImageView) findViewById(R.id.imgStatus);
+        TextView tv = (TextView) findViewById(R.id.textview_status);
+
+        if (ws.isWebServiceOnline()){
+            im.setImageResource(R.mipmap.webservice_online);
+            tv.setText(R.string.ws_avail);
+        }else{
+            im.setImageResource(R.mipmap.webservice_offline);
+            tv.setText(R.string.ws_unavail);
+        }
+
     }
 }

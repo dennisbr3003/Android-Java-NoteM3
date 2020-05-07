@@ -1,4 +1,4 @@
-package com.notemasterv10.takenote;
+package com.notemasterv10.takenote.webservice;
 
 import androidx.annotation.NonNull;
 

@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.notemasterv10.takenote.library.SharedResource;
+
 import java.io.File;
 
 public class CameraWrapperActivity extends AppCompatActivity implements Constants {
