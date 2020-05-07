@@ -53,7 +53,7 @@ public class WebService extends AppCompatActivity implements Constants {
     public void checkForWebService(final Context context){
 
         final String action = "test"; // <-- This action is used to test the webservice. It only checks if the
-                                      //      the webservice is online and if the database can be connected.
+        //      the webservice is online and if the database can be connected.
 
         new AsyncTask<Void, Void, Boolean> () {
 
@@ -86,8 +86,6 @@ public class WebService extends AppCompatActivity implements Constants {
                 super.onPostExecute(aBoolean);
                 try {
                     webservice_online = aBoolean; // this method is the only method that can set this value
-                    Log.d("DB", "Is de eventlistener online ? " + String.valueOf(webEventListener != null));
-                    Log.d("DB", "en de webservice ? " + String.valueOf(aBoolean));
                     if (webEventListener != null) {
                         if(aBoolean) {
                             webEventListener.showHideMenuItem(WebEventListener.Action.SHOW_UPLOAD);
@@ -110,25 +108,43 @@ public class WebService extends AppCompatActivity implements Constants {
         return webservice_online;
     }
 
+    @SuppressLint("StaticFieldLeak")
     public void createSharedPreferenceObject(final Context context) {
 
-        String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        final SharedPreferencePayload spp = new SharedPreferencePayload(android_id);
 
-        SharedPreferencePayload spp = new SharedPreferencePayload(android_id);
-        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        new AsyncTask<Void, Void, Void>(){
 
-        Map<String, ?> keys = prefs.getAll();
+            @Override
+            protected Void doInBackground(Void... voids) {
 
-        for (Map.Entry<String, ?> entry : keys.entrySet()) {
-            spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), "dennisbr");
-        }
+                SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
 
-        uploadSharedPreferencePayload(spp, "sharedpreference");
+                Map<String, ?> keys = prefs.getAll();
+
+                for (Map.Entry<String, ?> entry : keys.entrySet()) {
+                    spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), "DBRV1");
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                try{
+                    uploadSharedPreferencePayload(spp, "sharedpreference", context);
+                } catch(Exception e){
+                    Log.e("Error", e.getMessage());
+                }
+            }
+        }.execute();
 
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void uploadSharedPreferencePayload(final SharedPreferencePayload spp, final String action){
+    public void uploadSharedPreferencePayload(final SharedPreferencePayload spp, final String action, final Context context){
 
         final Callresult cr = new Callresult();
 
@@ -142,8 +158,7 @@ public class WebService extends AppCompatActivity implements Constants {
                 try {
                     json_payload = objectMapper.writeValueAsString(spp);
                 } catch (JsonProcessingException e) {
-                    cr.setAnswer(false);
-                    cr.setMessage(e.getMessage());
+                    readAnswer(new Callresult(false, e.getMessage()));
                 }
 
                 OkHttpClient client = new OkHttpClient().newBuilder()
@@ -162,8 +177,7 @@ public class WebService extends AppCompatActivity implements Constants {
 
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                            cr.setAnswer(false);
-                            cr.setMessage(e.getMessage());
+                            readAnswer(new Callresult(false, e.getMessage()));
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -174,9 +188,7 @@ public class WebService extends AppCompatActivity implements Constants {
                                 j_object = new JSONObject(response.body().string());
                                 if (j_object.has("status")) {
                                     if ((j_object.getString("status")).equalsIgnoreCase("1")) {
-                                        cr.setAnswer(true);
-                                        cr.setMessage(getString(R.string.upload_success));
-                                        readAnswer(cr);
+                                        readAnswer(new Callresult(true, context.getString(R.string.upload_success)));
                                     } else {
                                         cr.setAnswer(false);
                                         if (j_object.has("message")) {
@@ -192,16 +204,12 @@ public class WebService extends AppCompatActivity implements Constants {
                                     readAnswer(cr);
                                 }
                             } catch (JSONException e) {
-                                cr.setAnswer(false);
-                                cr.setMessage(e.getMessage());
-                                readAnswer(cr);
+                                readAnswer(new Callresult(false, e.getMessage()));
                             }
                         }
                     });
                 } catch (Exception e) {
-                    cr.setAnswer(false);
-                    cr.setMessage(e.getMessage());
-                    readAnswer(cr);
+                    readAnswer(new Callresult(false, e.getMessage()));
                 }
                 return null;
             }
@@ -209,8 +217,8 @@ public class WebService extends AppCompatActivity implements Constants {
     }
 
     private void readAnswer(Callresult cr){
-        Log.d(getString(R.string.takenote_infotag), String.valueOf(cr.getAnswer()));
-        Log.d(getString(R.string.takenote_infotag), cr.getMessage());
+        Log.d("DB", String.valueOf(cr.getAnswer()));
+        Log.d("DB", cr.getMessage());
     }
 
     private class Callresult{
@@ -218,6 +226,11 @@ public class WebService extends AppCompatActivity implements Constants {
         private String message = "";
 
         public Callresult() {
+        }
+
+        public Callresult(Boolean answer, String message) {
+            this.answer = answer;
+            this.message = message;
         }
 
         public Boolean getAnswer() {
