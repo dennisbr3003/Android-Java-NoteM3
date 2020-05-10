@@ -49,11 +49,10 @@ public class WebService extends AppCompatActivity implements Constants {
     }
 
     @SuppressLint("StaticFieldLeak")
-    //public void checkForWebService(final Context context, final View view){
     public void checkForWebService(final Context context){
 
         final String action = "test"; // <-- This action is used to test the webservice. It only checks if the
-        //      the webservice is online and if the database can be connected.
+                                      //      the webservice is online and if the database can be connected.
 
         new AsyncTask<Void, Void, Boolean> () {
 
@@ -94,10 +93,7 @@ public class WebService extends AppCompatActivity implements Constants {
                         }
                     }
                 } catch(Exception e){
-                    webservice_online = false;
-                    if (webEventListener != null) {
-                        webEventListener.showHideMenuItem(WebEventListener.Action.HIDE_UPLOAD);
-                    }
+                    // do nothing, there's virtually no chance this gets executed.
                 }
             }
         }.execute();
@@ -122,11 +118,9 @@ public class WebService extends AppCompatActivity implements Constants {
                 SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
 
                 Map<String, ?> keys = prefs.getAll();
-
                 for (Map.Entry<String, ?> entry : keys.entrySet()) {
                     spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), "DBRV1");
                 }
-
                 return null;
             }
 
@@ -134,9 +128,9 @@ public class WebService extends AppCompatActivity implements Constants {
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 try{
-                    uploadSharedPreferencePayload(spp, "sharedpreference", context);
+                    uploadSharedPreferencePayload(spp, "sharedpreference", context); // <-- a asynchronous task is defined in here
                 } catch(Exception e){
-                    Log.e("Error", e.getMessage());
+                    Log.e(context.getString(R.string.takenote_errortag), e.getMessage());
                 }
             }
         }.execute();
@@ -154,11 +148,11 @@ public class WebService extends AppCompatActivity implements Constants {
 
                 String json_payload = "";
                 ObjectMapper objectMapper = new ObjectMapper();
-
                 try {
                     json_payload = objectMapper.writeValueAsString(spp);
                 } catch (JsonProcessingException e) {
                     readAnswer(new Callresult(false, e.getMessage()));
+                    return null;
                 }
 
                 OkHttpClient client = new OkHttpClient().newBuilder()
