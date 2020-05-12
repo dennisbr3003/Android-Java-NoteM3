@@ -59,5 +59,8 @@
     <string name="ws_unavail">Webservice unavailable</string>
     <string name="upload_preferences">Upload preferences</string>
     <string name="upload_success">Upload to webservice completed successfully</string>
+    <string name="download_success">Download from webservice completed successfully</string>
+    <string name="mapping_failed">object mapping failed</string>
+    <string name="download_preferences">Download preferences</string>
 </resources>
  

@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-//pojo
+// pojo going up -->
 
 public class SharedPreferencePayload {
 

@@ -31,6 +31,7 @@ public class FirstFragment extends Fragment implements Constants {
 
     SharedResource sr = new SharedResource();
     WebService ws = new WebService();
+    private View view;
 
     private int requestCode;
     private int grantResults[];
@@ -41,7 +42,7 @@ public class FirstFragment extends Fragment implements Constants {
             Bundle savedInstanceState
     ) {
         // Inflate the layout for this fragment
-        View view;
+
         view = inflater.inflate(R.layout.fragment_first, container, false);
 
         /* read session */
@@ -50,13 +51,6 @@ public class FirstFragment extends Fragment implements Constants {
         }
         setBackgroundColorUsingPrefs(view);
 
-        Log.d("DB", "check webservice");
-        //ws.setWebEventListener(this);
-
-        //TODO nog refactoren moet nu ff vlug werken-->
-
-        //ws.checkForWebService(getContext());
-        //ws.createSharedPreferenceObject(getContext());
         return view;
 
     }

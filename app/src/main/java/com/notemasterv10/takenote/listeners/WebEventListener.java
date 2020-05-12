@@ -1,11 +1,14 @@
 package com.notemasterv10.takenote.listeners;
 
+import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
+
 public interface WebEventListener {
 
     public enum Action{
-        SHOW_UPLOAD, HIDE_UPLOAD
+        SHOW_UPL_DL, HIDE_UPL_DL
     }
 
     public void showHideMenuItem(Action action);
+    public void loadDownLoadedPreferences(SharedPreferenceResponse spr);
 
 }

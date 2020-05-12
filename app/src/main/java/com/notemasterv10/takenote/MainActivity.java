@@ -1,7 +1,9 @@
 package com.notemasterv10.takenote;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -20,11 +22,13 @@ import android.widget.TextView;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
+import com.notemasterv10.takenote.webservice.ArrayItemObject;
+import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
 import com.notemasterv10.takenote.webservice.WebService;
 
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener, WebEventListener, Constants {
 
-    private Boolean showOptionsItemUpload = false;
+    private Boolean showItemUploadDownload = false;
     SharedResource sr = new SharedResource();
     WebService ws = new WebService();
 
@@ -47,8 +51,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -86,6 +88,10 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 ws.createSharedPreferenceObject(this);
                 return true;
 
+            case R.id.action_download_preferences:
+                ws.downloadSharedPreferencePayload(this);
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
 
@@ -100,12 +106,13 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem item = menu.findItem(R.id.action_upload_preferences);
-        if (showOptionsItemUpload) {
-            item.setVisible(true);
-        } else {
-            item.setVisible(false);
-        }
+
+        MenuItem itemUpload = menu.findItem(R.id.action_upload_preferences);
+        MenuItem itemDownload = menu.findItem(R.id.action_download_preferences);
+
+        itemUpload.setVisible(showItemUploadDownload);
+        itemDownload.setVisible(showItemUploadDownload);
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -116,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
         String myString = savedInstanceState.getString(SAVED_INSTANCE_EDITORTEXT_TAG);
 
-        // assign texteditor value here -->
+        // assign text editor value here -->
         EditText et = (EditText) findViewById(R.id.editText);
         et.setText(myString);
 
@@ -275,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     @Override
     public void showHideMenuItem(Action action) {
 
-        showOptionsItemUpload = (action == Action.SHOW_UPLOAD);
+        showItemUploadDownload = (action == Action.SHOW_UPL_DL);
 
         ImageView im = (ImageView) findViewById(R.id.imgStatus);
         TextView tv = (TextView) findViewById(R.id.textview_status);
@@ -289,4 +296,28 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         }
 
     }
+
+    @Override
+    public void loadDownLoadedPreferences(SharedPreferenceResponse spr) {
+
+        for(final ArrayItemObject aio: spr.getShared_preference()){
+
+            SharedPreferences prefs = getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+            SharedPreferences.Editor prefsEdit = prefs.edit();
+            prefsEdit.putString(aio.getItem_name(), aio.getItem_value());
+            prefsEdit.apply(); // apply is background, commit is not
+
+            // Direct load for BGC only (may be changed later when more preference will be loaded) -->
+            if (aio.getItem_name().equals(BACKGROUND_COLOR)) {
+                runOnUiThread(new Runnable() { // <-- must be run on the UI thread
+                    @Override
+                    public void run() {
+                        EditText et = (EditText) findViewById(R.id.editText);
+                        et.setBackgroundColor(Integer.valueOf(aio.getItem_value())); // <-- quick load from the object not the saved value itself (both are the same)                    }
+                    }
+                });
+            }
+        }
+    }
+
 }

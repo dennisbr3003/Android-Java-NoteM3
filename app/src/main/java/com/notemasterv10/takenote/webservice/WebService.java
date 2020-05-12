@@ -87,9 +87,9 @@ public class WebService extends AppCompatActivity implements Constants {
                     webservice_online = aBoolean; // this method is the only method that can set this value
                     if (webEventListener != null) {
                         if(aBoolean) {
-                            webEventListener.showHideMenuItem(WebEventListener.Action.SHOW_UPLOAD);
+                            webEventListener.showHideMenuItem(WebEventListener.Action.SHOW_UPL_DL);
                         } else {
-                            webEventListener.showHideMenuItem(WebEventListener.Action.HIDE_UPLOAD);
+                            webEventListener.showHideMenuItem(WebEventListener.Action.HIDE_UPL_DL);
                         }
                     }
                 } catch(Exception e){
@@ -132,6 +132,78 @@ public class WebService extends AppCompatActivity implements Constants {
                 } catch(Exception e){
                     Log.e(context.getString(R.string.takenote_errortag), e.getMessage());
                 }
+            }
+        }.execute();
+
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    public void downloadSharedPreferencePayload(final Context context){
+
+        @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        final Callresult cr = new Callresult();
+
+        new AsyncTask<Void, Void, Void>(){
+
+            protected Void doInBackground(Void... voids) {
+
+                OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+                // okHttp3 does not support a body for GET, using the device_id as a path variable -->
+                Request request = new Request.Builder()
+                        .url(String.format("%s%s/%s", base_url, "sharedpreference", android_id))
+                        .method("GET", null)
+                        .build();
+
+                Response response = null;
+
+                try {
+                    client.newCall(request).enqueue(new Callback() {
+
+                        @Override
+                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                            readAnswer(new Callresult(false, e.getMessage()));
+                        }
+
+                        // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
+                        @Override
+                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                            JSONObject j_object = null;
+                            try {
+                                // first cast the answer to a json object for easy handling -->
+                                j_object = new JSONObject(response.body().string());
+                                if (j_object.has("device_id")) {
+                                    readAnswer(new Callresult(true, context.getString(R.string.download_success)));
+
+                                    // Now cast the answer to the expected format by using a pojo -->
+                                    ObjectMapper mapper = new ObjectMapper();
+                                    SharedPreferenceResponse spr = mapper.readValue(j_object.toString(), SharedPreferenceResponse.class);
+
+                                    // Handle the pojo and execute some actions -->
+                                    if(spr != null){
+                                        if (webEventListener != null) {
+                                            webEventListener.loadDownLoadedPreferences(spr);
+                                        }
+                                    } else {
+                                        readAnswer(new Callresult(false, context.getString(R.string.mapping_failed)));
+                                    }
+
+                                } else { // error object is returned
+                                    cr.setAnswer(false);
+                                    if (j_object.has("message")) {
+                                        cr.setMessage(j_object.getString("message"));
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                readAnswer(new Callresult(false, e.getMessage()));
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    readAnswer(new Callresult(false, e.getMessage()));
+                }
+                return null;
             }
         }.execute();
 
