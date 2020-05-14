@@ -4,11 +4,11 @@ import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
 
 public interface WebEventListener {
 
-    public enum Action{
+    enum Action{
         SHOW_UPL_DL, HIDE_UPL_DL
     }
 
-    public void showHideMenuItem(Action action);
-    public void loadDownLoadedPreferences(SharedPreferenceResponse spr);
+    void showHideMenuItem(Action action);
+    void loadDownLoadedPreferences(SharedPreferenceResponse spr);
 
 }

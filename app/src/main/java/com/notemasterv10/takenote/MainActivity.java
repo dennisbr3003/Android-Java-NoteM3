@@ -25,12 +25,14 @@ import com.notemasterv10.takenote.listeners.WebEventListener;
 import com.notemasterv10.takenote.webservice.ArrayItemObject;
 import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
 import com.notemasterv10.takenote.webservice.WebService;
+import com.notemasterv10.takenote.webservice.WebServiceChecker;
 
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener, WebEventListener, Constants {
 
     private Boolean showItemUploadDownload = false;
     SharedResource sr = new SharedResource();
     WebService ws = new WebService();
+    WebServiceChecker wsc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +43,9 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         setSupportActionBar(toolbar);
         sr.setDialogAnswerListener(this);
         ws.setWebEventListener(this);
-        ws.checkForWebService(this);
+        ws.checkForWebService();
         supportInvalidateOptionsMenu();
+
     }
 
     @Override
@@ -278,6 +281,36 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 break;
         }
     }
+
+    @Override
+    protected void onPause() {
+        if(wsc != null){
+            wsc.stopChecker();
+            // now wait a while to close all actions properly
+            while (wsc != null){
+                try {
+                    wsc.join(); // this will terminate the thread eventually
+                    wsc = null;
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+            }
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        // this will also fire after the onCreate event
+        if (wsc == null) {
+            // passing the ws object because it has the listener already set needed to update the UI
+            wsc = new WebServiceChecker(true, ws);
+        }
+        wsc.start(); // needed to start the run method in wsc
+        super.onResume();
+    }
+
+
 
     @Override
     public void showHideMenuItem(Action action) {

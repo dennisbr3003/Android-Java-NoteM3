@@ -49,7 +49,7 @@ public class WebService extends AppCompatActivity implements Constants {
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void checkForWebService(final Context context){
+    public void checkForWebService(){
 
         final String action = "test"; // <-- This action is used to test the webservice. It only checks if the
                                       //      the webservice is online and if the database can be connected.
