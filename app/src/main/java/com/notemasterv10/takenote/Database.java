@@ -32,7 +32,7 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
                                    TABLE_PNTS, PNTS_ID, PNTS_X, PNTS_Y);
         db.execSQL(sql);
 
-        sql = String.format("CREATE TABLE %s (%s INTEGER AUTO_INCREMENT, %s VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE, " +
+        sql = String.format("CREATE TABLE %s (%s INTEGER AUTOINCREMENT, %s VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE, " +
                             "%s DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')), %s BLOB, %s DATETIME "+
                             "DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')))",
                             TABLE_NTS, NTS_ID, NTS_NAME, NTS_CREATED, NTS_FILE, NTS_UPDATED);
@@ -79,16 +79,10 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         try {
             SQLiteDatabase sdb = getWritableDatabase();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            String ts = sdf.format(timestamp);
-
-            Log.d("DB", "Timestamp " + ts);
-
             ContentValues values = new ContentValues();
             values.put(NTS_NAME, name);
-            values.put(NTS_UPDATED, ts);
-            values.put(NTS_FILE, note); // blob
+            values.put(NTS_UPDATED, getCurrentTimestamp());
+            values.put(NTS_FILE, note); // blob = byte array
 
             switch(tableAction){
                 case INSERT:
@@ -109,6 +103,13 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
             return false;
         }
 
+    }
+
+    private String getCurrentTimestamp(){
+        // Formatted like (datetime(CURRENT_TIMESTAMP, 'localtime')) -->
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        return sdf.format(timestamp);
     }
 
     public void testUpdateInsertNote(){
