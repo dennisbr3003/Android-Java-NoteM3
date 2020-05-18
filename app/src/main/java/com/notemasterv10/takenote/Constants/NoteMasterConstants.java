@@ -1,6 +1,6 @@
-package com.notemasterv10.takenote;
+package com.notemasterv10.takenote.Constants;
 
-public interface Constants {
+public interface NoteMasterConstants {
 
     String BACKGROUND_COLOR = "BackGroundColor";
     String SHAREDPREF_NAME = "TakeNote";

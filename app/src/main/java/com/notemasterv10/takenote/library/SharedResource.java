@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -13,7 +14,8 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.notemasterv10.takenote.Constants;
+import com.notemasterv10.takenote.Database;
+import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 
@@ -21,7 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class SharedResource extends AppCompatActivity implements Constants {
+public class SharedResource extends AppCompatActivity implements NoteMasterConstants {
 
     private DialogAnswerListener dialogAnswerListener;
 
@@ -99,6 +101,16 @@ public class SharedResource extends AppCompatActivity implements Constants {
     }
 
     public void saveNoteText(Context context, byte[] byteArray) {
+
+        Database sdb = new Database(context);
+
+        try{
+            sdb.saveNote("test1", byteArray);
+        } catch(Exception e){
+            Log.d("DB", "Database opslaan niet gelukt");
+        }
+        sdb.testUpdateInsertNote(); // uitlezen
+
         try {
             FileOutputStream fos = context.openFileOutput(NOTE_FILENAME, Context.MODE_PRIVATE);
             fos.write(byteArray);

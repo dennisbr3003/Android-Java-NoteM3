@@ -17,6 +17,7 @@ import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.OnColorSelectedListener;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
+import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.webservice.WebService;
 
@@ -27,7 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class FirstFragment extends Fragment implements Constants {
+public class FirstFragment extends Fragment implements NoteMasterConstants {
 
     SharedResource sr = new SharedResource();
     WebService ws = new WebService();

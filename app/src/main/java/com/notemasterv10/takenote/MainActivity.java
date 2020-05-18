@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
@@ -27,7 +28,7 @@ import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
 import com.notemasterv10.takenote.webservice.WebService;
 import com.notemasterv10.takenote.webservice.WebServiceChecker;
 
-public class MainActivity extends AppCompatActivity implements DialogAnswerListener, WebEventListener, Constants {
+public class MainActivity extends AppCompatActivity implements DialogAnswerListener, WebEventListener, NoteMasterConstants {
 
     private Boolean showItemUploadDownload = false;
     SharedResource sr = new SharedResource();
@@ -303,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     protected void onResume() {
         // this will also fire after the onCreate event
         if (wsc == null) {
-            // passing the ws object because it has the listener already set needed to update the UI
+            // passing the ws object because it has the listener already set, needed to update the UI
             wsc = new WebServiceChecker(true, ws);
         }
         wsc.start(); // needed to start the run method in wsc

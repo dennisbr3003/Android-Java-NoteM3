@@ -23,13 +23,14 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.PointCollectorListener;
 
 import java.util.List;
 
 // this implementation launches the interface rendering it not null?
-public class ImageActivity extends AppCompatActivity implements PointCollectorListener, Constants {
+public class ImageActivity extends AppCompatActivity implements PointCollectorListener, NoteMasterConstants {
 
     SharedResource sr = new SharedResource();
 

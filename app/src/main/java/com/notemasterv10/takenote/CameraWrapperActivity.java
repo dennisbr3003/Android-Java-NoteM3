@@ -22,11 +22,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.SharedResource;
 
 import java.io.File;
 
-public class CameraWrapperActivity extends AppCompatActivity implements Constants {
+public class CameraWrapperActivity extends AppCompatActivity implements NoteMasterConstants {
 
     SharedResource sr = new SharedResource();
 

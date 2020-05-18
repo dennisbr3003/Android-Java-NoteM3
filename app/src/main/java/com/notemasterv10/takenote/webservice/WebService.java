@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notemasterv10.takenote.Constants;
+import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.listeners.WebEventListener;
 
@@ -30,7 +30,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class WebService extends AppCompatActivity implements Constants {
+public class WebService extends AppCompatActivity implements NoteMasterConstants {
 
     private final String base_url = "http://192.168.178.69:8080/notemaster/";
 
