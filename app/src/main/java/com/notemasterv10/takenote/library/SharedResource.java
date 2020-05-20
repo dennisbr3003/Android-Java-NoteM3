@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -18,10 +19,6 @@ import com.notemasterv10.takenote.Database;
 import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class SharedResource extends AppCompatActivity implements NoteMasterConstants {
 
@@ -86,6 +83,19 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         prefsEdit.apply(); // apply does it's work in th ebackground, commit does not.
     }
 
+    public void setOpenNoteName(Context context, String name){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putString(OPEN_NOTE, name);
+        prefsEdit.apply(); // apply does it's work in th ebackground, commit does not.
+    }
+
+    public String getOpenNoteName(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(OPEN_NOTE, NO_FILENAME);
+    }
+
+
     public void resetSharedPasspointsSet(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
@@ -100,26 +110,20 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         prefsEdit.apply(); // apply is background, commit is not
     }
 
-    public void saveNoteText(Context context, byte[] byteArray) {
+    public byte[] getNote(Context context, String name){
+        Database sdb = new Database(context);
+        return sdb.getNote(name);
+    }
+
+    public void saveNote(Context context, byte[] note, String name) {
 
         Database sdb = new Database(context);
-
         try{
-            sdb.saveNote("test1", byteArray);
+            sdb.saveNote(name, note);
         } catch(Exception e){
             Log.d("DB", "Database opslaan niet gelukt");
         }
-        sdb.testUpdateInsertNote(); // uitlezen
-
-        try {
-            FileOutputStream fos = context.openFileOutput(NOTE_FILENAME, Context.MODE_PRIVATE);
-            fos.write(byteArray);
-            fos.close();
-        } catch (FileNotFoundException e) {
-            // todo error-handling
-        } catch (IOException e) {
-            // todo error-handling
-        }
+        sdb.testUpdateInsertNote(); // read the contents of the table (may be removed later)
     }
 
     public Bitmap createBitmapFromOSFile(String absoluteFilePath) {
@@ -128,6 +132,77 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
            return bm;
         }
         return null;
+    }
+
+    private String getCurrentTimestamp(){
+        return String.valueOf(System.currentTimeMillis());
+    }
+
+    public void getNoteNameDialog(final Context context, final String currentNoteName, final byte[] note, final NoteAction noteAction){
+
+        final ComplexDialogAnswer answer = new ComplexDialogAnswer();
+        final EditText et = new EditText(context);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Save note");
+        builder.setMessage("Name your note...");
+        builder.setIcon(R.mipmap.dialog_orange_warning);
+        builder.setCancelable(false); // block back-button
+
+        // Set an EditText view to get user input
+        builder.setView(et);
+
+        builder.setPositiveButton(R.string.btn_caption_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (et.getText().toString().equals("") || et.getText().toString().equals(null)){
+                    String systemFileName = String.format("%s-%s", "Note", getCurrentTimestamp());
+                    Log.d("DB", "Bestandsnaam " + String.format("%s-%s", "Note", getCurrentTimestamp()));
+                    //saveNote(context,note,systemFileName);
+                    answer.setAnswer(systemFileName);
+                    if (noteAction.equals(NoteAction.SAVE_NEW)) {
+                        answer.setExtraInstruction("X");
+                        setOpenNoteName(context, NO_FILENAME);
+                    } else{
+                        setOpenNoteName(context, answer.getAnswer());
+                    }
+                } else {
+                    //saveNote(context,note,et.getText().toString());
+                    answer.setAnswer(et.getText().toString());
+                    if (noteAction.equals(NoteAction.SAVE_NEW)) {
+                        answer.setExtraInstruction("X");
+                        setOpenNoteName(context, NO_FILENAME);
+                    }else{
+                        setOpenNoteName(context, answer.getAnswer());
+                    }
+                }
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(R.string.btn_caption_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                answer.setAnswer("");
+                dialog.dismiss();
+            }
+        });
+
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                Log.d("DB", "Is de listener null? " + String.valueOf((dialogAnswerListener == null)));
+                Log.d("DB", "En we geven mee..." + answer.getAnswer());
+                if (dialogAnswerListener != null) {
+                    dialogAnswerListener.stringAnswerConfirmed(answer);
+                    // this method is actually an interface method overridden in MainActivity
+                    // Also check MainActivity.java and DialogAnswerListener.java (interface)
+                    // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
+                }
+            }
+        });
+
+        AlertDialog dlg = builder.create();
+        dlg.show();
     }
 
     public void askUserConfirmationDialog(final Context context){
@@ -169,8 +244,6 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
         AlertDialog dlg = builder.create();
         dlg.show();
-
-
     }
 
     public void selectPassPointImageCustomDialog(final Context context){
@@ -273,5 +346,6 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         }
 
     }
+
 
 }

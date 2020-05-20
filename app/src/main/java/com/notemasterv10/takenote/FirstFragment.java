@@ -1,13 +1,16 @@
 package com.notemasterv10.takenote;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,13 +23,6 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.notemasterv10.takenote.Constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.webservice.WebService;
-
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class FirstFragment extends Fragment implements NoteMasterConstants {
 
@@ -43,75 +39,61 @@ public class FirstFragment extends Fragment implements NoteMasterConstants {
             Bundle savedInstanceState
     ) {
         // Inflate the layout for this fragment
-
         view = inflater.inflate(R.layout.fragment_first, container, false);
 
         /* read session */
         if (savedInstanceState == null) {
             getSavedFileOnStartup(view); //only load once on init of fragment (savedInstanceState = null)
         }
+
         setBackgroundColorUsingPrefs(view);
-
         return view;
-
     }
 
-    private void updateTextObject(View v, final String msg) {
-        final String str = msg;
-        final EditText et = (EditText) v.findViewById(R.id.editText);
+    private void loadNote(final View v, final byte[] note) {
+
+        final EditText et = v.findViewById(R.id.editText);
+
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                et.append(msg);
-                et.append("\n");
+                // convert byte array directly to string -->
+                if (note != null) {
+                    et.setText(new String(note));
+                }
+                displayFileName(v);
             }
         });
     }
 
+    private void displayFileName(View v){
+
+        // this method may also be executed from threads, hence the v.getRootView()
+        final TextView tv = (TextView) v.getRootView().findViewById(R.id.text_view_currentnote);
+
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tv.setText(sr.getOpenNoteName(getContext()));
+            }
+        });
+
+    }
+
     private void getSavedFileOnStartup(final View v) {
+
+        final String noteName = sr.getOpenNoteName(getContext());
 
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-
-                FileInputStream fis = null;
-
-                try {
-                    fis = getContext().openFileInput(getString(R.string.fileName));
-                } catch (FileNotFoundException e) {
-                    Log.e(getString(R.string.FileNotFoundException), getString(R.string.FileOpsError));
-                    return; //do nothing
-                }
-
-                Log.i(getString(R.string.DefaultTag), fis.toString());
-                BufferedReader br = new BufferedReader(new InputStreamReader(new DataInputStream(fis)));
-                String line;
-
-                while (true) {
-                    try {
-                        if (((line = br.readLine()) != null)) {
-                            updateTextObject(v, line);
-                            Log.i(getString(R.string.DefaultTag), line);
-                        } else {
-                            break;
-                        }  // avoid endless loop
-                    } catch (IOException e) {
-                        Log.e(getString(R.string.IOException), getString(R.string.LineReadError));
-                    }
-                }
-                try {
-                    fis.close();
-                    Log.i(getString(R.string.DefaultTag), getString(R.string.NoErrorOnFileOps));
-                } catch (IOException e) {
-                    Log.e(getString(R.string.IOException), getString(R.string.FileOpsError));
-                    return; // do nothing
-                }
+                loadNote(v, sr.getNote(getContext(), noteName));
             }
         });
         t.start();
         try {
             t.join();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             Log.e(getString(R.string.InterruptedException), getString(R.string.ThreadNotExceuted));
         }
     }
@@ -122,9 +104,46 @@ public class FirstFragment extends Fragment implements NoteMasterConstants {
         // save something here
     }
 
-    private void saveText(View v) {
-        EditText et = (EditText) v.getRootView().findViewById(R.id.editText); //use getRootView to get correct view/container because we are in a thread
-        sr.saveNoteText(getContext(), et.getText().toString().getBytes());
+    @Override
+    public void onResume() {
+
+        super.onResume();
+        displayFileName(view);
+
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private void saveNote(final View v, final NoteAction noteAction) {
+
+        final EditText et = (EditText) v.getRootView().findViewById(R.id.editText); //use getRootView to get correct view/container because we are in a thread
+        final byte[] note = et.getText().toString().getBytes();
+
+        if (!(sr.getOpenNoteName(getContext()).equals(NO_FILENAME))) {
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    sr.saveNote(getContext(), note, sr.getOpenNoteName(getContext()));
+                    return null;
+                }
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    super.onPostExecute(aVoid);
+                    if(noteAction.equals(NoteAction.SAVE_NEW)) {
+                        et.setText("");
+                        sr.setOpenNoteName(getContext(), NO_FILENAME);
+                        displayFileName(v);
+                        Toast.makeText(getContext(), R.string.new_note, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), getString(R.string.ToastSaveSucces), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }.execute();
+        }
+        else { // show dialog and get a filename
+            sr.getNoteNameDialog(getContext(), NO_FILENAME, note, noteAction);
+        }
+
+
     }
 
     public void setBackgroundColorUsingPrefs(View view) {
@@ -139,22 +158,19 @@ public class FirstFragment extends Fragment implements NoteMasterConstants {
         view.findViewById(R.id.imgButtonSave).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                Log.d(getString(R.string.DefaultTag), getString(R.string.btnSave_Click));
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        saveText(v);
-                    }
-                });
-                t.start();
-                try {
-                    t.join();
-                    Toast.makeText(getContext(), getString(R.string.ToastSaveSucces), Toast.LENGTH_LONG).show();
-                } catch (InterruptedException e) {
-                    Toast.makeText(getContext(), getString(R.string.ToastSaveFailure), Toast.LENGTH_LONG).show();
-                }
+                Log.d("DB", "Actie SAVE_RETURN");
+                saveNote(v, NoteAction.SAVE_RETURN);
             }
         });
+
+        view.findViewById(R.id.imgButtonNew).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("DB", "Actie SAVE_NEW");
+                saveNote(v, NoteAction.SAVE_NEW);
+            }
+        });
+
         view.findViewById(R.id.imgButtonColor).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,7 +179,7 @@ public class FirstFragment extends Fragment implements NoteMasterConstants {
                 ColorPickerDialogBuilder
                         .with(getContext())
                         .setTitle("Choose color")
-                        //.initialColor(currentBackgroundColor)
+                        .initialColor(sr.getSharedBackgroundColor(getContext()))
                         .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
                         .density(12)
                         .setOnColorSelectedListener(new OnColorSelectedListener() {
@@ -198,6 +214,8 @@ public class FirstFragment extends Fragment implements NoteMasterConstants {
                 startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
             }
         });
+
+        sr.setDialogAnswerListener((MainActivity) getActivity());
 
     }
 

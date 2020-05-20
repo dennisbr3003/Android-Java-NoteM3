@@ -62,5 +62,9 @@
     <string name="download_success">Download from webservice completed successfully</string>
     <string name="mapping_failed">object mapping failed</string>
     <string name="download_preferences">Download preferences</string>
+    <string name="not_saved">unnamed note</string>
+    <string name="btn_caption_ok">OK</string>
+    <string name="btn_caption_cancel">Cancel</string>
+    <string name="new_note">New note opened</string>
 </resources>
  

@@ -30,6 +30,20 @@
         app:layout_constraintTop_toBottomOf="@id/StatusViewGroup">
 
         <ImageButton
+            android:id="@+id/imgButtonNew"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginEnd="77dp"
+            android:layout_marginRight="0dp"
+            android:layout_toEndOf="@id/imgButtonSave"
+            android:layout_toRightOf="@id/imgButtonSave"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/select_editor_color"
+            android:src="@mipmap/note_new" />
+
+        <ImageButton
             android:id="@+id/imgButtonSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -42,12 +56,12 @@
             android:id="@+id/imgButtonColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginLeft="15dp"
+            android:layout_marginStart="72dp"
+            android:layout_marginLeft="10dp"
             android:layout_marginEnd="77dp"
             android:layout_marginRight="0dp"
             android:layout_toEndOf="@id/imgButtonSave"
-            android:layout_toRightOf="@id/imgButtonSave"
+            android:layout_toRightOf="@id/imgButtonNew"
             android:background="@android:color/transparent"
             android:contentDescription="@string/select_editor_color"
             android:src="@mipmap/color_palette" />
@@ -96,6 +110,16 @@
             android:layout_marginTop="2dp"
             android:layout_toRightOf="@id/imgStatus"
             android:text="Webservice unavailable"
+            android:textSize="9sp" />
+
+        <TextView
+            android:id="@+id/text_view_currentnote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="2dp"
+            android:layout_marginRight="8dp"
+            android:text="filename here"
             android:textSize="9sp" />
     </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

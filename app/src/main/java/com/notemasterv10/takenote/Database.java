@@ -26,17 +26,16 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        // if either of these table already exist will be automatically detected -->
-
         String sql = String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s INTEGER NOT NULL, %s INTEGER NOT NULL)",
                                    TABLE_PNTS, PNTS_ID, PNTS_X, PNTS_Y);
         db.execSQL(sql);
 
-        sql = String.format("CREATE TABLE %s (%s INTEGER AUTOINCREMENT, %s VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE, " +
+        sql = String.format("CREATE TABLE %s (%s INTEGER AUTO_INCREMENT, %s VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE, " +
                             "%s DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')), %s BLOB, %s DATETIME "+
                             "DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')))",
                             TABLE_NTS, NTS_ID, NTS_NAME, NTS_CREATED, NTS_FILE, NTS_UPDATED);
         db.execSQL(sql);
+
     }
 
     @Override
@@ -46,9 +45,11 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
 
     public boolean noteExists(String name){
 
-        Boolean isFound = false;
-
+        Boolean isFound;
         SQLiteDatabase sdb = getReadableDatabase();
+
+        sdb.beginTransaction();
+
         String query = String.format("SELECT %s FROM %s WHERE %s = '%s'", NTS_NAME, TABLE_NTS, NTS_NAME, name);
         Cursor cursor = sdb.rawQuery(query, null);
 
@@ -58,8 +59,12 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
             isFound = true;
         }
 
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
         sdb.close();
+
         return isFound;
+
     }
 
     public boolean saveNote(String name, byte[] note){
@@ -71,37 +76,60 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
             // insert
             return processNote(name, note, TableAction.INSERT);
         }
+
     }
 
+    public byte[] getNote(String name){
+
+        byte[] note = null;
+        SQLiteDatabase sdb = getReadableDatabase();
+
+        sdb.beginTransaction();
+
+        String query = String.format("SELECT %s FROM %s WHERE %s = '%s'", NTS_FILE, TABLE_NTS, NTS_NAME, name);
+        Cursor cursor = sdb.rawQuery(query, null);
+
+        if (!(cursor.getCount() <= 0)){
+            if(cursor.moveToFirst()){
+                note = cursor.getBlob(0);
+            }
+        }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
+        sdb.close();
+
+        return note; // may be null may be not null
+
+    }
 
     private boolean processNote(String name, byte[] note, TableAction tableAction){
 
-        try {
-            SQLiteDatabase sdb = getWritableDatabase();
+        ContentValues values = new ContentValues();
 
-            ContentValues values = new ContentValues();
-            values.put(NTS_NAME, name);
-            values.put(NTS_UPDATED, getCurrentTimestamp());
-            values.put(NTS_FILE, note); // blob = byte array
+        SQLiteDatabase sdb = getWritableDatabase();
+        sdb.beginTransaction();
 
-            switch(tableAction){
-                case INSERT:
-                    sdb.insert(TABLE_NTS, null, values); // put values in record
-                    sdb.close();
-                    break;
-                case UPDATE:
-                    sdb.update(TABLE_NTS, values, String.format("%s = '%s'", NTS_NAME, name), null); // put values in record
-                    sdb.close();
-                    break;
-                default:
-                    break;
-            }
+        values.put(NTS_NAME, name);
+        values.put(NTS_UPDATED, getCurrentTimestamp());
+        values.put(NTS_FILE, note); // blob = byte array
 
-            return true;
+        switch(tableAction){
+            case INSERT:
+                sdb.insert(TABLE_NTS, null, values); // put values in record
+                break;
+            case UPDATE:
+                sdb.update(TABLE_NTS, values, String.format("%s = '%s'", NTS_NAME, name), null); // put values in record
+                break;
+            default:
+                break;
         }
-        catch (Exception e){
-            return false;
-        }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
+        sdb.close();
+
+        return true;
 
     }
 
@@ -115,6 +143,8 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
     public void testUpdateInsertNote(){
 
         SQLiteDatabase sdb = getReadableDatabase();
+        sdb.beginTransaction();
+
         String query = String.format("SELECT %s, %s, %s, %s FROM %s ORDER BY %s", NTS_ID, NTS_NAME, NTS_CREATED, NTS_UPDATED, TABLE_NTS, NTS_ID);
         Cursor cursor = sdb.rawQuery(query, null);
 
@@ -125,14 +155,22 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
                     cursor.getString(2),
                     cursor.getString(3)));
         }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
         sdb.close();
+
     }
 
     public void setPoints(List<Point> points) {
+
         SQLiteDatabase sdb = getWritableDatabase();
+        sdb.beginTransaction();
+
         //First clear the table
         sdb.delete(TABLE_PNTS,null, null); // delete all so no arguments
         int i=0;
+
         for(Point p: points){
             ContentValues values = new ContentValues();
             values.put(PNTS_ID, i);
@@ -141,13 +179,19 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
             sdb.insert(TABLE_PNTS,null, values); // put values in record
             i++;
         }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
         sdb.close();
+
     }
 
     public List<Point> getPoints(){
 
         List<Point> points = new ArrayList<Point>();
+
         SQLiteDatabase sdb = getReadableDatabase(); // because we are going to read
+        sdb.beginTransaction();
 
         // create SQL statement   columnIndex 0   1 (starts with 0)
         String query = String.format("SELECT %s, %s FROM %s ORDER BY %s", PNTS_X, PNTS_Y, TABLE_PNTS, PNTS_ID);
@@ -156,9 +200,13 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         while(cursor.moveToNext()){ // iterate through the result
             points.add(new Point(cursor.getInt(0), cursor.getInt(1)));
         }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
         sdb.close();
 
         return points;
+
     }
 
 }
