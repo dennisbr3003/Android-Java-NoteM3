@@ -22,8 +22,11 @@ import java.util.UUID;
 
 public class Database extends SQLiteOpenHelper implements DatabaseConstants {
 
+    private Context context;
+
     public Database(@Nullable Context context) {
         super(context, DB_NAME, null, DB_VERSION);
+        this.context = context;
     }
 
     @Override
@@ -79,6 +82,31 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         return note_list;
     }
 
+    public boolean deleteNote(String name){
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+            String sqlQuery = String.format("DELETE FROM %s WHERE %s = ?", TABLE_NTS, NTS_NAME);
+
+            SQLiteStatement stmt = db.compileStatement(sqlQuery);
+
+            stmt.clearBindings();
+            stmt.bindString(1, name);
+            stmt.executeUpdateDelete();
+
+            db.setTransactionSuccessful();
+            return true;
+        } catch(Exception e){
+            return false;
+        }
+        finally{
+            db.endTransaction();
+            db.close();
+        }
+
+    }
 
     private boolean updateNote(String name, byte[] note){
 

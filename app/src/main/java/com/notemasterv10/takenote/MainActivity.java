@@ -108,30 +108,55 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 ws.downloadSharedPreferencePayload(this);
                 return true;
             case R.id.action_find_notes:
-                NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-                int i = navHostFragment.getChildFragmentManager().getFragments().size();
-                Log.d("DB from options menu", String.valueOf(i));
-                if (i >= 1) {
-                    try {
-                        /*
-                           some sort of dirty trick I found on Stack Overflow. In the beginning I used a sample project with two
-                           fragment and a navigation fragment. Is not needed now but the one of he fragments is gone and the navigation
-                           fragment is still in. In order to get to my active fragment I have to go through the navigation fragment. In know
-                           there is only one fragment so I get index 0. If at any given moment there will be two or more this will not
-                           work anymore. In need the fragment to get to my nested child fragment
-                        */
-                        FirstFragment ff = (FirstFragment) navHostFragment.getChildFragmentManager().getFragments().get(0);
-                        if (ff != null) {
-                            ff.showList();
-                        }
-                    } catch (Exception e) {
-                        // do nothing
-                    }
-                }
+                showNoteList();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
 
+        }
+    }
+
+    private void showNoteList(){
+
+        /* Architecture fragments MainActivity:
+           MainActivity --> NavigationHostFragment --> FirstFragment --> NoteListFragment
+                            (level 1)                  (level 2)         (level 3)
+        */
+
+        // level 1 -->
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+
+        // level 2 -->
+        Fragment ff = navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
+
+        // ff is parent to level 3 -->
+        if(ff != null) {
+            // level 3 (is the child (the noet list) already loaded, don't load it again) -->
+            int t = ff.getChildFragmentManager().getFragments().size();
+            if(t >= 1) { // at least one child is loaded, but there could be more. Make sure you get the correct one -->
+                Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG); // this is set in showList method of ff
+                if (cf != null) {
+                    // the child is already loaded, don't load it again -->
+                    return;
+                } else {
+                    try{
+                        // Cast it to the type of the fragment that it is to get to the method forced there by an interface -->
+                        FirstFragment firstFrag = (FirstFragment) ff;
+                        firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
+                    } catch(Exception e){
+                        return;
+                    }
+
+                }
+            } else { // no child loaded yet -->
+                try{
+                    // Cast it to the type of the fragment that it is to get to the method forced there by an interface -->
+                    FirstFragment firstFrag = (FirstFragment) ff;
+                    firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
+                } catch(Exception e){
+                    return;
+                }
+            }
         }
     }
 

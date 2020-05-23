@@ -8,5 +8,6 @@
         android:id="@+id/FirstFragment"
         android:name="com.notemasterv10.takenote.FirstFragment"
         android:label="@string/first_fragment_label"
+        android:tag="note_main"
         tools:layout="@layout/fragment_first"/>
 </navigation>

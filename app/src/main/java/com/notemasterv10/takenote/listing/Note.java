@@ -1,19 +1,19 @@
 package com.notemasterv10.takenote.listing;
 
-import java.sql.Timestamp;
-
 public class Note {
 
     private String name;
     private String created;
     private String updated;
     private byte[] file;
+    private boolean isCurrentNote;
 
     public Note(String name, String created, String updated, byte[] file) {
         this.name = name;
         this.created = created;
         this.updated = updated;
         this.file = file;
+
     }
 
     public String getName() {
@@ -47,4 +47,21 @@ public class Note {
     public void setFile(byte[] file) {
         this.file = file;
     }
+
+    public boolean isCurrentNote() {
+        return isCurrentNote;
+    }
+
+    public void setCurrentNote(boolean currentNote) {
+        isCurrentNote = currentNote;
+    }
+
+    public void setCurrentNote(String currentNote) {
+        if (getName().equals(currentNote)){
+            this.isCurrentNote = true;
+        } else {
+            this.isCurrentNote = false;
+        }
+    }
+
 }

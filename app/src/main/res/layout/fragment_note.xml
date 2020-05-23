@@ -31,7 +31,7 @@
         android:layout_marginEnd="@dimen/text_margin"
         android:layout_marginRight="-58dp"
         android:layout_marginBottom="0dp"
-        android:layout_toRightOf="@id/img_note"
+        android:layout_toRightOf="@id/img_current"
         android:text="Note name"
         android:textAppearance="?attr/textAppearanceListItem"
         android:textSize="18sp" />
@@ -48,7 +48,7 @@
         android:layout_marginRight="@dimen/text_margin"
         android:layout_marginBottom="@dimen/text_margin"
         android:layout_toLeftOf="@id/img_delete"
-        android:layout_toRightOf="@id/img_note"
+        android:layout_toRightOf="@id/img_current"
         android:singleLine="true"
         android:text="contents"
         android:textAppearance="?attr/textAppearanceListItem"
@@ -56,17 +56,17 @@
 
     <ImageView
         android:id="@+id/img_delete"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_marginStart="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="25dp"
-        android:layout_marginRight="25dp"
+        android:layout_marginRight="13dp"
         android:layout_marginBottom="10dp"
-        app:srcCompat="@mipmap/note_delete" />
+        app:srcCompat="@android:drawable/ic_menu_delete" />
 
     <TextView
         android:id="@+id/txt_created"
@@ -74,6 +74,16 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/txtview_note_name"
         android:layout_marginLeft="@dimen/text_margin"
-        android:layout_toRightOf="@id/img_note"
+        android:layout_toRightOf="@id/img_current"
         android:text="created" />
+
+    <ImageView
+        android:id="@+id/img_current"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/txtview_note_name"
+        android:layout_toRightOf="@id/img_note"
+        android:paddingLeft="10dp"
+        android:paddingTop="5dp"
+        app:srcCompat="@android:drawable/presence_online" />
 </RelativeLayout>

@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.flask.colorpicker.ColorPickerView;
@@ -23,11 +22,12 @@ import com.flask.colorpicker.OnColorSelectedListener;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
+import com.notemasterv10.takenote.library.FragmentControlMethods;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listing.NoteListFragment;
 import com.notemasterv10.takenote.webservice.WebService;
 
-public class FirstFragment extends Fragment implements NoteMasterConstants {
+public class FirstFragment extends Fragment implements NoteMasterConstants, FragmentControlMethods {
 
     SharedResource sr = new SharedResource();
     WebService ws = new WebService();
@@ -219,19 +219,20 @@ public class FirstFragment extends Fragment implements NoteMasterConstants {
         });
 
         sr.setDialogAnswerListener((MainActivity) getActivity());
-
     }
 
-    public String runTest(){
-        return "Test";
-    }
 
-    public void showList(){
 
-        NoteListFragment nlf = new NoteListFragment();
-        FragmentTransaction fm = getChildFragmentManager().beginTransaction();
-        fm.replace(R.id.child_fragment_container, nlf).addToBackStack(null);
-        fm.commit();
+    @Override
+    public void showChildFragment(String fragment_tag){
+
+        switch(fragment_tag){
+            case NOTELIST_FRAGMENT_TAG:
+                NoteListFragment nlf = new NoteListFragment();
+                FragmentTransaction fm = getChildFragmentManager().beginTransaction();
+                fm.replace(R.id.child_fragment_container, nlf, NOTELIST_FRAGMENT_TAG).addToBackStack(null);
+                fm.commit();
+        }
 
     }
 

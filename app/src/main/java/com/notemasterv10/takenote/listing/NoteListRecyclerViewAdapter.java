@@ -3,11 +3,14 @@ package com.notemasterv10.takenote.listing;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.notemasterv10.takenote.R;
+import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listing.NoteListFragment.OnListFragmentInteractionListener;
 import java.util.List;
 
@@ -17,6 +20,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
     private final List<Note> mValues;
     private final OnListFragmentInteractionListener mListener;
     private Context context;
+    SharedResource sr = new SharedResource();
     // Database sdb = new Database(context);
 
     public NoteListRecyclerViewAdapter(List<Note> notes, OnListFragmentInteractionListener listener) {
@@ -39,6 +43,17 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
         holder.mNameView.setText(mValues.get(position).getName());
         holder.mContentView.setText(new String(mValues.get(position).getFile()));
         holder.mCreatedView.setText(String.format("%s %s", "Created:", mValues.get(position).getCreated()));
+        if(mValues.get(position).getName().equals(sr.getOpenNoteName(context))){
+            holder.mCurrentNote.setVisibility(View.VISIBLE);
+        } else {
+            holder.mCurrentNote.setVisibility(View.INVISIBLE);
+        }
+        holder.itemView.setSelected(selectedPos == position);
+
+        holder.itemView.setBackgroundColor(Color.TRANSPARENT);
+        if (holder.itemView.isSelected()) {
+            holder.itemView.setBackgroundColor(Color.WHITE);
+        }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,6 +85,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
         public final TextView mNameView;
         public final TextView mContentView;
         public final TextView mCreatedView;
+        public final ImageView mCurrentNote;
         public Note mItem;
 
         public ViewHolder(View view) {
@@ -78,6 +94,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
             mNameView = (TextView) view.findViewById(R.id.txtview_note_name);
             mContentView = (TextView) view.findViewById(R.id.content);
             mCreatedView = (TextView) view.findViewById(R.id.txt_created);
+            mCurrentNote = (ImageView) view.findViewById(R.id.img_current);
         }
 
         @Override
