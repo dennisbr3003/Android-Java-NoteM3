@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:tag="note_item">
+
+    <ImageView
+        android:id="@+id/img_note"
+        android:layout_width="59dp"
+        android:layout_height="57dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="false"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        app:srcCompat="@mipmap/note_list" />
+
+    <TextView
+        android:id="@+id/txtview_note_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/img_note"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginLeft="@dimen/text_margin"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:layout_marginRight="-58dp"
+        android:layout_marginBottom="0dp"
+        android:layout_toRightOf="@id/img_note"
+        android:text="Note name"
+        android:textAppearance="?attr/textAppearanceListItem"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txt_created"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginLeft="@dimen/text_margin"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:layout_marginRight="@dimen/text_margin"
+        android:layout_marginBottom="@dimen/text_margin"
+        android:layout_toLeftOf="@id/img_delete"
+        android:layout_toRightOf="@id/img_note"
+        android:singleLine="true"
+        android:text="contents"
+        android:textAppearance="?attr/textAppearanceListItem"
+        android:textSize="14sp" />
+
+    <ImageView
+        android:id="@+id/img_delete"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginBottom="10dp"
+        app:srcCompat="@mipmap/note_delete" />
+
+    <TextView
+        android:id="@+id/txt_created"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtview_note_name"
+        android:layout_marginLeft="@dimen/text_margin"
+        android:layout_toRightOf="@id/img_note"
+        android:text="created" />
+</RelativeLayout>

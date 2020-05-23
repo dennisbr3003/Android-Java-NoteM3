@@ -1,9 +1,7 @@
-package com.notemasterv10.takenote.Constants;
+package com.notemasterv10.takenote.constants;
 
 public interface DatabaseConstants {
-    enum TableAction{
-        UPDATE, INSERT
-    }
+
     static final String DB_NAME = "takenote.db";
     static final int DB_VERSION = 1;
     static final String TABLE_PNTS = "POINTS";

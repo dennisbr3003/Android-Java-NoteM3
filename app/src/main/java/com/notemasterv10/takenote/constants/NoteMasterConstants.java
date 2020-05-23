@@ -1,4 +1,4 @@
-package com.notemasterv10.takenote.Constants;
+package com.notemasterv10.takenote.constants;
 
 public interface NoteMasterConstants {
     enum NoteAction{

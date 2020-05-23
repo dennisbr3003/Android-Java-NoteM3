@@ -23,7 +23,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.notemasterv10.takenote.Constants.NoteMasterConstants;
+import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.PointCollectorListener;
 

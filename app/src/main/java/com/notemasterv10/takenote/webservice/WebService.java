@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notemasterv10.takenote.Constants.NoteMasterConstants;
+import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.listeners.WebEventListener;
 

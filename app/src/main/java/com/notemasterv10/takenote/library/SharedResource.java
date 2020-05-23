@@ -16,9 +16,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.notemasterv10.takenote.Database;
-import com.notemasterv10.takenote.Constants.NoteMasterConstants;
+import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
+import com.notemasterv10.takenote.listing.NoteListFragment;
 
 public class SharedResource extends AppCompatActivity implements NoteMasterConstants {
 
@@ -37,6 +38,20 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     }
 
     public SharedResource() {
+    }
+
+    // @Override
+    public void initListFragment(NoteListFragment nlf) {
+        /*
+        Log.d("DB", "Fragment start");
+        nlf = (NoteListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_l);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Log.d("DB", "After fragment init ");
+        ft.hide(nlf);
+        ft.commit();
+        Log.d("DB", "nlf niet zichtbaar? ");
+
+         */
     }
 
     public void saveSharedBackgroundColor(int iColor, Context context){
@@ -157,8 +172,8 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             public void onClick(DialogInterface dialog, int which) {
                 if (et.getText().toString().equals("") || et.getText().toString().equals(null)){
                     String systemFileName = String.format("%s-%s", "Note", getCurrentTimestamp());
-                    Log.d("DB", "Bestandsnaam " + String.format("%s-%s", "Note", getCurrentTimestamp()));
-                    //saveNote(context,note,systemFileName);
+                    //Log.d("DB", "Bestandsnaam " + String.format("%s-%s", "Note", getCurrentTimestamp()));
+                    saveNote(context,note,systemFileName);
                     answer.setAnswer(systemFileName);
                     if (noteAction.equals(NoteAction.SAVE_NEW)) {
                         answer.setExtraInstruction("X");
@@ -167,7 +182,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                         setOpenNoteName(context, answer.getAnswer());
                     }
                 } else {
-                    //saveNote(context,note,et.getText().toString());
+                    saveNote(context,note,et.getText().toString());
                     answer.setAnswer(et.getText().toString());
                     if (noteAction.equals(NoteAction.SAVE_NEW)) {
                         answer.setExtraInstruction("X");
