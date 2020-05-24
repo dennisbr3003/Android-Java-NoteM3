@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
+import com.notemasterv10.takenote.constants.WebServiceConstants;
 import com.notemasterv10.takenote.listeners.WebEventListener;
 
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -30,13 +32,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class WebService extends AppCompatActivity implements NoteMasterConstants {
+public class WebServiceMethods extends AppCompatActivity implements NoteMasterConstants, WebServiceConstants {
 
-    private final String base_url = "http://192.168.178.69:8080/notemaster/";
+    private final String base_url = BASE_URL;
 
-    private static Boolean webservice_online = false;
     private String json_response;
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    public static final MediaType JSON = MediaType.parse(JSON_UTF8);
 
     private WebEventListener webEventListener;
 
@@ -49,62 +50,6 @@ public class WebService extends AppCompatActivity implements NoteMasterConstants
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void checkForWebService(){
-
-        final String action = "test"; // <-- This action is used to test the webservice. It only checks if the
-                                      //      the webservice is online and if the database can be connected.
-
-        new AsyncTask<Void, Void, Boolean> () {
-
-            @Override
-            protected Boolean doInBackground(Void... voids) {
-
-                OkHttpClient client = new OkHttpClient().newBuilder()
-                        .build();
-                Request request = new Request.Builder()
-                        .url(String.format("%s%s", base_url, action))
-                        .method("GET", null)
-                        .build();
-
-                Response response = null;
-                try {
-                    response = client.newCall(request).execute(); // <-- actual call to the server
-                    json_response = response.body().string(); //<-- this is closable or read once and then never again
-                    JSONObject j_object = new JSONObject(json_response);
-                    if(j_object.has("status")){
-                        if(((String) j_object.get("status")).equalsIgnoreCase("1")){
-                            return true;
-                        } else {return false;}
-                    } else {return false;}
-                } catch (Exception e) {return false;}
-
-            }
-
-            @Override
-            protected void onPostExecute(final Boolean aBoolean) {
-                super.onPostExecute(aBoolean);
-                try {
-                    webservice_online = aBoolean; // this method is the only method that can set this value
-                    if (webEventListener != null) {
-                        if(aBoolean) {
-                            webEventListener.showHideMenuItem(WebEventListener.Action.SHOW_UPL_DL);
-                        } else {
-                            webEventListener.showHideMenuItem(WebEventListener.Action.HIDE_UPL_DL);
-                        }
-                    }
-                } catch(Exception e){
-                    // do nothing, there's virtually no chance this gets executed.
-                }
-            }
-        }.execute();
-
-    }
-
-    public Boolean isWebServiceOnline(){
-        return webservice_online;
-    }
-
-    @SuppressLint("StaticFieldLeak")
     public void createSharedPreferenceObject(final Context context) {
 
         @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -114,12 +59,12 @@ public class WebService extends AppCompatActivity implements NoteMasterConstants
 
             @Override
             protected Void doInBackground(Void... voids) {
-
+                UUID uuid = UUID.randomUUID(); // <-- used in the webservice to identify a batch
                 SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
 
                 Map<String, ?> keys = prefs.getAll();
                 for (Map.Entry<String, ?> entry : keys.entrySet()) {
-                    spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), "DBRV1");
+                    spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), uuid.toString());
                 }
                 return null;
             }
@@ -252,8 +197,8 @@ public class WebService extends AppCompatActivity implements NoteMasterConstants
                             JSONObject j_object = null;
                             try {
                                 j_object = new JSONObject(response.body().string());
-                                if (j_object.has("status")) {
-                                    if ((j_object.getString("status")).equalsIgnoreCase("1")) {
+                                if (j_object.has(RESPONSE_STATUS)) {
+                                    if ((j_object.getString(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
                                         readAnswer(new Callresult(true, context.getString(R.string.upload_success)));
                                     } else {
                                         cr.setAnswer(false);
