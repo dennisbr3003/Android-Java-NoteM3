@@ -8,7 +8,6 @@ public interface WebEventListener {
         SHOW_UPL_DL, HIDE_UPL_DL
     }
 
-    void showHideMenuItem(Action action);
     void loadDownLoadedPreferences(SharedPreferenceResponse spr);
 
 }

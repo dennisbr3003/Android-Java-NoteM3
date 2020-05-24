@@ -71,6 +71,7 @@
             -->
         </activity>
 
+        <service android:name="com.notemasterv10.takenote.webservice.WebServiceConnectService"> </service>
     </application>
 
 </manifest>

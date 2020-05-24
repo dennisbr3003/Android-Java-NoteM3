@@ -6,4 +6,5 @@ public interface WebServiceConstants {
     static final String JSON_UTF8 = "application/json; charset=utf-8";
     static final String RESPONSE_STATUS = "status";
     static final String IS_SUCCESS = "1";
+    static final String TEST_CONNECTION = "test";
 }

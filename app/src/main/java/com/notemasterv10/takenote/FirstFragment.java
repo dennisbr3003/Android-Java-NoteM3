@@ -103,13 +103,15 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Frag
 
     @Override
     public void onPause() {
-        super.onPause();
         // save something here
+        Log.d("DB ", "FirstFragment on pause");
+        super.onPause();
     }
 
     @Override
     public void onResume() {
 
+        Log.d("DB ", "FirstFragment resume");
         super.onResume();
         displayFileName(view);
 

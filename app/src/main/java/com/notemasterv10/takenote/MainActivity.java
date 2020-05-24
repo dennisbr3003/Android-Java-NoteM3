@@ -1,8 +1,10 @@
 package com.notemasterv10.takenote;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,20 +33,20 @@ import com.notemasterv10.takenote.listing.Note;
 import com.notemasterv10.takenote.listing.NoteListFragment;
 import com.notemasterv10.takenote.webservice.ArrayItemObject;
 import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
+import com.notemasterv10.takenote.webservice.WebServiceConnectService;
 import com.notemasterv10.takenote.webservice.WebServiceMethods;
-import com.notemasterv10.takenote.webservice.WebServiceConnector;
 
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener,
         WebEventListener,
         NoteMasterConstants,
-        //RecycleViewListener,
         NoteListFragment.OnListFragmentInteractionListener {
 
     private Boolean showItemUploadDownload = false;
+    private FirstFragment nlf;
     SharedResource sr = new SharedResource();
     WebServiceMethods ws = new WebServiceMethods();
-    private FirstFragment nlf;
-    WebServiceConnector wsc;
+    WebServiceConnectReceiver webServiceConnectReceiver = new WebServiceConnectReceiver();
+    Intent wscs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +57,10 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         setSupportActionBar(toolbar);
         sr.setDialogAnswerListener(this);
         ws.setWebEventListener(this);
-        //ws.checkForWebService();
         supportInvalidateOptionsMenu();
 
+        wscs = new Intent(this, WebServiceConnectService.class);
+        startService(wscs);
     }
 
     @Override
@@ -130,10 +133,10 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
         // ff is parent to level 3 -->
         if(ff != null) {
-            // level 3 (is the child (the noet list) already loaded, don't load it again) -->
+            // level 3 (is the child (the note list) already loaded, don't load it again) -->
             int t = ff.getChildFragmentManager().getFragments().size();
             if(t >= 1) { // at least one child is loaded, but there could be more. Make sure you get the correct one -->
-                Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG); // this is set in showList method of ff
+                Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG); // this is set in showChildFragment method of ff
                 if (cf != null) {
                     // the child is already loaded, don't load it again -->
                     return;
@@ -204,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         EditText et = (EditText) findViewById(R.id.editText);
         if (answer) {
             et.setText("");
-            //sr.saveNote(this, et.getText().toString().getBytes(), );
+            // TODO sr.saveNote(this, et.getText().toString().getBytes(), );
         }
     }
 
@@ -341,43 +344,24 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(wsc != null){
-            wsc.stopChecker();
-            // now wait a while to close all actions properly
-            while (wsc != null){
-                try {
-                    wsc.join(); // this will terminate the thread eventually
-                    wsc = null;
-                } catch (InterruptedException e) {
-                    // do nothing
-                }
-            }
-        }
+        stopService(wscs);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        wsc.stopChecker();
+        unregisterReceiver(webServiceConnectReceiver);
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        //wsc = new WebServiceConnector(true, ws);
-        if (wsc == null) {
-            // passing the ws object because it has the listener already set, needed to update the UI
-            //wsc = new WebServiceConnector(true, ws);
-            wsc = new WebServiceConnector(true);
-            wsc.setWebEventListener(this);
-            wsc.setAction("test");
-        }
-        wsc.start(); // n
+        registerReceiver(webServiceConnectReceiver, new IntentFilter(WebServiceConnectService.SERVICE_ACTION));
+
     }
 
 
-
-    @Override
     public void showHideMenuItem (final Action action){
 
         runOnUiThread(new Runnable(){
@@ -391,12 +375,20 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
                 switch (action){
                     case HIDE_UPL_DL:
-                        im.setImageResource(R.mipmap.webservice_offline);
-                        tv.setText(R.string.ws_unavail);
+                        try {
+                            im.setImageResource(R.mipmap.webservice_offline);
+                            tv.setText(R.string.ws_unavail);
+                        } catch(Exception e){
+                            // do nothing...
+                        }
                         break;
                     case SHOW_UPL_DL:
-                        im.setImageResource(R.mipmap.webservice_online);
-                        tv.setText(R.string.ws_avail);
+                        try {
+                            im.setImageResource(R.mipmap.webservice_online);
+                            tv.setText(R.string.ws_avail);
+                        } catch(Exception e){
+                            // do nothing...
+                        }
                         break;
                 }
 
@@ -454,6 +446,22 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
         Log.d("DB", "Item in recyclerview clicked");
 
+    }
+
+    public class WebServiceConnectReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(WebServiceConnectService.SERVICE_ACTION)){
+                boolean is_alive = intent.getExtras().getBoolean(WebServiceConnectService.IS_ALIVE);
+                Log.d("DB", "Broadcast received of (boolean) value " + String.valueOf(is_alive));
+                if(is_alive) {
+                    showHideMenuItem(WebEventListener.Action.SHOW_UPL_DL);
+                } else {
+                    showHideMenuItem(WebEventListener.Action.HIDE_UPL_DL);
+                }
+            }
+        }
     }
 
 }
