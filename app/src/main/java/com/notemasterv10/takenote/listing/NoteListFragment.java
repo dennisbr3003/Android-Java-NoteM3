@@ -1,7 +1,6 @@
 package com.notemasterv10.takenote.listing;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ import android.view.ViewGroup;
 
 import com.notemasterv10.takenote.Database;
 import com.notemasterv10.takenote.R;
-import com.notemasterv10.takenote.library.FragmentControlMethods;
 import com.notemasterv10.takenote.library.SharedResource;
 
 import java.util.ArrayList;
@@ -34,6 +32,7 @@ public class NoteListFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private List<Note> note_list = new ArrayList<Note>();
     private View v;
+    private Database sdb;
 
     SharedResource sr = new SharedResource();
 
@@ -90,16 +89,9 @@ public class NoteListFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
+    public void loadDataset(){
 
-    @Override
-    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
-
-        super.onViewCreated(view, savedInstanceState);
-        final Database sdb = new Database(getContext());
+        sdb = new Database(getContext());
 
         @SuppressLint("StaticFieldLeak")
         AsyncTask<Void, Void, List<Note>> asynctask = new AsyncTask<Void, Void, List<Note>>() {
@@ -114,7 +106,7 @@ public class NoteListFragment extends Fragment {
                 Log.d("DB", "Aantal elementen " + String.valueOf(note_list.size()));
 
                 super.onPostExecute(note_list);
-                RecyclerView recyclerView = (RecyclerView) view;
+                RecyclerView recyclerView = (RecyclerView) v;
                 if (mColumnCount <= 1) {
                     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                 } else {
@@ -124,6 +116,20 @@ public class NoteListFragment extends Fragment {
             }
         };
         asynctask.execute();
+
+    }
+    @Override
+    public void onResume() {
+
+        super.onResume();
+
+    }
+
+    @Override
+    public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
+
+        super.onViewCreated(view, savedInstanceState);
+        loadDataset();
 
     }
 
@@ -145,6 +151,12 @@ public class NoteListFragment extends Fragment {
         super.onDetach();
         mListener = null;
         note_list.clear();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //Log.d("DB", "on start event");
     }
 
     public interface OnListFragmentInteractionListener {

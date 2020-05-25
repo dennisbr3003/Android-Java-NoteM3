@@ -159,7 +159,10 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         return String.valueOf(System.currentTimeMillis());
     }
 
-    public void getNoteNameDialog(final Context context, final String currentNoteName, final byte[] note, final NoteAction noteAction){
+    public void getNoteNameDialog(final Context context, final byte[] note, final NoteAction noteAction){
+        getNoteNameDialog(context, note, noteAction, "", null);
+    }
+    public void getNoteNameDialog(final Context context, final byte[] currentNoteContent, final NoteAction noteAction, final String openNoteName, final byte[] openNoteContent){
 
         final ComplexDialogAnswer answer = new ComplexDialogAnswer();
         final EditText et = new EditText(context);
@@ -177,26 +180,28 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         builder.setPositiveButton(R.string.btn_caption_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (et.getText().toString().equals("") || et.getText().toString().equals(null)){
-                    String systemFileName = String.format("%s-%s", "Note", getCurrentTimestamp());
-                    //Log.d("DB", "Bestandsnaam " + String.format("%s-%s", "Note", getCurrentTimestamp()));
-                    saveNote(context,note,systemFileName);
-                    answer.setAnswer(systemFileName);
-                    if (noteAction.equals(NoteAction.SAVE_NEW)) {
-                        answer.setExtraInstruction("X");
-                        setOpenNoteName(context, NO_FILENAME);
-                    } else{
-                        setOpenNoteName(context, answer.getAnswer());
-                    }
+
+                String newFileName;
+
+                if (et.getText().toString().equals("") || et.getText().toString().equals(null)) {
+                    newFileName = String.format("%s-%s", "Note", getCurrentTimestamp());
                 } else {
-                    saveNote(context,note,et.getText().toString());
-                    answer.setAnswer(et.getText().toString());
-                    if (noteAction.equals(NoteAction.SAVE_NEW)) {
-                        answer.setExtraInstruction("X");
-                        setOpenNoteName(context, NO_FILENAME);
-                    }else{
-                        setOpenNoteName(context, answer.getAnswer());
+                    newFileName = et.getText().toString();
+                }
+
+                saveNote(context, currentNoteContent, newFileName);
+                answer.setAnswer(newFileName);
+
+                if (noteAction.equals(NoteAction.SAVE_NEW)) {
+                    answer.setExtraInstruction(OPEN_NEW_NOTE);
+                    setOpenNoteName(context, NO_FILENAME);
+                } else {
+                    if(noteAction.equals(NoteAction.SAVE_AND_OPEN)) {
+                        answer.setExtraInstruction(OPEN_SAVED_NOTE);
+                        answer.setAnswer(openNoteName); // use the name of the note to be opened
+                        answer.setContent(openNoteContent); // pass the new note through to the listener to be opened
                     }
+                    setOpenNoteName(context, answer.getAnswer()); // set shared preference
                 }
                 dialog.dismiss();
             }
@@ -212,8 +217,6 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                Log.d("DB", "Is de listener null? " + String.valueOf((dialogAnswerListener == null)));
-                Log.d("DB", "En we geven mee..." + answer.getAnswer());
                 if (dialogAnswerListener != null) {
                     dialogAnswerListener.stringAnswerConfirmed(answer);
                     // this method is actually an interface method overridden in MainActivity

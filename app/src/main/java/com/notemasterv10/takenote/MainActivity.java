@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         NoteListFragment.OnListFragmentInteractionListener {
 
     private Boolean showItemUploadDownload = false;
-    private FirstFragment nlf;
     SharedResource sr = new SharedResource();
     WebServiceMethods ws = new WebServiceMethods();
     WebServiceConnectReceiver webServiceConnectReceiver = new WebServiceConnectReceiver();
@@ -118,57 +117,25 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         }
     }
 
-    private void showNoteList(){
+    private void showNoteList() {
 
         /* Architecture fragments MainActivity:
            MainActivity --> NavigationHostFragment --> FirstFragment --> NoteListFragment
                             (level 1)                  (level 2)         (level 3)
+           at any given time (in this case) only one of the child fragments can be loaded
         */
-
         int noteCount = sr.getNoteCount(this);
-
+        boolean isEmpty = (noteCount == 0);
         // level 1 -->
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-
         // level 2 -->
         Fragment ff = navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
-
         // ff is parent to level 3 -->
-        if(ff != null) {
-            // level 3 (is the child (the note list) already loaded, don't load it again) -->
-            int t = ff.getChildFragmentManager().getFragments().size();
-            if(t >= 1) { // at least one child is loaded, but there could be more. Make sure you get the correct one -->
-                Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG); // this is set in showChildFragment method of ff
-                Fragment el = ff.getChildFragmentManager().findFragmentByTag(EMPTYLIST_FRAGMENT_TAG);
-                if ((cf != null) || (el != null)) {
-                    // a child is already loaded, don't load it again -->
-                    return;
-                } else {
-                    try{
-                        // Cast it to the type of the fragment that it is to get to the method forced there by an interface -->
-                        FirstFragment firstFrag = (FirstFragment) ff;
-                        if (noteCount > 0) {
-                            firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
-                        } else {
-                            firstFrag.showChildFragment(EMPTYLIST_FRAGMENT_TAG);
-                        }
-                    } catch(Exception e){
-                        return;
-                    }
-
-                }
-            } else { // no child loaded yet -->
-                try{
-                    // Cast it to the type of the fragment that it is to get to the method forced there by an interface -->
-                    FirstFragment firstFrag = (FirstFragment) ff;
-                    if (noteCount > 0) {
-                        firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
-                    } else {
-                        firstFrag.showChildFragment(EMPTYLIST_FRAGMENT_TAG);
-                    }
-                } catch(Exception e){
-                    return;
-                }
+        if (ff != null) {
+            if(isEmpty) {
+                ((FirstFragment) ff).showChildFragment(EMPTYLIST_FRAGMENT_TAG);
+            } else {
+                ((FirstFragment) ff).showChildFragment(NOTELIST_FRAGMENT_TAG);
             }
         }
     }
@@ -440,30 +407,68 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         if (answer.getAnswer().equals(null) || answer.getAnswer().equals("")) {
             tv.setText(String.format("%s", NO_FILENAME));
         } else {
-            if (answer.getExtraInstruction().equals("X")) {
+            if (answer.getExtraInstruction().equals(OPEN_NEW_NOTE)) {
                 tv.setText(NO_FILENAME);
                 et.setText("");
             } else {
-                tv.setText(answer.getAnswer());
-                Toast.makeText(this, getString(R.string.ToastSaveSucces), Toast.LENGTH_SHORT).show();
+                if (answer.getExtraInstruction().equals(OPEN_SAVED_NOTE)){
+                    tv.setText(answer.getAnswer());
+                    et.setText(new String(answer.getContent()));
+                } else {
+                    tv.setText(answer.getAnswer());
+                    Toast.makeText(this, getString(R.string.ToastSaveSucces), Toast.LENGTH_SHORT).show();
+                }
             }
-
         }
     }
 
+    public void popNoteList(){
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        Fragment ff = navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
+        if (ff != null) {
+            ((FirstFragment) ff).hideChildFragment();
+        }
+    }
 
     @Override
-    public void onListFragmentInteraction (Note note){
+    @SuppressLint("StaticFieldLeak")
+    public void onListFragmentInteraction (final Note note){
 
-        Log.d("DB", "Item in recyclerview clicked");
+        TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
+        EditText et = (EditText) findViewById(R.id.editText);
+
+        // unload current child fragment -->
+        popNoteList();
+
+        // selected note is the current note, do nothing -->
+        if (note.isCurrentNote()){
+            return;
+        }
+
+        // note already saved and named before; save directly -->
+        if (!(sr.getOpenNoteName(this).equals(NO_FILENAME))) {
+            sr.saveNote(this, et.getText().toString().getBytes(), sr.getOpenNoteName(this));
+        }
+        else {// note NOT already saved and named; show dialog and get a filename -->
+            sr.getNoteNameDialog(this, et.getText().toString().getBytes(), NoteAction.SAVE_AND_OPEN, note.getName(), note.getFile());
+            // this will be picked up by the dialog listener with the new action; exit here -->
+            return;
+        }
+
+        // saved without dialog; we are not going to the database here, just use the object to fill the new screen -->
+        et.setText(new String(note.getFile()));
+        tv.setText(note.getName());
+        sr.setOpenNoteName(this, note.getName());
 
     }
 
     @Override
     public void onListFragmentInteractionDelete(Note note) {
-        Log.d("DB", "Item in recyclerview <delete-image> clicked");
-        // dialog in adapter had the user confirm the action so just do it -->
         sr.deleteNote(this, note);
+        if(sr.getNoteCount(this) == 0){
+            popNoteList();
+            showNoteList();
+        }
 
     }
 
@@ -473,7 +478,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(WebServiceConnectService.SERVICE_ACTION)){
                 boolean is_alive = intent.getExtras().getBoolean(WebServiceConnectService.IS_ALIVE);
-                Log.d("DB", "Broadcast received of (boolean) value " + is_alive);
                 if(is_alive) {
                     showHideMenuItem(WebEventListener.Action.SHOW_UPL_DL);
                 } else {
