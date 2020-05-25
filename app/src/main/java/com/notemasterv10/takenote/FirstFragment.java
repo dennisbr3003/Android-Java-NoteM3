@@ -24,6 +24,7 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.FragmentControlMethods;
 import com.notemasterv10.takenote.library.SharedResource;
+import com.notemasterv10.takenote.listing.NoteListEmpty;
 import com.notemasterv10.takenote.listing.NoteListFragment;
 import com.notemasterv10.takenote.webservice.WebServiceMethods;
 
@@ -103,15 +104,12 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Frag
 
     @Override
     public void onPause() {
-        // save something here
-        Log.d("DB ", "FirstFragment on pause");
         super.onPause();
     }
 
     @Override
     public void onResume() {
 
-        Log.d("DB ", "FirstFragment resume");
         super.onResume();
         displayFileName(view);
 
@@ -227,13 +225,22 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Frag
 
     @Override
     public void showChildFragment(String fragment_tag){
-
+        FragmentTransaction fm;
         switch(fragment_tag){
             case NOTELIST_FRAGMENT_TAG:
                 NoteListFragment nlf = new NoteListFragment();
-                FragmentTransaction fm = getChildFragmentManager().beginTransaction();
+                fm = getChildFragmentManager().beginTransaction();
                 fm.replace(R.id.child_fragment_container, nlf, NOTELIST_FRAGMENT_TAG).addToBackStack(null);
                 fm.commit();
+                break;
+            case EMPTYLIST_FRAGMENT_TAG:
+                NoteListEmpty nle = new NoteListEmpty();
+                fm = getChildFragmentManager().beginTransaction();
+                fm.replace(R.id.child_fragment_container, nle, EMPTYLIST_FRAGMENT_TAG).addToBackStack(null);
+                fm.commit();
+                break;
+            default:
+                break;
         }
 
     }

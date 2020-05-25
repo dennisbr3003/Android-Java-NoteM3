@@ -17,6 +17,7 @@ public interface NoteMasterConstants {
     String OPEN_NOTE = "open_note";
     String NO_FILENAME = "no_name_entered";
     String NOTELIST_FRAGMENT_TAG = "note_list";
+    String EMPTYLIST_FRAGMENT_TAG = "empty_list";
 
     int REQUEST_ID_CAMERA = 263;
     int REQUEST_ID_GALLERY = 264;

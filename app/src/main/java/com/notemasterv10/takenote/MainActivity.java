@@ -125,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                             (level 1)                  (level 2)         (level 3)
         */
 
+        int noteCount = sr.getNoteCount(this);
+
         // level 1 -->
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
 
@@ -137,14 +139,19 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             int t = ff.getChildFragmentManager().getFragments().size();
             if(t >= 1) { // at least one child is loaded, but there could be more. Make sure you get the correct one -->
                 Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG); // this is set in showChildFragment method of ff
-                if (cf != null) {
-                    // the child is already loaded, don't load it again -->
+                Fragment el = ff.getChildFragmentManager().findFragmentByTag(EMPTYLIST_FRAGMENT_TAG);
+                if ((cf != null) || (el != null)) {
+                    // a child is already loaded, don't load it again -->
                     return;
                 } else {
                     try{
                         // Cast it to the type of the fragment that it is to get to the method forced there by an interface -->
                         FirstFragment firstFrag = (FirstFragment) ff;
-                        firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
+                        if (noteCount > 0) {
+                            firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
+                        } else {
+                            firstFrag.showChildFragment(EMPTYLIST_FRAGMENT_TAG);
+                        }
                     } catch(Exception e){
                         return;
                     }
@@ -154,7 +161,11 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 try{
                     // Cast it to the type of the fragment that it is to get to the method forced there by an interface -->
                     FirstFragment firstFrag = (FirstFragment) ff;
-                    firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
+                    if (noteCount > 0) {
+                        firstFrag.showChildFragment(NOTELIST_FRAGMENT_TAG);
+                    } else {
+                        firstFrag.showChildFragment(EMPTYLIST_FRAGMENT_TAG);
+                    }
                 } catch(Exception e){
                     return;
                 }
@@ -448,13 +459,21 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     }
 
+    @Override
+    public void onListFragmentInteractionDelete(Note note) {
+        Log.d("DB", "Item in recyclerview <delete-image> clicked");
+        // dialog in adapter had the user confirm the action so just do it -->
+        sr.deleteNote(this, note);
+
+    }
+
     public class WebServiceConnectReceiver extends BroadcastReceiver{
 
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(WebServiceConnectService.SERVICE_ACTION)){
                 boolean is_alive = intent.getExtras().getBoolean(WebServiceConnectService.IS_ALIVE);
-                Log.d("DB", "Broadcast received of (boolean) value " + String.valueOf(is_alive));
+                Log.d("DB", "Broadcast received of (boolean) value " + is_alive);
                 if(is_alive) {
                     showHideMenuItem(WebEventListener.Action.SHOW_UPL_DL);
                 } else {

@@ -27,7 +27,7 @@ import com.notemasterv10.takenote.library.SharedResource;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NoteListFragment extends Fragment implements FragmentControlMethods {
+public class NoteListFragment extends Fragment {
 
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
@@ -147,12 +147,8 @@ public class NoteListFragment extends Fragment implements FragmentControlMethods
         note_list.clear();
     }
 
-    @Override
-    public void showChildFragment(String fragment_tag) {
-        return;
-    }
-
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(Note note);
+        void onListFragmentInteractionDelete(Note note);
     }
 }

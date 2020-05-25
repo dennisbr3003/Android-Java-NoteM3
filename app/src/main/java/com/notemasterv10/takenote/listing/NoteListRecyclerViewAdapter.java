@@ -1,9 +1,13 @@
 package com.notemasterv10.takenote.listing;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +24,8 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
     private final List<Note> mValues;
     private final OnListFragmentInteractionListener mListener;
     private Context context;
+    private boolean deleteConfirmed;
     SharedResource sr = new SharedResource();
-    // Database sdb = new Database(context);
 
     public NoteListRecyclerViewAdapter(List<Note> notes, OnListFragmentInteractionListener listener) {
         mValues = notes;
@@ -43,7 +47,8 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
         holder.mNameView.setText(mValues.get(position).getName());
         holder.mContentView.setText(new String(mValues.get(position).getFile()));
         holder.mCreatedView.setText(String.format("%s %s", "Created:", mValues.get(position).getCreated()));
-        if(mValues.get(position).getName().equals(sr.getOpenNoteName(context))){
+        mValues.get(position).setCurrentNote(sr.getOpenNoteName(context));
+        if(mValues.get(position).isCurrentNote()){
             holder.mCurrentNote.setVisibility(View.VISIBLE);
         } else {
             holder.mCurrentNote.setVisibility(View.INVISIBLE);
@@ -55,6 +60,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
             holder.itemView.setBackgroundColor(Color.WHITE);
         }
 
+        // open file action -->
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,12 +72,63 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
                 notifyItemChanged(selectedPos);
 
                 if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
                     mListener.onListFragmentInteraction(holder.mItem);
                 }
             }
         });
+
+        // delete file action -->
+        holder.mDeleteNote.setOnClickListener(new View.OnClickListener() {
+
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+            @Override
+            public void onClick(View v) {
+                if (holder.getAdapterPosition() == RecyclerView.NO_POSITION) return;
+
+                notifyItemChanged(selectedPos);
+                selectedPos = holder.getLayoutPosition();
+                notifyItemChanged(selectedPos);
+
+                androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(context);
+                builder.setTitle(R.string.ConfirmDialogTitle);
+                builder.setMessage(R.string.AreYouSure);
+                builder.setIcon(R.mipmap.dialog_orange_warning);
+                builder.setCancelable(false); // block back-button
+
+                builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteConfirmed = true;
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteConfirmed = false;
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        if(deleteConfirmed) {
+                            mValues.remove(selectedPos);
+                            // this statement I believe forces me to build the dialog in the adapter (to good not to use)
+                            notifyDataSetChanged();
+                            if (null != mListener) {
+                                mListener.onListFragmentInteractionDelete(holder.mItem);
+                            }
+                        }
+                    }
+                });
+                AlertDialog dlg = builder.create();
+                dlg.show();
+
+            }
+        });
+
     }
 
     @Override
@@ -86,6 +143,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
         public final TextView mContentView;
         public final TextView mCreatedView;
         public final ImageView mCurrentNote;
+        public final ImageView mDeleteNote;
         public Note mItem;
 
         public ViewHolder(View view) {
@@ -95,6 +153,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
             mContentView = (TextView) view.findViewById(R.id.content);
             mCreatedView = (TextView) view.findViewById(R.id.txt_created);
             mCurrentNote = (ImageView) view.findViewById(R.id.img_current);
+            mDeleteNote = (ImageView) view.findViewById(R.id.img_deletenote);
         }
 
         @Override
@@ -102,4 +161,8 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
             return super.toString() + " '" + mContentView.getText() + "'";
         }
     }
+
+
+
+
 }

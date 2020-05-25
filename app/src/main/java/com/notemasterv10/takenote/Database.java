@@ -12,6 +12,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.notemasterv10.takenote.constants.DatabaseConstants;
+import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listing.Note;
 
 import java.sql.Timestamp;
@@ -133,6 +134,28 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
             db.endTransaction();
             db.close();
         }
+    }
+
+    public int getNoteListCount() {
+
+        SQLiteDatabase sdb = getReadableDatabase();
+        sdb.beginTransaction();
+
+        String sqlQuery = String.format("SELECT COUNT(*) FROM %s", TABLE_NTS);
+        SQLiteStatement stmt = sdb.compileStatement(sqlQuery);
+
+        long lngCount = stmt.simpleQueryForLong();
+
+        int intCount = (int) lngCount;
+        if((long)intCount != lngCount) {
+            return -1;
+        }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
+        sdb.close();
+
+        return intCount;
     }
 
     private boolean insertNote(String name, byte[] note){

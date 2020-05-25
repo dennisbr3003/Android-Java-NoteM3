@@ -19,7 +19,7 @@ import com.notemasterv10.takenote.Database;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
-import com.notemasterv10.takenote.listing.NoteListFragment;
+import com.notemasterv10.takenote.listing.Note;
 
 public class SharedResource extends AppCompatActivity implements NoteMasterConstants {
 
@@ -38,20 +38,6 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     }
 
     public SharedResource() {
-    }
-
-    // @Override
-    public void initListFragment(NoteListFragment nlf) {
-        /*
-        Log.d("DB", "Fragment start");
-        nlf = (NoteListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_l);
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Log.d("DB", "After fragment init ");
-        ft.hide(nlf);
-        ft.commit();
-        Log.d("DB", "nlf niet zichtbaar? ");
-
-         */
     }
 
     public void saveSharedBackgroundColor(int iColor, Context context){
@@ -130,6 +116,26 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         return sdb.getNote(name);
     }
 
+    public void deleteNote(Context context, Note note){
+        Database sdb = new Database(context);
+        sdb.deleteNote(note.getName());
+        if (note.isCurrentNote()){
+            // clear textview and open a new one
+            ComplexDialogAnswer answer = new ComplexDialogAnswer();
+            answer.setAnswer(NO_FILENAME);
+            answer.setExtraInstruction("X");
+            setOpenNoteName(context, NO_FILENAME);
+            if (dialogAnswerListener != null) {
+                dialogAnswerListener.stringAnswerConfirmed(answer);
+            }
+        }
+    }
+
+    public int getNoteCount(Context context){
+        Database sdb = new Database(context);
+        return sdb.getNoteListCount();
+    }
+
     public void saveNote(Context context, byte[] note, String name) {
 
         Database sdb = new Database(context);
@@ -165,6 +171,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         builder.setCancelable(false); // block back-button
 
         // Set an EditText view to get user input
+        et.setSingleLine(true);
         builder.setView(et);
 
         builder.setPositiveButton(R.string.btn_caption_ok, new DialogInterface.OnClickListener() {

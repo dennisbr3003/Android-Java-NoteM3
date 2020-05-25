@@ -16,7 +16,7 @@ import okhttp3.Response;
 
 public class WebServiceConnectService extends IntentService implements WebServiceConstants {
 
-    // specific for this service -->
+    // specific for this service (action should be unique) -->
     public static final String SERVICE_ACTION = "com.notemasterv10.takenote.webservice.WebServiceConnectService.CheckConnection";
     public static final String IS_ALIVE = "connection_alive";
 
@@ -37,7 +37,7 @@ public class WebServiceConnectService extends IntentService implements WebServic
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
         super.onStartCommand(intent, startId, startId);
         isRunning = true; // <-- to get the loop running
-        return START_STICKY; // <-- To keep the service alive
+        return START_STICKY; // <-- To keep the service alive, otherwise it will be destroyed after onHandleIntent is executed
     }
 
     @Override

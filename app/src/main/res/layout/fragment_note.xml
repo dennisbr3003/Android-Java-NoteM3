@@ -47,7 +47,7 @@
         android:layout_marginEnd="@dimen/text_margin"
         android:layout_marginRight="@dimen/text_margin"
         android:layout_marginBottom="@dimen/text_margin"
-        android:layout_toLeftOf="@id/img_delete"
+        android:layout_toLeftOf="@id/img_deletenote"
         android:layout_toRightOf="@id/img_current"
         android:singleLine="true"
         android:text="contents"
@@ -55,7 +55,7 @@
         android:textSize="14sp" />
 
     <ImageView
-        android:id="@+id/img_delete"
+        android:id="@+id/img_deletenote"
         android:layout_width="42dp"
         android:layout_height="42dp"
         android:layout_alignParentTop="true"
