@@ -411,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 tv.setText(NO_FILENAME);
                 et.setText("");
             } else {
-                if (answer.getExtraInstruction().equals(OPEN_SAVED_NOTE)){
+                if (answer.getExtraInstruction().equals(OPEN_SAVED_NOTE)) {
                     tv.setText(answer.getAnswer());
                     et.setText(new String(answer.getContent()));
                 } else {
@@ -450,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             sr.saveNote(this, et.getText().toString().getBytes(), sr.getOpenNoteName(this));
         }
         else {// note NOT already saved and named; show dialog and get a filename -->
-            sr.getNoteNameDialog(this, et.getText().toString().getBytes(), NoteAction.SAVE_AND_OPEN, note.getName(), note.getFile());
+            sr.noteNameDialog(this, et.getText().toString().getBytes(), NoteAction.SAVE_AND_OPEN, note.getName(), note.getFile());
             // this will be picked up by the dialog listener with the new action; exit here -->
             return;
         }
@@ -470,6 +470,18 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             showNoteList();
         }
 
+    }
+
+    @Override
+    public void renameAnswerConfirmed(ComplexDialogAnswer answer) {
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        Fragment ff = navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
+        if(ff != null){
+            Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG);
+            if(cf != null){
+                ((NoteListFragment) cf).deleteItemFromList(answer.getPosition(), answer.getRename_newname());
+            }
+        }
     }
 
     public class WebServiceConnectReceiver extends BroadcastReceiver{

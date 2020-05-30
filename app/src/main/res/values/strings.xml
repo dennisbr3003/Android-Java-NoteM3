@@ -69,5 +69,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="valid_filename_required">You must enter a valid note name</string>
+    <string name="note_exists">There already is a note with this name</string>
 </resources>
  

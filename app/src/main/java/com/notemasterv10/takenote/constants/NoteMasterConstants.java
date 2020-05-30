@@ -1,8 +1,9 @@
 package com.notemasterv10.takenote.constants;
 
 public interface NoteMasterConstants {
+
     enum NoteAction{
-        SAVE_RETURN, SAVE_NEW, SAVE_AND_OPEN
+        SAVE_RETURN, SAVE_NEW, SAVE_AND_OPEN, SET_NAME
     }
 
     String BACKGROUND_COLOR = "BackGroundColor";

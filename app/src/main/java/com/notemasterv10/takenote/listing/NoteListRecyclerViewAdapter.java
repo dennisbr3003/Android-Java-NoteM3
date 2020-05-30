@@ -28,6 +28,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
     public interface ClickInterface {
         void itemClickToOpen(Note note);
         void itemClickToDelete(Note note, View v, int position);
+        void itemClickToUpdate(Note note, View v);
     }
 
 
@@ -94,6 +95,8 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
 
         holder.itemClickListener.setPosition(position);
         holder.itemDeleteClickListener.setPosition(position);
+        holder.itemChangeClickListner.setPosition(position);
+
     }
 
     @Override
@@ -113,6 +116,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
 
         ItemClickListener itemClickListener;
         ItemDeleteClickListener itemDeleteClickListener;
+        ItemChangeClickListner itemChangeClickListner;
 
         public ViewHolder(View view) {
 
@@ -128,9 +132,11 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
 
             itemClickListener = new ItemClickListener();
             itemDeleteClickListener = new ItemDeleteClickListener();
+            itemChangeClickListner = new ItemChangeClickListner();
 
             mView.setOnClickListener(itemClickListener);
             mDeleteNote.setOnClickListener(itemDeleteClickListener);
+            mView.setOnLongClickListener(itemChangeClickListner);
 
         }
 
@@ -142,6 +148,11 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
 
     public void deleteItemFromList(int position){
         mValues.remove(position);
+        notifyDataSetChanged();
+    }
+
+    public void renameItemFromList(int position, String newNoteName){
+        mValues.get(position).setName(newNoteName);
         notifyDataSetChanged();
     }
 
@@ -176,6 +187,23 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
         @Override
         public void onClick(View v) {
             mClickInterface.itemClickToDelete(mValues.get(mPosition),v,mPosition);
+        }
+    }
+
+    private class ItemChangeClickListner implements View.OnLongClickListener{
+
+        private int mPosition;
+
+        public void setPosition(int position) {
+            this.mPosition = position;
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            Note note = mValues.get(mPosition);
+            note.setListPosition(mPosition);
+            mClickInterface.itemClickToUpdate(mValues.get(mPosition), v);
+            return true;
         }
     }
 

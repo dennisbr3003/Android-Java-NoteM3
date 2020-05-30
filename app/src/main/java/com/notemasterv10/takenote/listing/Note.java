@@ -7,6 +7,7 @@ public class Note {
     private String updated;
     private byte[] file;
     private boolean isCurrentNote;
+    private int listPosition;
 
     public Note(String name, String created, String updated, byte[] file) {
         this.name = name;
@@ -64,4 +65,11 @@ public class Note {
         }
     }
 
+    public int getListPosition() {
+        return listPosition;
+    }
+
+    public void setListPosition(int listPosition) {
+        this.listPosition = listPosition;
+    }
 }

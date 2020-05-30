@@ -6,4 +6,5 @@ public interface DialogAnswerListener {
     public void booleanAnswerConfirmed(Boolean answer);
     public void integerAnswerConfirmed(int answer);
     public void stringAnswerConfirmed(ComplexDialogAnswer answer);
+    public void renameAnswerConfirmed(ComplexDialogAnswer answer);
 }

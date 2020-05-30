@@ -147,7 +147,7 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Chil
             }.execute();
         }
         else { // show dialog and get a filename
-            sr.getNoteNameDialog(getContext(), note, noteAction);
+            sr.noteNameDialog(getContext(), note, noteAction);
             // any further actions are handled by the dialog listener -->
         }
 
@@ -226,7 +226,14 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Chil
         nle = new NoteListEmpty();
     }
 
+    public void renameItemFromList(String fragment_tag, int position, String newNoteName){
 
+        Fragment fragment = getChildFragmentManager().findFragmentByTag(fragment_tag);
+        if(fragment != null){
+            ((NoteListFragment) fragment).deleteItemFromList(position, newNoteName);
+        }
+
+    }
 
     @Override
     public void showChildFragment(String fragment_tag) {

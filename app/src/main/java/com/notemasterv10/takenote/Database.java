@@ -109,6 +109,32 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
 
     }
 
+    public boolean renameNote(String old_name, String new_name){
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+            String sqlQuery = String.format("UPDATE %s SET %s = ? WHERE %s = ?", TABLE_NTS, NTS_NAME, NTS_NAME);
+
+            SQLiteStatement stmt = db.compileStatement(sqlQuery);
+
+            stmt.clearBindings();
+            stmt.bindString(1, new_name);
+            stmt.bindString(2, old_name);
+            stmt.executeUpdateDelete();
+
+            db.setTransactionSuccessful();
+            return true;
+        } catch(Exception e){
+            return false;
+        }
+        finally{
+            db.endTransaction();
+            db.close();
+        }
+    }
+
     private boolean updateNote(String name, byte[] note){
 
         SQLiteDatabase db = getWritableDatabase();
@@ -185,6 +211,7 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
             db.close();
         }
     }
+
     public boolean noteExists(String name){
 
         Boolean isFound = false;

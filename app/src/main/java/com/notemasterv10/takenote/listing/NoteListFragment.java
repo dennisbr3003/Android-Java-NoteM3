@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,13 +21,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.notemasterv10.takenote.Database;
+import com.notemasterv10.takenote.MainActivity;
 import com.notemasterv10.takenote.R;
+import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.library.SharedResource;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NoteListFragment extends Fragment {
+public class NoteListFragment extends Fragment implements NoteMasterConstants {
 
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
@@ -55,7 +58,7 @@ public class NoteListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_note_list, container, false);
-        // Set the adapter
+
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
 
@@ -64,6 +67,7 @@ public class NoteListFragment extends Fragment {
             nlrv = new NoteListRecyclerViewAdapter(note_list, mListener);
             // set the adapter click listeners
             setItemClickListeners(nlrv);
+            // Set the adapter
             recyclerView.setAdapter(nlrv);
 
         }
@@ -128,6 +132,19 @@ public class NoteListFragment extends Fragment {
                 dlg.show();
 
             }
+
+            @Override
+            public void itemClickToUpdate(final Note note, final View v) {
+
+                nlrv.setLastSelectedItem();
+                nlrv.setSelectedItem(note.getListPosition());
+                nlrv.notifyItemChanged(nlrv.getLastSelectedItem());
+                nlrv.notifyItemChanged(nlrv.getSelectedItem());
+
+                sr.noteNameDialog(getContext(), null, NoteAction.SET_NAME, "",null, note.getName(), note.isCurrentNote(), note.getListPosition());
+                // answer is being handled listener MainActivity.renameAnswerConfirmed, exit here -->
+
+            }
         });
     }
 
@@ -172,6 +189,7 @@ public class NoteListFragment extends Fragment {
     public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         loadData();
+        sr.setDialogAnswerListener((MainActivity) getActivity());
     }
 
     @Override
@@ -191,6 +209,13 @@ public class NoteListFragment extends Fragment {
     public void onStart() {
         super.onStart();
     }
+
+
+    public void deleteItemFromList(int position, String newNoteName){
+        nlrv.renameItemFromList(position, newNoteName);
+        nlrv.resetSelectedItemPositions(); // clear selection
+    }
+
 
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(Note note);
