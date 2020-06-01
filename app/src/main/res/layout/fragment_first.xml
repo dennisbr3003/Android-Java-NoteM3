@@ -52,6 +52,20 @@
             android:src="@mipmap/note_new" />
 
         <ImageButton
+            android:id="@+id/imgButtonDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="80dp"
+            android:layout_marginLeft="80dp"
+            android:layout_marginEnd="77dp"
+            android:layout_marginRight="0dp"
+            android:layout_toEndOf="@id/imgButtonSave"
+            android:layout_toRightOf="@id/imgButtonSave"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/select_editor_color"
+            android:src="@mipmap/note_delete" />
+
+        <ImageButton
             android:id="@+id/imgButtonSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,8 +78,8 @@
             android:id="@+id/imgButtonColor"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:layout_marginStart="87dp"
-            android:layout_marginLeft="25dp"
+            android:layout_marginStart="152dp"
+            android:layout_marginLeft="88dp"
             android:layout_marginTop="7dp"
             android:layout_marginEnd="77dp"
             android:layout_marginRight="0dp"
@@ -140,7 +154,11 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="-1dp">
 
     </FrameLayout>
 

@@ -1,5 +1,6 @@
 package com.notemasterv10.takenote.library;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -185,6 +187,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     public void noteNameDialog(final Context context, final byte[] currentNoteContent, final NoteAction noteAction, final String openNoteName, final byte[] openNoteContent, final String oldNoteName,final boolean isCurrentNote, final int position){
 
         final ComplexDialogAnswer answer = new ComplexDialogAnswer();
+        final EditTextDimensions etd = new EditTextDimensions();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
@@ -203,9 +206,9 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         LayoutInflater inf = LayoutInflater.from(context);
         final View complexDialogExtraLayout = inf.inflate(R.layout.complex_dialog, null);
 
-        final EditText cdet = (EditText) complexDialogExtraLayout.findViewById(R.id.editTextFileName);
-        final TextView cdtv = (TextView) complexDialogExtraLayout.findViewById(R.id.textViewError);
-        final ImageView cdiv = (ImageView) complexDialogExtraLayout.findViewById(R.id.imageViewError);
+        final EditText cdet = complexDialogExtraLayout.findViewById(R.id.editTextFileName);
+        final TextView cdtv = complexDialogExtraLayout.findViewById(R.id.textViewError);
+        final ImageView cdiv = complexDialogExtraLayout.findViewById(R.id.imageViewError);
 
         // initially hide the error objects (text and image) -->
         cdtv.setVisibility(View.INVISIBLE);
@@ -216,8 +219,13 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         cdet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Hide the error object for a new attempt -->
                 cdtv.setVisibility(View.INVISIBLE);
                 cdiv.setVisibility(View.INVISIBLE);
+                // First enlarge the EditText object to reclaim space from the error object -->
+                RelativeLayout.LayoutParams lparams = new RelativeLayout.LayoutParams(etd.getWidthBase() + etd.getWidthExtension() ,cdet.getHeight());
+                lparams.leftMargin = etd.getX();
+                cdet.setLayoutParams(lparams);
             }
         });
 
@@ -262,6 +270,26 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         });
 
         final AlertDialog dlg = builder.create();
+
+        dlg.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+
+                // if the error object are not visible dynamically extend the input EditText
+                // We must do this here because here the objects are known and the dimensions have values -->
+                etd.setWidthExtension(cdiv.getWidth());
+                etd.setWidthBase(cdet.getWidth());
+                etd.setX((int) cdet.getX());
+                etd.setY((int) cdet.getY());
+
+                RelativeLayout.LayoutParams lparams = new RelativeLayout.LayoutParams(etd.getWidthBase() + etd.getWidthExtension(),cdet.getHeight());
+                // we have to reassign the left margin because of this action, it will now jump to coordinate x = 0,
+                // replace (or rather reassign) it with the original value of the design (complex_dialog.xml) -->
+                lparams.leftMargin = etd.getX();
+                cdet.setLayoutParams(lparams);
+
+            }
+        });
         dlg.show();
 
         // instantiate on click listener here (overriding the default) to be able to manipulate default behaviour. -->
@@ -277,20 +305,32 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
                     // input checks -->
                     if (cdet.getText().toString().equals("") || cdet.getText().toString().equals(null)){
+
+                        // First shrink the EditText object to make room for the error objects -->
+                        RelativeLayout.LayoutParams lparams = new RelativeLayout.LayoutParams(etd.getWidthBase() ,cdet.getHeight());
+                        lparams.leftMargin = etd.getX();
+                        cdet.setLayoutParams(lparams);
+                        // show the error objects -->
                         cdiv.setVisibility(View.VISIBLE);
                         cdtv.setVisibility(View.VISIBLE);
                         cdtv.setText(R.string.valid_filename_required);
-                        cancelDismiss = true; // do not dismiss dialog
+                        cancelDismiss = true; // <-- do not dismiss dialog
                         return;
                     }
 
                     newNoteName = cdet.getText().toString();
 
                     if(noteExists(context, newNoteName)){
+
+                        // First shrink the EditText object to make room for the error objects -->
+                        RelativeLayout.LayoutParams lparams = new RelativeLayout.LayoutParams(etd.getWidthBase() ,cdet.getHeight());
+                        lparams.leftMargin = etd.getX();
+                        cdet.setLayoutParams(lparams);
+                        // show the error objects -->
                         cdiv.setVisibility(View.VISIBLE);
                         cdtv.setVisibility(View.VISIBLE);
                         cdtv.setText(R.string.note_exists);
-                        cancelDismiss = true; // do not dismiss dialog
+                        cancelDismiss = true; // <-- do not dismiss dialog
                         return;
                     }
 
@@ -368,6 +408,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
         AlertDialog dlg = builder.create();
         dlg.show();
+
     }
 
     public void selectPassPointImageCustomDialog(final Context context){
@@ -471,5 +512,53 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     }
 
+    private class EditTextDimensions{
 
+        private int x;
+        private int y;
+        private int widthBase;
+        private int widthExtension;
+
+        public EditTextDimensions() {
+        }
+
+        public EditTextDimensions(int x, int y, int widthBase, int widthExtension) {
+            this.x = x;
+            this.y = y;
+            this.widthBase = widthBase;
+            this.widthExtension = widthExtension;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public void setX(int x) {
+            this.x = x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public void setY(int y) {
+            this.y = y;
+        }
+
+        public int getWidthBase() {
+            return widthBase;
+        }
+
+        public void setWidthBase(int widthBase) {
+            this.widthBase = widthBase;
+        }
+
+        public int getWidthExtension() {
+            return widthExtension;
+        }
+
+        public void setWidthExtension(int widthExtension) {
+            this.widthExtension = widthExtension;
+        }
+    }
 }
