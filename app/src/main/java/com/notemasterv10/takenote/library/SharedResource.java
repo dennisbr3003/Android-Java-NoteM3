@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -127,7 +127,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             answer.setExtraInstruction("X");
             setOpenNoteName(context, NO_FILENAME);
             if (dialogAnswerListener != null) {
-                dialogAnswerListener.stringAnswerConfirmed(answer);
+                dialogAnswerListener.saveAnswerConfirmed(answer);
             }
         }
     }
@@ -165,87 +165,77 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         }
         return null;
     }
-// todo refactor -->
+
     private String getCurrentTimestamp(){
         return String.valueOf(System.currentTimeMillis());
     }
 
-    public void noteNameDialog(final Context context, final byte[] note, final NoteAction noteAction){
+    public void noteNameDialog(Context context, byte[] note, NoteAction noteAction){
         noteNameDialog(context, note, noteAction, "", null, "", false, 0);
     }
 
-    public void noteNameDialog(final Context context, final byte[] currentNoteContent, final NoteAction noteAction, final String openNoteName, final byte[] openNoteContent){
+    public void noteNameDialog(Context context, byte[] currentNoteContent, NoteAction noteAction, String openNoteName, byte[] openNoteContent){
         noteNameDialog(context, currentNoteContent, noteAction, openNoteName, openNoteContent, "", false, 0);
+    }
+
+    public void noteNameDialog(final Context context, NoteAction noteAction, String oldNoteName, boolean isCurrentNote, int position){
+        noteNameDialog(context, null, noteAction, "", null, oldNoteName, isCurrentNote, position);
     }
 
     public void noteNameDialog(final Context context, final byte[] currentNoteContent, final NoteAction noteAction, final String openNoteName, final byte[] openNoteContent, final String oldNoteName,final boolean isCurrentNote, final int position){
 
         final ComplexDialogAnswer answer = new ComplexDialogAnswer();
-        final EditText et = new EditText(context);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Save note");
-        if(!noteAction.equals(NoteAction.SET_NAME)) {
-            builder.setMessage("Name your note...");
-        } else{
-            builder.setMessage("Rename your note...");
+
+        if(!noteAction.equals(NoteAction.CHANGE_NAME)) { // rename -->
+            builder.setTitle(R.string.SaveNote);
+            builder.setMessage(R.string.SaveNoteExtraText);
+        } else{ // save -->
+            builder.setTitle(R.string.RenameNote);
+            builder.setMessage(R.string.RenameNoteExtraText);
         }
-        builder.setIcon(R.mipmap.dialog_orange_warning);
+
+        builder.setIcon(R.mipmap.note_update);
         builder.setCancelable(false); // block back-button
 
-        // Set an EditText view to get user input
-        et.setSingleLine(true);
-        builder.setView(et);
-        if(noteAction.equals(NoteAction.SET_NAME)){
-            et.setText(oldNoteName);
-            et.selectAll();
+        // set op the dialog extra layout (complex_dialog.xml) -->
+        LayoutInflater inf = LayoutInflater.from(context);
+        final View complexDialogExtraLayout = inf.inflate(R.layout.complex_dialog, null);
+
+        final EditText cdet = (EditText) complexDialogExtraLayout.findViewById(R.id.editTextFileName);
+        final TextView cdtv = (TextView) complexDialogExtraLayout.findViewById(R.id.textViewError);
+        final ImageView cdiv = (ImageView) complexDialogExtraLayout.findViewById(R.id.imageViewError);
+
+        // initially hide the error objects (text and image) -->
+        cdtv.setVisibility(View.INVISIBLE);
+        cdiv.setVisibility(View.INVISIBLE);
+
+        // setup simple click listener for the filename field,so when the name text field
+        // is clicked the error objects are reset for a new attempt -->
+        cdet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cdtv.setVisibility(View.INVISIBLE);
+                cdiv.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        // load the view into the dialog -->
+        builder.setView(complexDialogExtraLayout);
+
+        // preload the filename if the the action is to rename a note -->
+        if(noteAction.equals(NoteAction.CHANGE_NAME)){
+            cdet.setText(oldNoteName);
+            cdet.selectAll();
         }
+
         builder.setPositiveButton(R.string.btn_caption_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
-                String newNoteName;
-
-                if (noteAction.equals(NoteAction.SET_NAME)){
-                    if (et.getText().toString().equals("") || et.getText().toString().equals(null)){
-                        Toast.makeText(context, R.string.valid_filename_required, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    newNoteName = et.getText().toString();
-                    if(noteExists(context, newNoteName)){
-                        Toast.makeText(context, R.string.note_exists, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    renameNote(context, oldNoteName, newNoteName);
-                    if(isCurrentNote) {
-                        setOpenNoteName(context, newNoteName); // set shared preference
-                    }
-                    answer.setPosition(position);
-                    answer.setRename_oldname(oldNoteName);
-                    answer.setRename_newname(newNoteName);
-                } else {
-                    if (et.getText().toString().equals("") || et.getText().toString().equals(null)) {
-                        newNoteName = String.format("%s-%s", "Note", getCurrentTimestamp());
-                    } else {
-                        newNoteName = et.getText().toString();
-                    }
-
-                    saveNote(context, currentNoteContent, newNoteName);
-                    answer.setAnswer(newNoteName);
-
-                    if (noteAction.equals(NoteAction.SAVE_NEW)) {
-                        answer.setExtraInstruction(OPEN_NEW_NOTE);
-                        setOpenNoteName(context, NO_FILENAME);
-                    } else {
-                        if (noteAction.equals(NoteAction.SAVE_AND_OPEN)) {
-                            answer.setExtraInstruction(OPEN_SAVED_NOTE);
-                            answer.setAnswer(openNoteName); // use the name of the note to be opened
-                            answer.setContent(openNoteContent); // pass the new note through to the listener to be opened
-                        }
-                        setOpenNoteName(context, answer.getAnswer()); // set shared preference
-                    }
-                }
-                dialog.dismiss();
+                // Do nothing. We override the button after the show() event. This way we can
+                // override the onDismiss and keep the user 'trapped'in this dialog and force
+                // a valid input.
             }
         });
         builder.setNegativeButton(R.string.btn_caption_cancel, new DialogInterface.OnClickListener() {
@@ -260,10 +250,10 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             @Override
             public void onDismiss(DialogInterface dialog) {
                 if (dialogAnswerListener != null) {
-                    if(noteAction.equals(NoteAction.SET_NAME)) {
+                    if(noteAction.equals(NoteAction.CHANGE_NAME)) {
                         dialogAnswerListener.renameAnswerConfirmed(answer);
                     } else {
-                        dialogAnswerListener.stringAnswerConfirmed(answer);
+                        dialogAnswerListener.saveAnswerConfirmed(answer);
                     }
                 } else{
                     Log.d("DB", "dialogAnswerListener null!!");
@@ -271,9 +261,73 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             }
         });
 
-        AlertDialog dlg = builder.create();
+        final AlertDialog dlg = builder.create();
         dlg.show();
+
+        // instantiate on click listener here (overriding the default) to be able to manipulate default behaviour. -->
+        dlg.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String newNoteName;
+                boolean cancelDismiss = false;
+
+                // rename -->
+                if (noteAction.equals(NoteAction.CHANGE_NAME)){
+
+                    // input checks -->
+                    if (cdet.getText().toString().equals("") || cdet.getText().toString().equals(null)){
+                        cdiv.setVisibility(View.VISIBLE);
+                        cdtv.setVisibility(View.VISIBLE);
+                        cdtv.setText(R.string.valid_filename_required);
+                        cancelDismiss = true; // do not dismiss dialog
+                        return;
+                    }
+
+                    newNoteName = cdet.getText().toString();
+
+                    if(noteExists(context, newNoteName)){
+                        cdiv.setVisibility(View.VISIBLE);
+                        cdtv.setVisibility(View.VISIBLE);
+                        cdtv.setText(R.string.note_exists);
+                        cancelDismiss = true; // do not dismiss dialog
+                        return;
+                    }
+
+                    answer.setPosition(position);
+                    answer.setRename_oldname(oldNoteName);
+                    answer.setRename_newname(newNoteName);
+                    answer.setRename_iscurrent(isCurrentNote);
+
+                } else {
+
+                    // save -->
+                    if (cdet.getText().toString().equals("") || cdet.getText().toString().equals(null)) {
+                        newNoteName = String.format("%s-%s", "Note", getCurrentTimestamp());
+                    } else {
+                        newNoteName = cdet.getText().toString();
+                    }
+
+                    answer.setAnswer(newNoteName);
+                    answer.setCurrent_content(currentNoteContent);
+
+                    if (noteAction.equals(NoteAction.SAVE_NEW)) {
+                        answer.setExtraInstruction(OPEN_NEW_NOTE);
+                    } else {
+                        if (noteAction.equals(NoteAction.SAVE_AND_OPEN)) {
+                            answer.setExtraInstruction(OPEN_SAVED_NOTE);
+                            answer.setOpen_existing_note(openNoteName); // use the name of the note to be opened
+                            answer.setNew_content(openNoteContent); // pass the new note through to the listener to be opened
+                        }
+                    }
+                }
+                if(!cancelDismiss) {
+                    dlg.dismiss();
+                }
+            }
+        });
     }
+
 
     public void askUserConfirmationDialog(final Context context){
 

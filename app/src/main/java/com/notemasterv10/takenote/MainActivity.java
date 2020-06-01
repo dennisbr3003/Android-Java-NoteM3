@@ -399,24 +399,50 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     }
 
 
+    @SuppressLint("StaticFieldLeak")
     @Override
-    public void stringAnswerConfirmed (ComplexDialogAnswer answer){
+    public void saveAnswerConfirmed(final ComplexDialogAnswer answer){
 
         TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
         EditText et = (EditText) findViewById(R.id.editText);
-        if (answer.getAnswer().equals(null) || answer.getAnswer().equals("")) {
+
+        if (answer.getAnswer() == null || answer.getAnswer().equals("")) {
             tv.setText(String.format("%s", NO_FILENAME));
         } else {
+
+            final Context context = this;
+
+            // save the 'old' current note -->
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    sr.saveNote(context, answer.getCurrent_content(), answer.getAnswer());
+                    return null;
+                }
+            }.execute();
+
+
             if (answer.getExtraInstruction().equals(OPEN_NEW_NOTE)) {
+
+                // open an new empty note -->
                 tv.setText(NO_FILENAME);
                 et.setText("");
+                sr.setOpenNoteName(context, NO_FILENAME);
+
             } else {
                 if (answer.getExtraInstruction().equals(OPEN_SAVED_NOTE)) {
-                    tv.setText(answer.getAnswer());
-                    et.setText(new String(answer.getContent()));
+
+                    // open an existing previously saved note -->
+                    tv.setText(answer.getOpen_existing_note());
+                    et.setText(new String(answer.getNew_content()));
+                    sr.setOpenNoteName(context, answer.getOpen_existing_note());
+
                 } else {
-                    tv.setText(answer.getAnswer());
+
+                    // the current notes is saved, visually nothing changes unless it's a new note -->
                     Toast.makeText(this, getString(R.string.ToastSaveSucces), Toast.LENGTH_SHORT).show();
+                    tv.setText(answer.getAnswer());
+                    sr.setOpenNoteName(context, answer.getAnswer());
                 }
             }
         }
@@ -451,7 +477,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         }
         else {// note NOT already saved and named; show dialog and get a filename -->
             sr.noteNameDialog(this, et.getText().toString().getBytes(), NoteAction.SAVE_AND_OPEN, note.getName(), note.getFile());
-            // this will be picked up by the dialog listener with the new action; exit here -->
+            // this will be picked up by the dialog listener saveAnswerConfirmed with the new action; exit here -->
             return;
         }
 
@@ -472,14 +498,36 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     @Override
-    public void renameAnswerConfirmed(ComplexDialogAnswer answer) {
+    public void renameAnswerConfirmed(final ComplexDialogAnswer answer) {
+
+        final Context context = this;
+
+        // execute the rename action in the filesystem (SQLite database) asynchronous
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                sr.renameNote(context, answer.getRename_oldname(), answer.getRename_newname());
+                return null;
+            }
+        }.execute();
+
+        // this section can be executed independent from the database interaction -->
+        if(answer.getRename_iscurrent()) {
+            // if the rename if for the current note, then set the current note value -->
+            sr.setOpenNoteName(this, answer.getRename_newname());
+            TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
+            tv.setText(answer.getRename_newname());
+        }
+
+        // try to reach the list fragment to update the list -->
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         Fragment ff = navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
         if(ff != null){
             Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG);
             if(cf != null){
-                ((NoteListFragment) cf).deleteItemFromList(answer.getPosition(), answer.getRename_newname());
+                ((NoteListFragment) cf).renameItemInList(answer.getPosition(), answer.getRename_newname());
             }
         }
     }

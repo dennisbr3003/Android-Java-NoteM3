@@ -71,5 +71,9 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="valid_filename_required">You must enter a valid note name</string>
     <string name="note_exists">There already is a note with this name</string>
+    <string name="SaveNote">Save note</string>
+    <string name="SaveNoteExtraText">Enter a new name for your note...</string>
+    <string name="RenameNote">Rename note</string>
+    <string name="RenameNoteExtraText">Enter a new and unique name for your note...</string>
 </resources>
  

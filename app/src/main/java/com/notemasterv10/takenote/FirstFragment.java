@@ -230,7 +230,7 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Chil
 
         Fragment fragment = getChildFragmentManager().findFragmentByTag(fragment_tag);
         if(fragment != null){
-            ((NoteListFragment) fragment).deleteItemFromList(position, newNoteName);
+            ((NoteListFragment) fragment).renameItemInList(position, newNoteName);
         }
 
     }

@@ -27,7 +27,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
 
     public interface ClickInterface {
         void itemClickToOpen(Note note);
-        void itemClickToDelete(Note note, View v, int position);
+        void itemClickToDelete(Note note, View v);
         void itemClickToUpdate(Note note, View v);
     }
 
@@ -186,7 +186,9 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
 
         @Override
         public void onClick(View v) {
-            mClickInterface.itemClickToDelete(mValues.get(mPosition),v,mPosition);
+            Note note = mValues.get(mPosition);
+            note.setListPosition(mPosition);
+            mClickInterface.itemClickToDelete(mValues.get(mPosition), v);
         }
     }
 

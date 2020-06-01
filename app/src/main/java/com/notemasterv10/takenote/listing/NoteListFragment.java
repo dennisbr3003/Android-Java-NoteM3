@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -87,18 +86,15 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
             }
 
             @Override
-            public void itemClickToDelete(final Note note, final View v, final int position) {
+            public void itemClickToDelete(final Note note, final View v) {
 
-                nlrv.setLastSelectedItem();
-                nlrv.setSelectedItem(position);
-                nlrv.notifyItemChanged(nlrv.getLastSelectedItem());
-                nlrv.notifyItemChanged(nlrv.getSelectedItem());
+                markSelectedItem(note);
 
                 androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(v.getContext());
 
                 builder.setTitle(R.string.ConfirmDialogTitle);
                 builder.setMessage(String.format("Are you sure you want to delete '%s' ? This cannot be undone.", note.getName()));
-                builder.setIcon(R.mipmap.dialog_orange_warning);
+                builder.setIcon(R.mipmap.note_delete);
                 builder.setCancelable(false); // block back-button
 
                 builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
@@ -120,7 +116,7 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
                     @Override
                     public void onDismiss(DialogInterface dialog) {
                         if(deleteConfirmed) {
-                            nlrv.deleteItemFromList(position);
+                            nlrv.deleteItemFromList(note.getListPosition());
                             if (null != mListener) {
                                 mListener.onListFragmentInteractionDelete(note);
                             }
@@ -136,12 +132,8 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
             @Override
             public void itemClickToUpdate(final Note note, final View v) {
 
-                nlrv.setLastSelectedItem();
-                nlrv.setSelectedItem(note.getListPosition());
-                nlrv.notifyItemChanged(nlrv.getLastSelectedItem());
-                nlrv.notifyItemChanged(nlrv.getSelectedItem());
-
-                sr.noteNameDialog(getContext(), null, NoteAction.SET_NAME, "",null, note.getName(), note.isCurrentNote(), note.getListPosition());
+                markSelectedItem(note);
+                sr.noteNameDialog(getContext(), NoteAction.CHANGE_NAME, note.getName(), note.isCurrentNote(), note.getListPosition());
                 // answer is being handled listener MainActivity.renameAnswerConfirmed, exit here -->
 
             }
@@ -211,7 +203,7 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
     }
 
 
-    public void deleteItemFromList(int position, String newNoteName){
+    public void renameItemInList(int position, String newNoteName){
         nlrv.renameItemFromList(position, newNoteName);
         nlrv.resetSelectedItemPositions(); // clear selection
     }
@@ -221,4 +213,12 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
         void onListFragmentInteraction(Note note);
         void onListFragmentInteractionDelete(Note note);
     }
+
+    private void markSelectedItem(Note note){
+        nlrv.setLastSelectedItem();
+        nlrv.setSelectedItem(note.getListPosition());
+        nlrv.notifyItemChanged(nlrv.getLastSelectedItem());
+        nlrv.notifyItemChanged(nlrv.getSelectedItem());
+    }
+
 }
