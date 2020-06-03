@@ -75,7 +75,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 try{
                     uploadSharedPreferencePayload(spp, "sharedpreference", context); // <-- a asynchronous task is defined in here
                 } catch(Exception e){
-                    Log.e(context.getString(R.string.takenote_errortag), e.getMessage());
+                    Log.e(context.getString(R.string.ErrorTag), e.getMessage());
                 }
             }
         }.execute();

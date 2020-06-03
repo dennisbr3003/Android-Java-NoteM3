@@ -3,7 +3,7 @@ package com.notemasterv10.takenote.constants;
 public interface NoteMasterConstants {
 
     enum NoteAction{
-        SAVE_RETURN, SAVE_NEW, SAVE_AND_OPEN, CHANGE_NAME
+        SAVE_RETURN, SAVE_NEW, SAVE_AND_OPEN, CHANGE_NAME, DELETE
     }
 
     String BACKGROUND_COLOR = "BackGroundColor";
@@ -24,7 +24,7 @@ public interface NoteMasterConstants {
     int REQUEST_ID_CAMERA = 263;
     int REQUEST_ID_GALLERY = 264;
     int DEFAULT_EDITOR_BACKGROUND_COLOR = -1;
-    int NO_POSITION = -1;
+    int NOT_INDEXED = -1;
 
     // PointCollector
     int MAX_DEVIATION = 40;

@@ -148,7 +148,7 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Chil
         }
         else { // show dialog and get a filename
             sr.noteNameDialog(getContext(), note, noteAction);
-            // any further actions are handled by the dialog listener -->
+            // any further actions are handled by the dialog listener MainActivity.saveNote -->
         }
 
 
@@ -223,8 +223,8 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Chil
         view.findViewById(R.id.imgButtonDelete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // delete current note (and open an new empty one)
-               sr.askUserConfirmationDialog(getContext(), null, NO_POSITION, null);
+               sr.askUserConfirmationDialog(getContext(), NoteAction.DELETE);
+               // any further actions are handled by the dialog listener MainActivity.deleteNote -->
             }
         });
 

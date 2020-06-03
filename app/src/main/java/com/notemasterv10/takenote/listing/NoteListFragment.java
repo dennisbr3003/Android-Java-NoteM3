@@ -89,7 +89,7 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
             public void itemClickToDelete(final Note note, final View v) {
 
                 markSelectedItem(note);
-                sr.askUserConfirmationDialog(v.getContext(), null, note);
+                sr.askUserConfirmationDialog(v.getContext(), NoteAction.DELETE, note);
                 // handling is done through a listener MainActivity.deleteNote, exit here -->
 
             }

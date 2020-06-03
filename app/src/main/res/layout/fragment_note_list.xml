@@ -2,12 +2,12 @@
 <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/list"
     android:name="com.notemasterv10.takenote.noteListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorButtonNormal"
     android:tag="note_list"
+    android:focusableInTouchMode="true"
     app:layoutManager="LinearLayoutManager"
     tools:context="com.notemasterv10.takenote.listing.NoteListFragment"
     tools:listitem="@layout/fragment_note" />

@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dialog_background"
+    android:focusableInTouchMode="true"
     android:paddingBottom="0dp">
 
     <ImageView
@@ -13,7 +14,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:contentDescription="@string/exclamation"
+        android:contentDescription="@string/Exclamation"
         android:padding="10dp"
         app:srcCompat="@mipmap/question_mark" />
 
@@ -27,7 +28,7 @@
         android:layout_toEndOf="@id/image_icon"
         android:layout_toRightOf="@id/image_icon"
         android:paddingTop="15dp"
-        android:text="@string/change_lock_screen_image"
+        android:text="@string/ChangeLockScreenImage"
         android:textColor="@android:color/black"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -47,7 +48,7 @@
         android:layout_marginEnd="-6dp"
         android:layout_marginRight="0dp"
         android:padding="17dp"
-        android:text="@string/dialog_description_image"
+        android:text="@string/DialogDescriptionImage"
         android:textColor="@android:color/black" />
 
     <Button

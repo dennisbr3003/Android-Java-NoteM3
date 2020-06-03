@@ -1,18 +1,18 @@
 package com.notemasterv10.takenote.interaction;
 
-public class IntegerAnswer extends Answer {
+public class SingleIntegerAnswer extends Answer {
     private int answer = 0;
 
-    public IntegerAnswer() {
+    public SingleIntegerAnswer() {
         super("");
     }
 
-    public IntegerAnswer(int answer) {
+    public SingleIntegerAnswer(int answer) {
         super("");
         this.answer = answer;
     }
 
-    public IntegerAnswer(int answer, String extraInstructions) {
+    public SingleIntegerAnswer(int answer, String extraInstructions) {
         super(extraInstructions);
         this.answer = answer;
     }

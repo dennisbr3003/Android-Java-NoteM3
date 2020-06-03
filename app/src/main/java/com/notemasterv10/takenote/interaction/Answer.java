@@ -1,6 +1,6 @@
 package com.notemasterv10.takenote.interaction;
 
-public class Answer {
+public abstract class Answer {
     private String extraInstructions = "";
 
     public Answer(String extraInstructions) {

@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
     android:orientation="vertical"
+    android:focusableInTouchMode="true"
     tools:context=".ImageActivity">
 
     <ImageView

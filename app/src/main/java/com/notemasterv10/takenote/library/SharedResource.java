@@ -20,9 +20,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.notemasterv10.takenote.Database;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
-import com.notemasterv10.takenote.interaction.ComplexBooleanAnswer;
-import com.notemasterv10.takenote.interaction.ComplexStringAnswer;
-import com.notemasterv10.takenote.interaction.IntegerAnswer;
+import com.notemasterv10.takenote.interaction.ExtendedBooleanAnswer;
+import com.notemasterv10.takenote.interaction.ExtendedStringAnswer;
+import com.notemasterv10.takenote.interaction.SingleIntegerAnswer;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listing.Note;
 
@@ -131,7 +131,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         sdb.deleteNote(note.getName());
         if (note.isCurrentNote()){
             // clear textview and open a new one
-            ComplexStringAnswer answer = new ComplexStringAnswer();
+            ExtendedStringAnswer answer = new ExtendedStringAnswer();
             answer.setAnswer(NO_FILENAME);
             answer.setExtraInstructions(OPEN_NEW_NOTE);
             setOpenNoteName(context, NO_FILENAME);
@@ -162,17 +162,14 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         try{
             sdb.saveNote(name, note);
         } catch(Exception e){
-            Log.d("DB", "Database opslaan niet gelukt");
+            Log.d(getString(R.string.ErrorTag), String.format("%s %s", getString(R.string.CouldNotSaveToDatabase), e.getMessage()));
         }
         sdb.testUpdateInsertNote(); // read the contents of the table (may be removed later)
     }
 
     public Bitmap createBitmapFromOSFile(String absoluteFilePath) {
         Bitmap bm = BitmapFactory.decodeFile(absoluteFilePath); // should hold directory and filename (Attention this uses extra manifest permission)
-        if(bm != null){
-           return bm;
-        }
-        return null;
+        return bm;
     }
 
     private String getCurrentTimestamp(){
@@ -193,7 +190,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     public void noteNameDialog(final Context context, final byte[] currentNoteContent, final NoteAction noteAction, final String openNoteName, final byte[] openNoteContent, final String oldNoteName,final boolean isCurrentNote, final int position){
 
-        final ComplexStringAnswer answer = new ComplexStringAnswer();
+        final ExtendedStringAnswer extendedStringAnswer = new ExtendedStringAnswer();
         final EditTextDimensions etd = new EditTextDimensions();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -256,13 +253,13 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         builder.setNegativeButton(R.string.ButtonCaptionCancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                answer.setAnswer("");
+                extendedStringAnswer.setAnswer("");
                 // if the action is to open a new note it still has to be done even if the
                 // save of the current (new) note is cancelled.
                 if (noteAction.equals(NoteAction.SAVE_AND_OPEN)) {
-                    answer.setExtraInstructions(OPEN_SAVED_NOTE);
-                    answer.setOpen_existing_note(openNoteName); // use the name of the note to be opened
-                    answer.setNew_content(openNoteContent); // pass the new note through to the listener to be opened
+                    extendedStringAnswer.setExtraInstructions(OPEN_SAVED_NOTE);
+                    extendedStringAnswer.setNewNoteName(openNoteName); // use the name of the note to be opened
+                    extendedStringAnswer.setNewNoteContent(openNoteContent); // pass the new note through to the listener to be opened
                 }
                 dialog.dismiss();
             }
@@ -273,9 +270,9 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             public void onDismiss(DialogInterface dialog) {
                 if (dialogAnswerListener != null) {
                     if(noteAction.equals(NoteAction.CHANGE_NAME)) {
-                        dialogAnswerListener.renameNote(answer);
+                        dialogAnswerListener.renameNote(extendedStringAnswer);
                     } else {
-                        dialogAnswerListener.saveNote(answer);
+                        dialogAnswerListener.saveNote(extendedStringAnswer);
                     }
                 }
             }
@@ -346,10 +343,10 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                         return;
                     }
 
-                    answer.setPosition(position);
-                    answer.setRename_oldname(oldNoteName);
-                    answer.setRename_newname(newNoteName);
-                    answer.setRename_iscurrent(isCurrentNote);
+                    extendedStringAnswer.setPosition(position);
+                    extendedStringAnswer.setCurrentNoteName(oldNoteName);
+                    extendedStringAnswer.setNewNoteName(newNoteName);
+                    extendedStringAnswer.setCurrentNote(isCurrentNote);
 
                 } else {
 
@@ -360,16 +357,16 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                         newNoteName = cdet.getText().toString();
                     }
 
-                    answer.setAnswer(newNoteName);
-                    answer.setCurrent_content(currentNoteContent);
+                    extendedStringAnswer.setAnswer(newNoteName);
+                    extendedStringAnswer.setCurrentNoteContent(currentNoteContent);
 
                     if (noteAction.equals(NoteAction.SAVE_NEW)) {
-                        answer.setExtraInstructions(OPEN_NEW_NOTE);
+                        extendedStringAnswer.setExtraInstructions(OPEN_NEW_NOTE);
                     } else {
                         if (noteAction.equals(NoteAction.SAVE_AND_OPEN)) {
-                            answer.setExtraInstructions(OPEN_SAVED_NOTE);
-                            answer.setOpen_existing_note(openNoteName); // use the name of the note to be opened
-                            answer.setNew_content(openNoteContent); // pass the new note through to the listener to be opened
+                            extendedStringAnswer.setExtraInstructions(OPEN_SAVED_NOTE);
+                            extendedStringAnswer.setNewNoteName(openNoteName); // use the name of the note to be opened
+                            extendedStringAnswer.setNewNoteContent(openNoteContent); // pass the new note through to the listener to be opened
                         }
                     }
                 }
@@ -380,40 +377,46 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         });
     }
 
-    public void askUserConfirmationDialog(Context context){
-        askUserConfirmationDialog(context, null, NO_POSITION, null);
+
+    public void askUserConfirmationDialog(Context context, NoteAction noteAction){
+        askUserConfirmationDialog(context, noteAction, null);
     }
 
-    public void askUserConfirmationDialog(Context context, NoteAction noteAction, Note note){
-        askUserConfirmationDialog(context, null, note.getListPosition(), note);
-    }
+    public void askUserConfirmationDialog(final Context context, NoteAction noteAction, final Note note){
 
-    public void askUserConfirmationDialog(final Context context, NoteAction noteAction, int position, final Note note){
-
-        final ComplexBooleanAnswer complex_answer = new ComplexBooleanAnswer();
+        final ExtendedBooleanAnswer extendedBooleanAnswer = new ExtendedBooleanAnswer();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.ConfirmDialogTitle);
+
+        if(noteAction.equals(NoteAction.DELETE)) {
+            builder.setTitle(R.string.ConfirmDelete);
+            builder.setIcon(R.mipmap.note_delete);
+        } else {
+            builder.setTitle(R.string.ConfirmAction);
+            builder.setIcon(R.mipmap.dialog_orange_warning);
+        }
+
         builder.setMessage(R.string.AreYouSure);
-        builder.setIcon(R.mipmap.note_delete);
         builder.setCancelable(false); // <-- block back-button
 
-        complex_answer.setExtraInstructions(String.valueOf(position));
-        if(note != null){
-            complex_answer.setNote(note);
+        if(note != null){ // extra values needed in the listener -->
+            extendedBooleanAnswer.setExtraInstructions(String.valueOf(note.getListPosition()));
+            extendedBooleanAnswer.setNote(note);
+        } else {
+            extendedBooleanAnswer.setExtraInstructions(String.valueOf(NOT_INDEXED));
         }
 
         builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                complex_answer.setAnswer(true);
+                extendedBooleanAnswer.setAnswer(true);
                 dialog.dismiss();
             }
         });
         builder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                complex_answer.setAnswer(false);
+                extendedBooleanAnswer.setAnswer(false);
                 dialog.dismiss();
             }
         });
@@ -422,7 +425,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             @Override
             public void onDismiss(DialogInterface dialog) {
                 if (dialogAnswerListener != null) {
-                    dialogAnswerListener.deleteNote(complex_answer);
+                    dialogAnswerListener.deleteNote(extendedBooleanAnswer);  // <-- implemented in MainActivity
                 }
             }
         });
@@ -434,7 +437,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     public void selectPassPointImageCustomDialog(final Context context){
 
-        final IntegerAnswer answer = new IntegerAnswer();
+        final SingleIntegerAnswer answer = new SingleIntegerAnswer();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 

@@ -2,22 +2,22 @@ package com.notemasterv10.takenote.interaction;
 
 import com.notemasterv10.takenote.listing.Note;
 
-public class ComplexBooleanAnswer extends Answer {
+public class ExtendedBooleanAnswer extends Answer {
 
     private boolean answer = false;
     private Note note;
 
-    public ComplexBooleanAnswer() {
+    public ExtendedBooleanAnswer() {
         super("");
         this.answer = false;
     }
 
-    public ComplexBooleanAnswer(boolean answer) {
+    public ExtendedBooleanAnswer(boolean answer) {
         super("");
         this.answer = answer;
     }
 
-    public ComplexBooleanAnswer(String extraInstructions, boolean answer) {
+    public ExtendedBooleanAnswer(String extraInstructions, boolean answer) {
         super(extraInstructions);
         this.answer = answer;
     }

@@ -63,7 +63,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                 ImageView im = findViewById(R.id.imageView);
                 im.setImageBitmap(sr.createBitmapFromOSFile(sr.getSharedPasspointPhoto(this)));
             } catch (Exception ex) {
-                Log.d(getString(R.string.DefaultTag), getString(R.string.picture_error));
+                Log.d(getString(R.string.DefaultTag), getString(R.string.PictureError));
                 sr.resetSharedPasspointPhoto(this);
             }
         }
@@ -119,7 +119,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                         ImageView im = findViewById(R.id.imageView);
                         im.setImageBitmap(sr.createBitmapFromOSFile(sr.getSharedPasspointPhoto(this)));
                     } catch (Exception ex) {
-                        Log.d(getString(R.string.DefaultTag), getString(R.string.picture_error));
+                        Log.d(getString(R.string.DefaultTag), getString(R.string.PictureError));
                         sr.resetSharedPasspointPhoto(this);
                     }
                 }

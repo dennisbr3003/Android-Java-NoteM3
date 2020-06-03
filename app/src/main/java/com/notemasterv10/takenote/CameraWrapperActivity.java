@@ -67,7 +67,7 @@ public class CameraWrapperActivity extends AppCompatActivity implements NoteMast
                 // If request is cancelled, the result arrays are empty.
                 if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     // permission denied, Disable the functionality that depends on this permission -->
-                    Toast.makeText(this, R.string.access_ext_storage_denied, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.AccessExternalStorageDenied, Toast.LENGTH_SHORT).show();
                     //This part of the app (taking a photo) cannot function without this permission for now so close it -->
                     onDestroy();
                 }
@@ -166,7 +166,7 @@ public class CameraWrapperActivity extends AppCompatActivity implements NoteMast
                                    }
                                });
                            } catch(Exception e){
-                               Log.e(getString(R.string.takenote_errortag), getString(R.string.picture_error));
+                               Log.e(getString(R.string.ErrorTag), getString(R.string.PictureError));
                                return null;
                            }
                            return null;
@@ -177,7 +177,7 @@ public class CameraWrapperActivity extends AppCompatActivity implements NoteMast
 
             default:
                 // unknown parameter, log error -->
-                Log.e(getString(R.string.takenote_errortag), getString(R.string.activity_unknown));
+                Log.e(getString(R.string.ErrorTag), getString(R.string.ActivityUnknown));
                 break;
         }
     }

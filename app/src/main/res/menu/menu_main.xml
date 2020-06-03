@@ -15,12 +15,12 @@
     <item
         android:id="@+id/action_change_passpoint_picture"
         android:orderInCategory="115"
-        android:title="@string/change_passpoint_picture"
+        android:title="@string/ChangePasspointPicture"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_reset_passpoint_picture"
         android:orderInCategory="118"
-        android:title="@string/reset_passpoint_picture" />
+        android:title="@string/ResetPasspointPicture" />
     <item
         android:id="@+id/action_upload_preferences"
         android:orderInCategory="130"
@@ -38,6 +38,6 @@
         android:id="@+id/action_find_notes"
         android:icon="@mipmap/note_find"
         android:orderInCategory="0"
-        android:title="@string/find_notes"
+        android:title="@string/FindNotes"
         app:showAsAction="ifRoom" />
 </menu>

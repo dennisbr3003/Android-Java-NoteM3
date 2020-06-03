@@ -25,9 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
-import com.notemasterv10.takenote.interaction.ComplexBooleanAnswer;
-import com.notemasterv10.takenote.interaction.ComplexStringAnswer;
-import com.notemasterv10.takenote.interaction.IntegerAnswer;
+import com.notemasterv10.takenote.interaction.ExtendedBooleanAnswer;
+import com.notemasterv10.takenote.interaction.ExtendedStringAnswer;
+import com.notemasterv10.takenote.interaction.SingleIntegerAnswer;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     }
 
     @Override
-    public void integerAnswerConfirmed (IntegerAnswer answer){
+    public void integerAnswerConfirmed (SingleIntegerAnswer answer){
 
         switch (answer.getAnswer()) {
 
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
             default:
                 // unknown parameter, log error -->
-                Log.e(getString(R.string.takenote_errortag), getString(R.string.activity_unknown));
+                Log.e(getString(R.string.ErrorTag), getString(R.string.ActivityUnknown));
                 break;
         }
     }
@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
             default:
                 // unknown parameter, log error -->
-                Log.e(getString(R.string.takenote_errortag), getString(R.string.activity_unknown));
+                Log.e(getString(R.string.ErrorTag), getString(R.string.ActivityUnknown));
                 break;
         }
     }
@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                     case HIDE_UPL_DL:
                         try {
                             im.setImageResource(R.mipmap.webservice_offline);
-                            tv.setText(R.string.ws_unavail);
+                            tv.setText(R.string.WebServiceDead);
                         } catch(Exception e){
                             // do nothing...
                         }
@@ -351,16 +351,14 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                     case SHOW_UPL_DL:
                         try {
                             im.setImageResource(R.mipmap.webservice_online);
-                            tv.setText(R.string.ws_avail);
+                            tv.setText(R.string.WebServiceAlive);
                         } catch(Exception e){
                             // do nothing...
                         }
                         break;
                 }
-
             }
         });
-
     }
 
     @Override
@@ -389,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     @SuppressLint("StaticFieldLeak")
     @Override
-    public void saveNote(final ComplexStringAnswer answer){
+    public void saveNote(final ExtendedStringAnswer answer){
 
         TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
         EditText et = (EditText) findViewById(R.id.editText);
@@ -400,19 +398,13 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
             tv.setText(String.format("%s", NO_FILENAME));
 
-            Log.d("DB", "Is dat answer object nou null of wat?" + String.valueOf((answer == null)));
-
             if(answer != null) { // <-- save from FirstFragment view group
 
-                Log.d("DB", answer.getExtraInstructions());
-
                 if (answer.getExtraInstructions().equals(OPEN_SAVED_NOTE)) {
-
                     // open an existing previously saved note -->
-                    tv.setText(answer.getOpen_existing_note());
-                    et.setText(new String(answer.getNew_content()));
-                    sr.setOpenNoteName(context, answer.getOpen_existing_note());
-
+                    tv.setText(answer.getNewNoteName());
+                    et.setText(new String(answer.getNewNoteContent()));
+                    sr.setOpenNoteName(context, answer.getNewNoteName());
                 }
             }
 
@@ -421,29 +413,23 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... voids) {
-                    sr.saveNote(context, answer.getCurrent_content(), answer.getAnswer());
+                    sr.saveNote(context, answer.getCurrentNoteContent(), answer.getAnswer());
                     return null;
                 }
             }.execute();
 
-
             if (answer.getExtraInstructions().equals(OPEN_NEW_NOTE)) {
-
                 // open an new empty note -->
                 tv.setText(NO_FILENAME);
                 et.setText("");
                 sr.setOpenNoteName(context, NO_FILENAME);
-
             } else {
                 if (answer.getExtraInstructions().equals(OPEN_SAVED_NOTE)) {
-
                     // open an existing previously saved note -->
-                    tv.setText(answer.getOpen_existing_note());
-                    et.setText(new String(answer.getNew_content()));
-                    sr.setOpenNoteName(context, answer.getOpen_existing_note());
-
+                    tv.setText(answer.getNewNoteName());
+                    et.setText(new String(answer.getNewNoteContent()));
+                    sr.setOpenNoteName(context, answer.getNewNoteName());
                 } else {
-
                     // the current notes is saved, visually nothing changes unless it's a new note -->
                     Toast.makeText(this, getString(R.string.ToastSaveSucces), Toast.LENGTH_SHORT).show();
                     tv.setText(answer.getAnswer());
@@ -495,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     @SuppressLint("StaticFieldLeak")
     @Override
-    public void renameNote(final ComplexStringAnswer answer) {
+    public void renameNote(final ExtendedStringAnswer answer) {
 
         final Context context = this;
 
@@ -503,17 +489,17 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
-                sr.renameNote(context, answer.getRename_oldname(), answer.getRename_newname());
+                sr.renameNote(context, answer.getCurrentNoteName(), answer.getNewNoteName());
                 return null;
             }
         }.execute();
 
         // this section can be executed independent from the database interaction -->
-        if(answer.getRename_iscurrent()) {
+        if(answer.getCurrentNote()) {
             // if the rename if for the current note, then set the current note value -->
-            sr.setOpenNoteName(this, answer.getRename_newname());
+            sr.setOpenNoteName(this, answer.getNewNoteName());
             TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
-            tv.setText(answer.getRename_newname());
+            tv.setText(answer.getNewNoteName());
         }
 
         // try to reach the list fragment to update the list -->
@@ -522,7 +508,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         if(ff != null){
             Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG);
             if(cf != null){
-                ((NoteListFragment) cf).renameItemInList(answer.getPosition(), answer.getRename_newname());
+                ((NoteListFragment) cf).renameItemInList(answer.getPosition(), answer.getNewNoteName());
             }
         }
     }
@@ -530,7 +516,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     @SuppressLint("StaticFieldLeak")
     @Override
-    public void deleteNote(ComplexBooleanAnswer answer) {
+    public void deleteNote(ExtendedBooleanAnswer answer) {
 
         if(answer.getNote() == null){
 
@@ -540,7 +526,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
             if(answer.isAnswer()){
                 // if position = -1 (NO_POSITION) then the delete was fired from FirstFragment
-                if(answer.getExtraInstructions().equals(String.valueOf(NO_POSITION))){
+                if(answer.getExtraInstructions().equals(String.valueOf(NOT_INDEXED))){
                     if(!sr.getOpenNoteName(this).equals(NO_FILENAME)){
                         new AsyncTask<Void, Void, Void>() {
                             @Override
