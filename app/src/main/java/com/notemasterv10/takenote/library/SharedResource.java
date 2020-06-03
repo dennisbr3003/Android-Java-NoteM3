@@ -1,6 +1,5 @@
 package com.notemasterv10.takenote.library;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -21,6 +20,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.notemasterv10.takenote.Database;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
+import com.notemasterv10.takenote.interaction.ComplexBooleanAnswer;
+import com.notemasterv10.takenote.interaction.ComplexStringAnswer;
+import com.notemasterv10.takenote.interaction.IntegerAnswer;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listing.Note;
 
@@ -119,17 +121,22 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         return sdb.getNote(name);
     }
 
+    public void deleteNote(Context context, String noteName){
+        Database sdb = new Database(context);
+        sdb.deleteNote(noteName);
+    }
+
     public void deleteNote(Context context, Note note){
         Database sdb = new Database(context);
         sdb.deleteNote(note.getName());
         if (note.isCurrentNote()){
             // clear textview and open a new one
-            ComplexDialogAnswer answer = new ComplexDialogAnswer();
+            ComplexStringAnswer answer = new ComplexStringAnswer();
             answer.setAnswer(NO_FILENAME);
-            answer.setExtraInstruction("X");
+            answer.setExtraInstructions(OPEN_NEW_NOTE);
             setOpenNoteName(context, NO_FILENAME);
             if (dialogAnswerListener != null) {
-                dialogAnswerListener.saveAnswerConfirmed(answer);
+                dialogAnswerListener.saveNote(answer);
             }
         }
     }
@@ -186,7 +193,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     public void noteNameDialog(final Context context, final byte[] currentNoteContent, final NoteAction noteAction, final String openNoteName, final byte[] openNoteContent, final String oldNoteName,final boolean isCurrentNote, final int position){
 
-        final ComplexDialogAnswer answer = new ComplexDialogAnswer();
+        final ComplexStringAnswer answer = new ComplexStringAnswer();
         final EditTextDimensions etd = new EditTextDimensions();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -238,18 +245,25 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             cdet.selectAll();
         }
 
-        builder.setPositiveButton(R.string.btn_caption_ok, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.ButtonCaptionOk, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Do nothing. We override the button after the show() event. This way we can
-                // override the onDismiss and keep the user 'trapped'in this dialog and force
+                // override the onDismiss and keep the user trapped' in this dialog and 'force'
                 // a valid input.
             }
         });
-        builder.setNegativeButton(R.string.btn_caption_cancel, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.ButtonCaptionCancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 answer.setAnswer("");
+                // if the action is to open a new note it still has to be done even if the
+                // save of the current (new) note is cancelled.
+                if (noteAction.equals(NoteAction.SAVE_AND_OPEN)) {
+                    answer.setExtraInstructions(OPEN_SAVED_NOTE);
+                    answer.setOpen_existing_note(openNoteName); // use the name of the note to be opened
+                    answer.setNew_content(openNoteContent); // pass the new note through to the listener to be opened
+                }
                 dialog.dismiss();
             }
         });
@@ -259,12 +273,10 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             public void onDismiss(DialogInterface dialog) {
                 if (dialogAnswerListener != null) {
                     if(noteAction.equals(NoteAction.CHANGE_NAME)) {
-                        dialogAnswerListener.renameAnswerConfirmed(answer);
+                        dialogAnswerListener.renameNote(answer);
                     } else {
-                        dialogAnswerListener.saveAnswerConfirmed(answer);
+                        dialogAnswerListener.saveNote(answer);
                     }
-                } else{
-                    Log.d("DB", "dialogAnswerListener null!!");
                 }
             }
         });
@@ -313,7 +325,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                         // show the error objects -->
                         cdiv.setVisibility(View.VISIBLE);
                         cdtv.setVisibility(View.VISIBLE);
-                        cdtv.setText(R.string.valid_filename_required);
+                        cdtv.setText(R.string.ValidFileNameRequired);
                         cancelDismiss = true; // <-- do not dismiss dialog
                         return;
                     }
@@ -329,7 +341,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                         // show the error objects -->
                         cdiv.setVisibility(View.VISIBLE);
                         cdtv.setVisibility(View.VISIBLE);
-                        cdtv.setText(R.string.note_exists);
+                        cdtv.setText(R.string.NoteExists);
                         cancelDismiss = true; // <-- do not dismiss dialog
                         return;
                     }
@@ -352,10 +364,10 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                     answer.setCurrent_content(currentNoteContent);
 
                     if (noteAction.equals(NoteAction.SAVE_NEW)) {
-                        answer.setExtraInstruction(OPEN_NEW_NOTE);
+                        answer.setExtraInstructions(OPEN_NEW_NOTE);
                     } else {
                         if (noteAction.equals(NoteAction.SAVE_AND_OPEN)) {
-                            answer.setExtraInstruction(OPEN_SAVED_NOTE);
+                            answer.setExtraInstructions(OPEN_SAVED_NOTE);
                             answer.setOpen_existing_note(openNoteName); // use the name of the note to be opened
                             answer.setNew_content(openNoteContent); // pass the new note through to the listener to be opened
                         }
@@ -368,28 +380,40 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         });
     }
 
+    public void askUserConfirmationDialog(Context context){
+        askUserConfirmationDialog(context, null, NO_POSITION, null);
+    }
 
-    public void askUserConfirmationDialog(final Context context){
+    public void askUserConfirmationDialog(Context context, NoteAction noteAction, Note note){
+        askUserConfirmationDialog(context, null, note.getListPosition(), note);
+    }
 
-        final BooleanAnswerObject answer = new BooleanAnswerObject();
+    public void askUserConfirmationDialog(final Context context, NoteAction noteAction, int position, final Note note){
+
+        final ComplexBooleanAnswer complex_answer = new ComplexBooleanAnswer();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.ConfirmDialogTitle);
         builder.setMessage(R.string.AreYouSure);
-        builder.setIcon(R.mipmap.dialog_orange_warning);
-        builder.setCancelable(false); // block back-button
+        builder.setIcon(R.mipmap.note_delete);
+        builder.setCancelable(false); // <-- block back-button
+
+        complex_answer.setExtraInstructions(String.valueOf(position));
+        if(note != null){
+            complex_answer.setNote(note);
+        }
 
         builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                answer.setAnswer(true);
+                complex_answer.setAnswer(true);
                 dialog.dismiss();
             }
         });
-        builder.setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                answer.setAnswer(false);
+                complex_answer.setAnswer(false);
                 dialog.dismiss();
             }
         });
@@ -398,10 +422,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             @Override
             public void onDismiss(DialogInterface dialog) {
                 if (dialogAnswerListener != null) {
-                    dialogAnswerListener.booleanAnswerConfirmed(answer.isAnswer());
-                    // this method is actually an interface method overridden in MainActivity
-                    // Also check MainActivity.java and DialogAnswerListener.java (interface)
-                    // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
+                    dialogAnswerListener.deleteNote(complex_answer);
                 }
             }
         });
@@ -413,7 +434,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     public void selectPassPointImageCustomDialog(final Context context){
 
-        final IntegerAnswerObject answer = new IntegerAnswerObject();
+        final IntegerAnswer answer = new IntegerAnswer();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
@@ -430,9 +451,9 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         dlg.show();
 
         // set on-click-listeners on the buttons
-        Button btnCamera = (Button) dlg.findViewById(R.id.button_camera);
-        Button btnGallery = (Button) dlg.findViewById(R.id.button_gallery);
-        Button btnCancel = (Button) dlg.findViewById(R.id.button_cancel);
+        Button btnCamera = dlg.findViewById(R.id.button_camera);
+        Button btnGallery = dlg.findViewById(R.id.button_gallery);
+        Button btnCancel = dlg.findViewById(R.id.button_cancel);
 
         btnCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -463,52 +484,13 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             @Override
             public void onDismiss(DialogInterface dialog) {
                 if (dialogAnswerListener != null) {
-                    dialogAnswerListener.integerAnswerConfirmed(answer.getAnswer());
+                    dialogAnswerListener.integerAnswerConfirmed(answer);
                     // this method is actually an interface method overridden in MainActivity
                     // Also check MainActivity.java and DialogAnswerListener.java (interface)
                     // Actually dialogAnswerListener IS IN FACT an instance of MainActivity (!)
                 }
             }
         });
-
-    }
-
-    private class BooleanAnswerObject {
-
-        private boolean answer;
-
-        public BooleanAnswerObject() {
-            this.setAnswer(false);
-        }
-
-        public boolean isAnswer() {
-            return answer;
-        }
-
-        public void setAnswer(boolean answer) {
-            this.answer = answer;
-        }
-
-    }
-
-    private class IntegerAnswerObject {
-
-        private int answer;
-
-        public IntegerAnswerObject() {
-        }
-
-        public IntegerAnswerObject(int answer) {
-            this.answer = answer;
-        }
-
-        public int getAnswer() {
-            return answer;
-        }
-
-        public void setAnswer(int answer) {
-            this.answer = answer;
-        }
 
     }
 

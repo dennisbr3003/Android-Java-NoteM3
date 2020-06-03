@@ -1,10 +1,12 @@
 package com.notemasterv10.takenote.listeners;
 
-import com.notemasterv10.takenote.library.ComplexDialogAnswer;
+import com.notemasterv10.takenote.interaction.ComplexBooleanAnswer;
+import com.notemasterv10.takenote.interaction.ComplexStringAnswer;
+import com.notemasterv10.takenote.interaction.IntegerAnswer;
 
 public interface DialogAnswerListener {
-    public void booleanAnswerConfirmed(Boolean answer);
-    public void integerAnswerConfirmed(int answer);
-    public void saveAnswerConfirmed(ComplexDialogAnswer answer);
-    public void renameAnswerConfirmed(ComplexDialogAnswer answer);
+    public void integerAnswerConfirmed(IntegerAnswer answer);
+    public void saveNote(ComplexStringAnswer answer);
+    public void renameNote(ComplexStringAnswer answer);
+    public void deleteNote(ComplexBooleanAnswer answer);
 }

@@ -156,7 +156,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         builder.setMessage(R.string.DialogMessage);
         builder.setIcon(R.mipmap.dialog_orange_warning);
 
-        builder.setPositiveButton(R.string.btnPosCaption, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.ButtonCaptionOk, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // do nothing there is only information in this dialog
@@ -173,13 +173,13 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
     @Override
     public void pointsCollected(final List<Point> points_list) {
         if (!sr.pointsSetInSharedPrefs(this)) {
-            Log.d("Debug-DB", getString(R.string.points_saving));
+            Log.d("Debug-DB", getString(R.string.SavingPoints));
             savePointsCollected(points_list);
             //give immediate access after storing the 4 points
             Intent i = new Intent(ImageActivity.this, MainActivity.class); // next step = MainActivity ?
             startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
         } else {
-            Log.d("Debug-DB", getString(R.string.points_verify));
+            Log.d("Debug-DB", getString(R.string.VerifyPoints));
             // verify points to the ones we save earlier (from the db)
             verifyPassPoints(points_list);
         }
@@ -190,7 +190,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         // First show a dialog to be shown during verification
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // Do not use setMessage if you want to use an icon; instead use setTitle
-        builder.setTitle(R.string.verify_values);
+        builder.setTitle(R.string.VerifyValues);
         builder.setIcon(R.mipmap.db_storing); // this will be placed besides the title
 
         final AlertDialog dlg = builder.create();
@@ -260,7 +260,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         // First show a dialog to indicate activity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // Do not use setMessage if you want to use an icon; instead use setTitle
-        builder.setTitle(R.string.storing_progress);
+        builder.setTitle(R.string.StoringValues);
         builder.setIcon(R.mipmap.db_storing); // this will be placed besides the title
 
         final AlertDialog dlg = builder.create();

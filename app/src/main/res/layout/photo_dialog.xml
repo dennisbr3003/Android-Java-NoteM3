@@ -61,7 +61,7 @@
         android:layout_marginBottom="15dp"
         android:layout_toEndOf="@id/button_cancel"
         android:layout_toRightOf="@id/button_cancel"
-        android:text="@string/camera" />
+        android:text="@string/Camera" />
 
     <Button
         android:id="@+id/button_gallery"
@@ -72,7 +72,7 @@
         android:layout_marginBottom="15dp"
         android:layout_toEndOf="@id/button_camera"
         android:layout_toRightOf="@id/button_camera"
-        android:text="@string/gallery" />
+        android:text="@string/Gallery" />
 
     <Button
         android:id="@+id/button_cancel"
@@ -87,5 +87,5 @@
         android:layout_marginBottom="15dp"
         android:layout_toEndOf="@id/image_icon"
         android:layout_toRightOf="@id/image_icon"
-        android:text="@string/cancel" />
+        android:text="@string/Cancel" />
 </RelativeLayout>

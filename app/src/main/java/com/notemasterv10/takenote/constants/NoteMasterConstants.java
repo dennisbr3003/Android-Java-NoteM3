@@ -24,6 +24,7 @@ public interface NoteMasterConstants {
     int REQUEST_ID_CAMERA = 263;
     int REQUEST_ID_GALLERY = 264;
     int DEFAULT_EDITOR_BACKGROUND_COLOR = -1;
+    int NO_POSITION = -1;
 
     // PointCollector
     int MAX_DEVIATION = 40;

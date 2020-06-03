@@ -139,7 +139,7 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Chil
                         et.setText("");
                         sr.setOpenNoteName(getContext(), NO_FILENAME);
                         displayFileName(v);
-                        Toast.makeText(getContext(), R.string.new_note, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.NewNoteOpened, Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getContext(), getString(R.string.ToastSaveSucces), Toast.LENGTH_SHORT).show();
                     }
@@ -220,19 +220,18 @@ public class FirstFragment extends Fragment implements NoteMasterConstants, Chil
             }
         });
 
+        view.findViewById(R.id.imgButtonDelete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // delete current note (and open an new empty one)
+               sr.askUserConfirmationDialog(getContext(), null, NO_POSITION, null);
+            }
+        });
+
         sr.setDialogAnswerListener((MainActivity) getActivity());
         // create child fragments -->
         nlf = new NoteListFragment();
         nle = new NoteListEmpty();
-    }
-
-    public void renameItemFromList(String fragment_tag, int position, String newNoteName){
-
-        Fragment fragment = getChildFragmentManager().findFragmentByTag(fragment_tag);
-        if(fragment != null){
-            ((NoteListFragment) fragment).renameItemInList(position, newNoteName);
-        }
-
     }
 
     @Override

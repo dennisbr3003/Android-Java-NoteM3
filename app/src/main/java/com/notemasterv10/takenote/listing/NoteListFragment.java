@@ -89,43 +89,8 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
             public void itemClickToDelete(final Note note, final View v) {
 
                 markSelectedItem(note);
-
-                androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(v.getContext());
-
-                builder.setTitle(R.string.ConfirmDialogTitle);
-                builder.setMessage(String.format("Are you sure you want to delete '%s' ? This cannot be undone.", note.getName()));
-                builder.setIcon(R.mipmap.note_delete);
-                builder.setCancelable(false); // block back-button
-
-                builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        deleteConfirmed = true;
-                        dialog.dismiss();
-                    }
-                });
-                builder.setNegativeButton(R.string.No, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        deleteConfirmed = false;
-                        dialog.dismiss();
-                    }
-                });
-
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        if(deleteConfirmed) {
-                            nlrv.deleteItemFromList(note.getListPosition());
-                            if (null != mListener) {
-                                mListener.onListFragmentInteractionDelete(note);
-                            }
-                        }
-                        nlrv.resetSelectedItemPositions(); // clear selection
-                    }
-                });
-                AlertDialog dlg = builder.create();
-                dlg.show();
+                sr.askUserConfirmationDialog(v.getContext(), null, note);
+                // handling is done through a listener MainActivity.deleteNote, exit here -->
 
             }
 
@@ -134,7 +99,7 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
 
                 markSelectedItem(note);
                 sr.noteNameDialog(getContext(), NoteAction.CHANGE_NAME, note.getName(), note.isCurrentNote(), note.getListPosition());
-                // answer is being handled listener MainActivity.renameAnswerConfirmed, exit here -->
+                // answer is being handled listener MainActivity.renameNote, exit here -->
 
             }
         });
@@ -208,10 +173,17 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
         nlrv.resetSelectedItemPositions(); // clear selection
     }
 
+    public void removeItemFromList(int position){
+        nlrv.removeItemFromList(position);
+        nlrv.resetSelectedItemPositions(); // clear selection
+    }
+
+    public void resetSelection(){
+        nlrv.resetSelectedItemPositions(); // clear selection
+    }
 
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(Note note);
-        void onListFragmentInteractionDelete(Note note);
     }
 
     private void markSelectedItem(Note note){

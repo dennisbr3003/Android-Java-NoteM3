@@ -1,10 +1,9 @@
-package com.notemasterv10.takenote.library;
+package com.notemasterv10.takenote.interaction;
 
-public class ComplexDialogAnswer {
+public class ComplexStringAnswer extends Answer {
 
     private String answer="";
 
-    private String extraInstruction="";
     private byte[] new_content = null;
     private String open_existing_note = "";
     private byte[] current_content = null;
@@ -15,7 +14,12 @@ public class ComplexDialogAnswer {
 
     private int position=0;
 
-    public ComplexDialogAnswer() {
+    public ComplexStringAnswer() {
+        super("");
+    }
+    public ComplexStringAnswer(String answer) {
+        super("");
+        this.answer = answer;
     }
 
     public byte[] getNew_content() {
@@ -26,10 +30,6 @@ public class ComplexDialogAnswer {
         this.new_content = new_content;
     }
 
-    public ComplexDialogAnswer(String answer) {
-        this.answer = answer;
-    }
-
     public String getAnswer() {
         return answer;
     }
@@ -38,13 +38,6 @@ public class ComplexDialogAnswer {
         this.answer = answer;
     }
 
-    public String getExtraInstruction() {
-        return extraInstruction;
-    }
-
-    public void setExtraInstruction(String extraInstruction) {
-        this.extraInstruction = extraInstruction;
-    }
     public String getRename_oldname() {
         return rename_oldname;
     }
@@ -91,4 +84,5 @@ public class ComplexDialogAnswer {
     public void setOpen_existing_note(String open_existing_note) {
         this.open_existing_note = open_existing_note;
     }
+
 }

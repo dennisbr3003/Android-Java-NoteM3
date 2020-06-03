@@ -146,7 +146,7 @@ public class NoteListRecyclerViewAdapter extends RecyclerView.Adapter<NoteListRe
         }
     }
 
-    public void deleteItemFromList(int position){
+    public void removeItemFromList(int position){
         mValues.remove(position);
         notifyDataSetChanged();
     }

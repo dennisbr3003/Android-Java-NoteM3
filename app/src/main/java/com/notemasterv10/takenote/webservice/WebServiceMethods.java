@@ -119,7 +119,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                 // first cast the answer to a json object for easy handling -->
                                 j_object = new JSONObject(response.body().string());
                                 if (j_object.has("device_id")) {
-                                    readAnswer(new Callresult(true, context.getString(R.string.download_success)));
+                                    readAnswer(new Callresult(true, context.getString(R.string.DownloadSuccess)));
 
                                     // Now cast the answer to the expected format by using a pojo -->
                                     ObjectMapper mapper = new ObjectMapper();
@@ -131,7 +131,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                             webEventListener.loadDownLoadedPreferences(spr);
                                         }
                                     } else {
-                                        readAnswer(new Callresult(false, context.getString(R.string.mapping_failed)));
+                                        readAnswer(new Callresult(false, context.getString(R.string.MappingFailed)));
                                     }
 
                                 } else { // error object is returned
@@ -199,7 +199,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                 j_object = new JSONObject(response.body().string());
                                 if (j_object.has(RESPONSE_STATUS)) {
                                     if ((j_object.getString(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
-                                        readAnswer(new Callresult(true, context.getString(R.string.upload_success)));
+                                        readAnswer(new Callresult(true, context.getString(R.string.UploadSuccess)));
                                     } else {
                                         cr.setAnswer(false);
                                         if (j_object.has("message")) {

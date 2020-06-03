@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_reset_passpoints"
         android:orderInCategory="100"
-        android:title="@string/reset_passpoints_caption"
+        android:title="@string/ResetPasspointsCaption"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_reset_backgroundcolor"
@@ -22,20 +22,15 @@
         android:orderInCategory="118"
         android:title="@string/reset_passpoint_picture" />
     <item
-        android:id="@+id/action_clear_notetext"
-        android:orderInCategory="120"
-        android:title="@string/clear_notes"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_upload_preferences"
         android:orderInCategory="130"
-        android:title="@string/upload_preferences"
+        android:title="@string/UploadPreferences"
         android:visible="false"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_download_preferences"
         android:orderInCategory="140"
-        android:title="@string/download_preferences"
+        android:title="@string/DownloadPreferences"
         android:visible="false"
         app:showAsAction="never" />
     <!-- Action bar icons -->

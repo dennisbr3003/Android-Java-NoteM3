@@ -48,7 +48,7 @@
             android:layout_toEndOf="@id/imgButtonSave"
             android:layout_toRightOf="@id/imgButtonSave"
             android:background="@android:color/transparent"
-            android:contentDescription="@string/select_editor_color"
+            android:contentDescription="@string/SelectColorEditor"
             android:src="@mipmap/note_new" />
 
         <ImageButton
@@ -62,7 +62,7 @@
             android:layout_toEndOf="@id/imgButtonSave"
             android:layout_toRightOf="@id/imgButtonSave"
             android:background="@android:color/transparent"
-            android:contentDescription="@string/select_editor_color"
+            android:contentDescription="@string/SelectColorEditor"
             android:src="@mipmap/note_delete" />
 
         <ImageButton
@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="0dp"
             android:background="@android:color/transparent"
-            android:contentDescription="@string/save"
+            android:contentDescription="@string/Save"
             android:src="@mipmap/floppy_save" />
 
         <ImageButton
@@ -86,7 +86,7 @@
             android:layout_toEndOf="@id/imgButtonSave"
             android:layout_toRightOf="@id/imgButtonNew"
             android:background="@android:color/transparent"
-            android:contentDescription="@string/select_editor_color"
+            android:contentDescription="@string/SelectColorEditor"
             android:scaleType="fitCenter"
             android:src="@mipmap/color_palette" />
 
@@ -97,7 +97,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:background="@android:color/transparent"
-            android:contentDescription="@string/lock"
+            android:contentDescription="@string/Lock"
             android:src="@mipmap/padlock" />
 
 

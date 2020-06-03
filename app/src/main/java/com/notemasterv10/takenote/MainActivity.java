@@ -25,7 +25,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
-import com.notemasterv10.takenote.library.ComplexDialogAnswer;
+import com.notemasterv10.takenote.interaction.ComplexBooleanAnswer;
+import com.notemasterv10.takenote.interaction.ComplexStringAnswer;
+import com.notemasterv10.takenote.interaction.IntegerAnswer;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
@@ -86,10 +88,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 EditText et = (EditText) findViewById(R.id.editText);
                 et.setBackgroundColor(DEFAULT_EDITOR_BACKGROUND_COLOR);
                 sr.saveSharedBackgroundColor(DEFAULT_EDITOR_BACKGROUND_COLOR, this);
-                return true;
-
-            case R.id.action_clear_notetext:
-                sr.askUserConfirmationDialog(this);
                 return true;
 
             case R.id.action_change_passpoint_picture:
@@ -179,20 +177,10 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         super.onSaveInstanceState(savedInstanceState);
     }
 
-
     @Override
-    public void booleanAnswerConfirmed (Boolean answer){
-        EditText et = (EditText) findViewById(R.id.editText);
-        if (answer) {
-            et.setText("");
-            // TODO sr.saveNote(this, et.getText().toString().getBytes(), );
-        }
-    }
+    public void integerAnswerConfirmed (IntegerAnswer answer){
 
-    @Override
-    public void integerAnswerConfirmed ( int answer){
-
-        switch (answer) {
+        switch (answer.getAnswer()) {
 
             case CANCEL_CLICKED:
                 // cancel, do nothing -->
@@ -401,17 +389,34 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     @SuppressLint("StaticFieldLeak")
     @Override
-    public void saveAnswerConfirmed(final ComplexDialogAnswer answer){
+    public void saveNote(final ComplexStringAnswer answer){
 
         TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
         EditText et = (EditText) findViewById(R.id.editText);
 
+        final Context context = this;
+
         if (answer.getAnswer() == null || answer.getAnswer().equals("")) {
+
             tv.setText(String.format("%s", NO_FILENAME));
+
+            Log.d("DB", "Is dat answer object nou null of wat?" + String.valueOf((answer == null)));
+
+            if(answer != null) { // <-- save from FirstFragment view group
+
+                Log.d("DB", answer.getExtraInstructions());
+
+                if (answer.getExtraInstructions().equals(OPEN_SAVED_NOTE)) {
+
+                    // open an existing previously saved note -->
+                    tv.setText(answer.getOpen_existing_note());
+                    et.setText(new String(answer.getNew_content()));
+                    sr.setOpenNoteName(context, answer.getOpen_existing_note());
+
+                }
+            }
+
         } else {
-
-            final Context context = this;
-
             // save the 'old' current note -->
             new AsyncTask<Void, Void, Void>() {
                 @Override
@@ -422,7 +427,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             }.execute();
 
 
-            if (answer.getExtraInstruction().equals(OPEN_NEW_NOTE)) {
+            if (answer.getExtraInstructions().equals(OPEN_NEW_NOTE)) {
 
                 // open an new empty note -->
                 tv.setText(NO_FILENAME);
@@ -430,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 sr.setOpenNoteName(context, NO_FILENAME);
 
             } else {
-                if (answer.getExtraInstruction().equals(OPEN_SAVED_NOTE)) {
+                if (answer.getExtraInstructions().equals(OPEN_SAVED_NOTE)) {
 
                     // open an existing previously saved note -->
                     tv.setText(answer.getOpen_existing_note());
@@ -488,19 +493,9 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     }
 
-    @Override
-    public void onListFragmentInteractionDelete(Note note) {
-        sr.deleteNote(this, note);
-        if(sr.getNoteCount(this) == 0){
-            popNoteList();
-            showNoteList();
-        }
-
-    }
-
     @SuppressLint("StaticFieldLeak")
     @Override
-    public void renameAnswerConfirmed(final ComplexDialogAnswer answer) {
+    public void renameNote(final ComplexStringAnswer answer) {
 
         final Context context = this;
 
@@ -528,6 +523,65 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
             Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG);
             if(cf != null){
                 ((NoteListFragment) cf).renameItemInList(answer.getPosition(), answer.getRename_newname());
+            }
+        }
+    }
+
+
+    @SuppressLint("StaticFieldLeak")
+    @Override
+    public void deleteNote(ComplexBooleanAnswer answer) {
+
+        if(answer.getNote() == null){
+
+            EditText et = findViewById(R.id.editText);
+            TextView tv = findViewById(R.id.text_view_currentnote);
+            final Context context = this;
+
+            if(answer.isAnswer()){
+                // if position = -1 (NO_POSITION) then the delete was fired from FirstFragment
+                if(answer.getExtraInstructions().equals(String.valueOf(NO_POSITION))){
+                    if(!sr.getOpenNoteName(this).equals(NO_FILENAME)){
+                        new AsyncTask<Void, Void, Void>() {
+                            @Override
+                            protected Void doInBackground(Void... voids) {
+                                sr.deleteNote(context, sr.getOpenNoteName(context));
+                                return null;
+                            }
+                        }.execute();
+                    }
+                    et.setText("");
+                    sr.setOpenNoteName(this, NO_FILENAME);
+                    tv.setText(NO_FILENAME);
+                }
+            }
+
+        } else {
+
+            // try to reach the list fragment to update the list -->
+            Fragment cf = null;
+            NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+            Fragment ff = navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
+            if (ff != null) {
+                cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG);
+            }
+
+            if (answer.isAnswer()) {
+                // try to reach the list fragment to update the list -->
+                if (cf != null) {
+                    ((NoteListFragment) cf).removeItemFromList(answer.getNote().getListPosition());
+                }
+                // delete the note from SQLite -->
+                sr.deleteNote(this, answer.getNote());
+                // show the correct fragment -->
+                if (sr.getNoteCount(this) == 0) {
+                    popNoteList();
+                    showNoteList();
+                }
+            } else { // cancel -->
+                if (cf != null) {
+                    ((NoteListFragment) cf).resetSelection();
+                }
             }
         }
     }
