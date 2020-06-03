@@ -5,11 +5,11 @@ public class ExtendedStringAnswer extends Answer {
     private String answer="";
 
     private byte[] newNoteContent = null;
-    private String newNoteName = "";
     private byte[] currentNoteContent = null;
 
+    private String newNoteName = "";
     private String currentNoteName ="";
-    private String rename_newname ="";
+
     private boolean isCurrentNote = false;
 
     private int position=0;
