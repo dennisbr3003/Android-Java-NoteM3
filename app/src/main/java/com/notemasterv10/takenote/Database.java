@@ -33,14 +33,23 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
+        // passpoint coordinates
         String sql = String.format("CREATE TABLE %s (%s INTEGER PRIMARY KEY, %s INTEGER NOT NULL, %s INTEGER NOT NULL)",
                                    TABLE_PNTS, PNTS_ID, PNTS_X, PNTS_Y);
         db.execSQL(sql);
 
-        sql = String.format("CREATE TABLE %s (%s INTEGER AUTO_INCREMENT, %s VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE, " +
+        // notes
+        sql = String.format("CREATE TABLE %s (%s VARCHAR(50), %s VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE, " +
                             "%s DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')), %s BLOB, %s DATETIME "+
                             "DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')))",
                             TABLE_NTS, NTS_ID, NTS_NAME, NTS_CREATED, NTS_FILE, NTS_UPDATED);
+        db.execSQL(sql);
+
+        // passpoint image
+        sql = String.format("CREATE TABLE %s (%s VARCHAR(50), %s VARCHAR(20) PRIMARY KEY NOT NULL UNIQUE, " +
+                            "%s DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')), %s BLOB, %s DATETIME "+
+                            "DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')))",
+                            TABLE_PPI, PPI_ID, PPI_NAME, PPI_CREATED, PPI_FILE, PPI_UPDATED);
         db.execSQL(sql);
 
     }
@@ -58,6 +67,18 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         } else {
             // insert
             return insertNote(name, note);
+        }
+
+    }
+
+    public boolean savePassPointImage(String name, byte[] passpointimage){
+        // First check if we have to do an update (if the record already exists)
+        if(passPointImageExists(name)){
+            // update
+            return updatePassPointImage(name, passpointimage);
+        } else {
+            // insert
+            return insertPassPointImage(name, passpointimage);
         }
 
     }
@@ -135,6 +156,33 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         }
     }
 
+    private boolean updatePassPointImage(String name, byte[] passpointimage){
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+            String sqlQuery = String.format("UPDATE %s SET %s = ?, %s = ? WHERE %s = ?", TABLE_PPI, PPI_FILE, PPI_UPDATED, PPI_NAME);
+
+            SQLiteStatement stmt = db.compileStatement(sqlQuery);
+
+            stmt.clearBindings();
+            stmt.bindBlob(1, passpointimage);
+            stmt.bindString(2, getCurrentTimestamp());
+            stmt.bindString(3, name);
+            stmt.executeUpdateDelete();
+
+            db.setTransactionSuccessful();
+            return true;
+        } catch(Exception e){
+            return false;
+        }
+        finally{
+            db.endTransaction();
+            db.close();
+        }
+    }
+
     private boolean updateNote(String name, byte[] note){
 
         SQLiteDatabase db = getWritableDatabase();
@@ -184,6 +232,34 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         return intCount;
     }
 
+    private boolean insertPassPointImage(String name, byte[] passpointimage){
+
+        UUID uuid = UUID.randomUUID();
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+            String sqlQuery = String.format("INSERT INTO %s (%s, %s, %s) VALUES (?,?,?)",
+                    TABLE_PPI, PPI_ID, PPI_NAME, PPI_FILE);
+            SQLiteStatement stmt = db.compileStatement(sqlQuery);
+
+            stmt.clearBindings();
+            stmt.bindString(1, uuid.toString());
+            stmt.bindString(2, name);
+            stmt.bindBlob(3, passpointimage);
+            stmt.executeInsert();
+
+            db.setTransactionSuccessful();
+            return true;
+        } catch(Exception e){
+            return false;
+        }
+        finally{
+            db.endTransaction();
+            db.close();
+        }
+    }
+
     private boolean insertNote(String name, byte[] note){
 
         UUID uuid = UUID.randomUUID();
@@ -209,6 +285,34 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         finally{
             db.endTransaction();
             db.close();
+        }
+    }
+
+    public boolean passPointImageExists(String name){
+
+        Boolean isFound = false;
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            db.beginTransaction();
+
+            Cursor c = db.query(TABLE_PPI, new String[]{PPI_NAME}, String.format("%s = ?", PPI_NAME),
+                    new String[]{name},
+                    null, null, null);
+
+            if (c.getCount() <= 0) {
+                isFound = false;
+            } else {
+                isFound = true;
+            }
+
+            db.setTransactionSuccessful();
+        } catch (Exception e){
+            isFound = false;
+        }
+        finally {
+            db.endTransaction();
+            db.close();
+            return isFound;
         }
     }
 
@@ -239,6 +343,35 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
             return isFound;
         }
     }
+
+    public byte[] getPassPointImage(String name){
+
+        byte[] passpointimage = null;
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            db.beginTransaction();
+
+            Cursor c = db.query(TABLE_PPI, new String[]{PPI_FILE}, String.format("%s = ?", PPI_NAME),
+                    new String[]{name},
+                    null, null, null);
+
+            if (!(c.getCount() <= 0)) {
+                if (c.moveToFirst()) {
+                    passpointimage = c.getBlob(0);
+                }
+            }
+            db.setTransactionSuccessful();
+        } catch(Exception e){
+            return null;
+        }
+        finally {
+            db.endTransaction();
+            db.close();
+            return passpointimage; // may be null may be not null
+        }
+
+    }
+
 
     public byte[] getNote(String name){
 
@@ -275,6 +408,28 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
         return sdf.format(timestamp);
     }
 
+    public void testUpdateInsertPassPointImage(){
+
+        SQLiteDatabase sdb = getReadableDatabase();
+        sdb.beginTransaction();
+
+        String query = String.format("SELECT %s, %s, %s, %s FROM %s ORDER BY %s", PPI_ID, PPI_NAME, PPI_CREATED, PPI_UPDATED, TABLE_PPI, PPI_ID);
+        Cursor cursor = sdb.rawQuery(query, null);
+
+        while(cursor.moveToNext()){ // iterate through the result
+            Log.d("Record: ", String.format("%s - %s - %s - %s",
+                    cursor.getString(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getString(3)));
+        }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
+        sdb.close();
+
+    }
+
     public void testUpdateInsertNote(){
 
         SQLiteDatabase sdb = getReadableDatabase();
@@ -285,7 +440,7 @@ public class Database extends SQLiteOpenHelper implements DatabaseConstants {
 
         while(cursor.moveToNext()){ // iterate through the result
             Log.d("Record: ", String.format("%s - %s - %s - %s",
-                    cursor.getInt(0),
+                    cursor.getString(0),
                     cursor.getString(1),
                     cursor.getString(2),
                     cursor.getString(3)));

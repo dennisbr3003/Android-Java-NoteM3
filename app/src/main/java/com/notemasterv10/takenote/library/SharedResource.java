@@ -26,6 +26,8 @@ import com.notemasterv10.takenote.interaction.SingleIntegerAnswer;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listing.Note;
 
+import java.io.ByteArrayOutputStream;
+
 public class SharedResource extends AppCompatActivity implements NoteMasterConstants {
 
     private DialogAnswerListener dialogAnswerListener;
@@ -55,8 +57,14 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     public void saveSharedPasspointPhoto(String filepath, Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
+        // todo moet andere naam worden voor sql lite database
         prefsEdit.putString(PASSPOINT_IMAGE, filepath);
         prefsEdit.apply(); // apply is background, commit is not
+
+        Log.d("DB", "Nu nog even de database in (gecomprimeerd)");
+        Database sdb = new Database(context);
+        sdb.savePassPointImage("TEST", convertBitmapToByteArray(createBitmapFromOSFile(filepath)));
+        sdb.testUpdateInsertPassPointImage();
     }
 
     public void setImageviewBitmapFromAbsolutePath(ImageView im, String absoluteFilePath){
@@ -170,6 +178,18 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     public Bitmap createBitmapFromOSFile(String absoluteFilePath) {
         Bitmap bm = BitmapFactory.decodeFile(absoluteFilePath); // should hold directory and filename (Attention this uses extra manifest permission)
         return bm;
+    }
+
+    public Bitmap convertByteArrayToBitmap(byte[] passpointimmage){
+        Bitmap bm = BitmapFactory.decodeByteArray(passpointimmage, 0, passpointimmage.length);
+        return bm;
+    }
+
+    public byte[] convertBitmapToByteArray(Bitmap bm) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] passpointimage = stream.toByteArray();
+        return passpointimage;
     }
 
     private String getCurrentTimestamp(){
