@@ -9,6 +9,7 @@ public interface NoteMasterConstants {
     String BACKGROUND_COLOR = "BackGroundColor";
     String SHAREDPREF_NAME = "TakeNote";
     String PASSPOINT_IMAGE = "passpointImage";
+    String PASSPOINT_IMAGE_NAME = "passpointImageName";
     String SETTING_UNKNOWN = "Unknown";
     String PASSPOINTS_SET = "PointsSet";
     String CAMERA_ABSOLUTE_FILEPATH = "New_Photo_Filepath";

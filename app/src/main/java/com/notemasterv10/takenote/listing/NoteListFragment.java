@@ -2,13 +2,11 @@ package com.notemasterv10.takenote.listing;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,10 +17,10 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.notemasterv10.takenote.Database;
 import com.notemasterv10.takenote.MainActivity;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
+import com.notemasterv10.takenote.database.NoteTable;
 import com.notemasterv10.takenote.library.SharedResource;
 
 import java.util.ArrayList;
@@ -34,7 +32,7 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
     private OnListFragmentInteractionListener mListener;
     private List<Note> note_list = new ArrayList<Note>();
     private View v;
-    private Database sdb;
+    private NoteTable noteTable;
     private NoteListRecyclerViewAdapter nlrv;
     SharedResource sr = new SharedResource();
     private boolean deleteConfirmed;
@@ -118,13 +116,13 @@ public class NoteListFragment extends Fragment implements NoteMasterConstants {
 
     public void loadData(){
 
-        sdb = new Database(getContext());
+        noteTable = new NoteTable(getContext());
 
         @SuppressLint("StaticFieldLeak")
         AsyncTask<Void, Void, List<Note>> asynctask = new AsyncTask<Void, Void, List<Note>>() {
             @Override
             protected List<Note> doInBackground(Void... voids) {
-                return sdb.getNoteListing();
+                return noteTable.getNoteListing();
             }
 
             @Override

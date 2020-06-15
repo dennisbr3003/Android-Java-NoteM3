@@ -17,9 +17,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.notemasterv10.takenote.Database;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
+import com.notemasterv10.takenote.database.ImageTable;
+import com.notemasterv10.takenote.database.NoteTable;
 import com.notemasterv10.takenote.interaction.ExtendedBooleanAnswer;
 import com.notemasterv10.takenote.interaction.ExtendedStringAnswer;
 import com.notemasterv10.takenote.interaction.SingleIntegerAnswer;
@@ -38,7 +39,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     // The PointCollectorListener is set from outside this class (by another class). If it is
     // not set, it will be a null reference. This is checked when running the onTouchListener
-    // in this class. If the refrence is not null it will execute the method and pass the
+    // in this class. If the reference is not null it will execute the method and pass the
     // collected points. Actually ImageActivity is passed to here (it implements the interface!).
     public void setDialogAnswerListener(DialogAnswerListener dialogAnswerListener) {
         this.dialogAnswerListener = dialogAnswerListener;
@@ -47,6 +48,12 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     public SharedResource() {
     }
 
+    private String getCurrentTimestamp(){
+        return String.valueOf(System.currentTimeMillis());
+    }
+
+    //---------------------------------------------------------------------------------------------->
+
     public void saveSharedBackgroundColor(int iColor, Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
@@ -54,61 +61,88 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         prefsEdit.apply(); // apply is background, commit is not
     }
 
-    public void saveSharedPasspointPhoto(String filepath, Context context){
+    public int getSharedBackgroundColor(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor prefsEdit = prefs.edit();
-        // todo moet andere naam worden voor sql lite database
-        prefsEdit.putString(PASSPOINT_IMAGE, filepath);
-        prefsEdit.apply(); // apply is background, commit is not
-
-        Log.d("DB", "Nu nog even de database in (gecomprimeerd)");
-        Database sdb = new Database(context);
-        sdb.savePassPointImage("TEST", convertBitmapToByteArray(createBitmapFromOSFile(filepath)));
-        sdb.testUpdateInsertPassPointImage();
+        return Integer.parseInt(prefs.getString(BACKGROUND_COLOR, "-1"));
     }
 
-    public void setImageviewBitmapFromAbsolutePath(ImageView im, String absoluteFilePath){
-        im.setImageBitmap(createBitmapFromOSFile(absoluteFilePath));
+    //---------------------------------------------------------------------------------------------->
+
+    public void saveSharedPasspointImage(String fileName, Context context) {
+
+        ImageTable imageTable = new ImageTable(context);
+
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+
+        if (fileName.equals(SETTING_UNKNOWN)) {
+            // reset, remove image from db
+            if(imageTable.deletePasspointImage(PASSPOINT_IMAGE)){
+                prefsEdit.putString(PASSPOINT_IMAGE_NAME, fileName);
+                prefsEdit.apply(); // apply is background, commit is not
+            } // if this fails do nothing...
+        } else {
+            imageTable.savePassPointImage(PASSPOINT_IMAGE, convertBitmapToByteArray(createBitmapFromOSFile(fileName)));
+            prefsEdit.putString(PASSPOINT_IMAGE_NAME, PASSPOINT_IMAGE);
+            prefsEdit.apply();
+        }
+        imageTable.testUpdateInsertPassPointImage(); // test contents
     }
 
     public Bitmap getImageviewBitmapFromAbsolutePath (String absoluteFilePath){
         return createBitmapFromOSFile(absoluteFilePath);
     }
 
-    public int getSharedBackgroundColor(Context context){
+    public String getSharedPrefsPasspointImage(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        return Integer.valueOf(prefs.getString(BACKGROUND_COLOR, "-1"));
+        return prefs.getString(PASSPOINT_IMAGE_NAME, SETTING_UNKNOWN);
     }
 
-    public String getSharedPasspointPhoto(Context context){
-        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(PASSPOINT_IMAGE, SETTING_UNKNOWN);
+    public Bitmap getSavedPasspointImageAsBitmap(Context context){
+        byte[] img = getSavedPasspointImage(context);
+        return BitmapFactory.decodeByteArray(img, 0, img.length);
     }
+
+    public byte[] getSavedPasspointImage(Context context){
+        ImageTable imageTable = new ImageTable(context);
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        return imageTable.getPassPointImage(prefs.getString(PASSPOINT_IMAGE_NAME, PASSPOINT_IMAGE));
+    }
+
+    public void resetSharedPrefsPasspointImage(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putString(PASSPOINT_IMAGE, SETTING_UNKNOWN);
+        prefsEdit.apply(); // apply is background, commit is not
+    }
+
+    public Bitmap createBitmapFromOSFile(String absoluteFilePath) {
+        return BitmapFactory.decodeFile(absoluteFilePath); // should hold directory and filename (Attention this uses extra manifest permission)
+    }
+
+    public Bitmap convertByteArrayToBitmap(byte[] passpointimmage){
+        return BitmapFactory.decodeByteArray(passpointimmage, 0, passpointimmage.length);
+    }
+
+    public byte[] convertBitmapToByteArray(Bitmap bm) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        return stream.toByteArray();
+    }
+
+    //---------------------------------------------------------------------------------------------->
 
     public boolean pointsSetInSharedPrefs(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        return Boolean.valueOf(prefs.getString(PASSPOINTS_SET, "false"));
+        return Boolean.parseBoolean(prefs.getString(PASSPOINTS_SET, "false"));
     }
 
     public void setSharedPasspointsSet(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
         prefsEdit.putString(PASSPOINTS_SET, String.valueOf(true));
-        prefsEdit.apply(); // apply does it's work in th ebackground, commit does not.
+        prefsEdit.apply(); // apply does it's work in the background, commit does not.
     }
-
-    public void setOpenNoteName(Context context, String name){
-        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putString(OPEN_NOTE, name);
-        prefsEdit.apply(); // apply does it's work in th ebackground, commit does not.
-    }
-
-    public String getOpenNoteName(Context context){
-        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(OPEN_NOTE, NO_FILENAME);
-    }
-
 
     public void resetSharedPasspointsSet(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
@@ -117,26 +151,33 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         prefsEdit.apply(); // apply does it's work in the background, commit does not.
     }
 
-    public void resetSharedPasspointPhoto(Context context){
+    //---------------------------------------------------------------------------------------------->
+
+    public void setOpenNoteName(Context context, String name){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putString(PASSPOINT_IMAGE, SETTING_UNKNOWN);
-        prefsEdit.apply(); // apply is background, commit is not
+        prefsEdit.putString(OPEN_NOTE, name);
+        prefsEdit.apply(); // apply does it's work in the background, commit does not.
+    }
+
+    public String getOpenNoteName(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(OPEN_NOTE, NO_FILENAME);
     }
 
     public byte[] getNote(Context context, String name){
-        Database sdb = new Database(context);
-        return sdb.getNote(name);
+        NoteTable noteTable = new NoteTable(context);
+        return noteTable.getNote(name);
     }
 
     public void deleteNote(Context context, String noteName){
-        Database sdb = new Database(context);
-        sdb.deleteNote(noteName);
+        NoteTable noteTable = new NoteTable(context);
+        noteTable.deleteNote(noteName);
     }
 
     public void deleteNote(Context context, Note note){
-        Database sdb = new Database(context);
-        sdb.deleteNote(note.getName());
+        NoteTable noteTable = new NoteTable(context);
+        noteTable.deleteNote(note.getName());
         if (note.isCurrentNote()){
             // clear textview and open a new one
             ExtendedStringAnswer answer = new ExtendedStringAnswer();
@@ -150,51 +191,31 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     }
 
     public int getNoteCount(Context context){
-        Database sdb = new Database(context);
-        return sdb.getNoteListCount();
+        NoteTable noteTable = new NoteTable(context);
+        return noteTable.getNoteListCount();
     }
 
     public boolean noteExists(Context context, String name){
-        Database sdb = new Database(context);
-        return sdb.noteExists(name);
+        NoteTable noteTable = new NoteTable(context);
+        return noteTable.noteExists(name);
     }
 
     public boolean renameNote(Context context, String old_name, String new_name){
-        Database sdb = new Database(context);
-        return sdb.renameNote(old_name, new_name);
+        NoteTable noteTable = new NoteTable(context);
+        return noteTable.renameNote(old_name, new_name);
     }
 
     public void saveNote(Context context, byte[] note, String name) {
-
-        Database sdb = new Database(context);
+        NoteTable noteTable = new NoteTable(context);
         try{
-            sdb.saveNote(name, note);
+            noteTable.saveNote(name, note);
         } catch(Exception e){
             Log.d(getString(R.string.ErrorTag), String.format("%s %s", getString(R.string.CouldNotSaveToDatabase), e.getMessage()));
         }
-        sdb.testUpdateInsertNote(); // read the contents of the table (may be removed later)
+        noteTable.testUpdateInsertNote(); // read the contents of the table (may be removed later)
     }
 
-    public Bitmap createBitmapFromOSFile(String absoluteFilePath) {
-        Bitmap bm = BitmapFactory.decodeFile(absoluteFilePath); // should hold directory and filename (Attention this uses extra manifest permission)
-        return bm;
-    }
-
-    public Bitmap convertByteArrayToBitmap(byte[] passpointimmage){
-        Bitmap bm = BitmapFactory.decodeByteArray(passpointimmage, 0, passpointimmage.length);
-        return bm;
-    }
-
-    public byte[] convertBitmapToByteArray(Bitmap bm) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        byte[] passpointimage = stream.toByteArray();
-        return passpointimage;
-    }
-
-    private String getCurrentTimestamp(){
-        return String.valueOf(System.currentTimeMillis());
-    }
+    //---------------------------------------------------------------------------------------------->
 
     public void noteNameDialog(Context context, byte[] note, NoteAction noteAction){
         noteNameDialog(context, note, noteAction, "", null, "", false, 0);
@@ -333,7 +354,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                 if (noteAction.equals(NoteAction.CHANGE_NAME)){
 
                     // input checks -->
-                    if (cdet.getText().toString().equals("") || cdet.getText().toString().equals(null)){
+                    if (cdet.getText().toString().equals("") || cdet.getText().toString() == null){
 
                         // First shrink the EditText object to make room for the error objects -->
                         RelativeLayout.LayoutParams lparams = new RelativeLayout.LayoutParams(etd.getWidthBase() ,cdet.getHeight());
@@ -371,7 +392,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                 } else {
 
                     // save -->
-                    if (cdet.getText().toString().equals("") || cdet.getText().toString().equals(null)) {
+                    if (cdet.getText().toString().equals("") || cdet.getText().toString() == null) {
                         newNoteName = String.format("%s-%s", "Note", getCurrentTimestamp());
                     } else {
                         newNoteName = cdet.getText().toString();

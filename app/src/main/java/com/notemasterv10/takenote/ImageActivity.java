@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
+import com.notemasterv10.takenote.database.PointTable;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.PointCollectorListener;
 
@@ -35,7 +36,6 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
     SharedResource sr = new SharedResource();
 
     private PointCollector pointCollector = new PointCollector();
-    private Database sdb = new Database(this);
 
     // Variables for requesting permissions, API 25+
     private int requestCode;
@@ -53,23 +53,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // TODO needs refactoring -->
-
-        try {
-            ImageView im = findViewById(R.id.imageView);
-            sr.setImageviewBitmapFromAbsolutePath(im, sr.getSharedPasspointPhoto(this));
-        }catch(Exception e) {
-            try {
-                ImageView im = findViewById(R.id.imageView);
-                im.setImageBitmap(sr.createBitmapFromOSFile(sr.getSharedPasspointPhoto(this)));
-            } catch (Exception ex) {
-                Log.d(getString(R.string.DefaultTag), getString(R.string.PictureError));
-                sr.resetSharedPasspointPhoto(this);
-            }
-        }
-        if (!sr.pointsSetInSharedPrefs(this)) {
-            showSetPassPointsDialog(); // this may change as the build progresses
-        }
+        showPassPointImage();
     }
 
     @Override
@@ -99,34 +83,14 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
 
         }
 
-        if (sr.getSharedPasspointPhoto(this) != SETTING_UNKNOWN) {
-
-            Log.d("Test", "shared passpoint photo <> unknown");
-
+        if (sr.getSharedPrefsPasspointImage(this) != SETTING_UNKNOWN) {
             // asynchronous --> if input is required goto callback procedure
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 //if you dont have required permissions ask for it (only required for API 23+)
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
                 // If the permission dialog appears we will load the picture from the callback method (onRequestPermissionsResult).
             } else { // rights are ALREADY granted so go for it -->
-
-                // TODO needs refactoring -->
-                try {
-                    ImageView im = findViewById(R.id.imageView);
-                    sr.setImageviewBitmapFromAbsolutePath(im, sr.getSharedPasspointPhoto(this));
-                }catch(Exception e) {
-                    try {
-                        ImageView im = findViewById(R.id.imageView);
-                        im.setImageBitmap(sr.createBitmapFromOSFile(sr.getSharedPasspointPhoto(this)));
-                    } catch (Exception ex) {
-                        Log.d(getString(R.string.DefaultTag), getString(R.string.PictureError));
-                        sr.resetSharedPasspointPhoto(this);
-                    }
-                }
-
-                if (!sr.pointsSetInSharedPrefs(this)) {
-                    showSetPassPointsDialog(); // this may change as the build progresses
-                }
+                showPassPointImage();
             }
         }
         else{
@@ -187,6 +151,8 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
 
     private void verifyPassPoints(final List<Point> points_list) {
 
+        final PointTable pointTable = new PointTable(this);
+
         // First show a dialog to be shown during verification
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // Do not use setMessage if you want to use an icon; instead use setTitle
@@ -203,9 +169,9 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
             @Override
             protected Boolean doInBackground(Void... voids) {
 
-                List<Point> points_saved = sdb.getPoints();
+                List<Point> points_saved = pointTable.getPoints();
 
-                Log.d("Debug-DB","Loaded points from DB " + String.valueOf(points_saved.size()));
+                Log.d("Debug-DB","Loaded points from DB " + points_saved.size());
 
                 try { // just to show the dialog
                     Thread.sleep(1000);
@@ -256,7 +222,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
 
     private void savePointsCollected(final List<Point> points_list) {
         // this code could hold up the UI thread so we should move this to a asynchronous thread of its own
-
+        final PointTable pointTable = new PointTable(this);
         // First show a dialog to indicate activity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // Do not use setMessage if you want to use an icon; instead use setTitle
@@ -281,7 +247,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                         Log.d("Point captured", String.valueOf(p.x) + " " + String.valueOf(p.y));
                     }
                     Thread.sleep(1000); // Just so you can see the dialog (test purposes)
-                    sdb.setPoints(points_list);
+                    pointTable.setPoints(points_list);
                     Log.d("Debug-DB", "Point saved to MySQL DB");
                 } catch (Exception e) {
                     Log.d("Debug-DB", "No point collected, object = null (" + e.getLocalizedMessage() + ")");
@@ -334,6 +300,20 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         // Apply the newly created layout parameters to the alert dialog window
         dlg.getWindow().setAttributes(layoutParams);
 
+    }
+
+    private void showPassPointImage(){
+        try{
+            ImageView im = (ImageView) findViewById(R.id.imageView);
+            im.setImageBitmap(sr.getSavedPasspointImageAsBitmap(this));
+        } catch(Exception e) {
+            // there was an error, reset to default pic and reset passpoints
+            Log.d(getString(R.string.ErrorTag), String.format("%s <%s>", getString(R.string.PictureError), e.getMessage()));
+            sr.resetSharedPrefsPasspointImage(this);
+        }
+        if (!sr.pointsSetInSharedPrefs(this)) {
+            showSetPassPointsDialog(); // this may change as the build progresses
+        }
     }
 
 }

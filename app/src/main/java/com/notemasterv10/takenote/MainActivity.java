@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 return true;
 
             case R.id.action_reset_passpoint_picture:
-                sr.saveSharedPasspointPhoto(SETTING_UNKNOWN, this);
+                sr.saveSharedPasspointImage(SETTING_UNKNOWN, this);
                 resetAndAquirePasspoints();
                 return true;
 
@@ -225,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                             // put new file path into shared prefs -->
                             if (data != null) {
                                 try {
-                                    sr.saveSharedPasspointPhoto(data.getStringExtra(CAMERA_ABSOLUTE_FILEPATH), MainActivity.this);
+                                    sr.saveSharedPasspointImage(data.getStringExtra(CAMERA_ABSOLUTE_FILEPATH), MainActivity.this);
                                 } catch (Exception e) {
                                     return 0; // didn't work, do nothing and leave everything the same
                                 }
@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                             if (data != null) {
                                 try {
                                     // Uri is passed back through the data object but it's not an absolute path...it's through an UriWrapper -->
-                                    sr.saveSharedPasspointPhoto(MediaUriWrapper.getRealPath(MainActivity.this, data.getData()), MainActivity.this);
+                                    sr.saveSharedPasspointImage(MediaUriWrapper.getRealPath(MainActivity.this, data.getData()), MainActivity.this);
                                 } catch (Exception e) {
                                     return 0; // didn't work, do nothing and leave everything the same
                                 }
