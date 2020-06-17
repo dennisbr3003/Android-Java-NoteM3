@@ -1,16 +1,17 @@
-package com.notemasterv10.takenote.listing;
+package com.notemasterv10.takenote.library;
 
-public class Note {
+public class PassPointImage {
 
     private String id;
     private String name;
     private String created;
     private String updated;
     private byte[] file;
-    private boolean isCurrentNote;
-    private int listPosition;
 
-    public Note(String id, String name, String created, String updated, byte[] file) {
+    public PassPointImage() {
+    }
+
+    public PassPointImage(String id, String name, String created, String updated, byte[] file) {
         this.id = id;
         this.name = name;
         this.created = created;
@@ -56,29 +57,5 @@ public class Note {
 
     public void setFile(byte[] file) {
         this.file = file;
-    }
-
-    public boolean isCurrentNote() {
-        return isCurrentNote;
-    }
-
-    public void setCurrentNote(boolean currentNote) {
-        isCurrentNote = currentNote;
-    }
-
-    public void setCurrentNote(String currentNote) {
-        if (getName().equals(currentNote)){
-            this.isCurrentNote = true;
-        } else {
-            this.isCurrentNote = false;
-        }
-    }
-
-    public int getListPosition() {
-        return listPosition;
-    }
-
-    public void setListPosition(int listPosition) {
-        this.listPosition = listPosition;
     }
 }

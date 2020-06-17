@@ -44,7 +44,7 @@ public class NoteTable extends Database implements DatabaseConstants {
         Cursor cursor = sdb.rawQuery(query, null);
 
         while(cursor.moveToNext()){ // iterate through the result
-            Note note = new Note(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4));
+            Note note = new Note(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4));
             note_list.add(note);
         }
 

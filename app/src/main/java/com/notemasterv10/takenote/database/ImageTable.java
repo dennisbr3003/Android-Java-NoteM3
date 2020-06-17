@@ -9,7 +9,11 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.notemasterv10.takenote.constants.DatabaseConstants;
+import com.notemasterv10.takenote.library.PassPointImage;
+import com.notemasterv10.takenote.listing.Note;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class ImageTable extends Database implements DatabaseConstants {
@@ -165,6 +169,28 @@ public class ImageTable extends Database implements DatabaseConstants {
             return passpointimage; // may be null may be not null
         }
 
+    }
+
+    public List<PassPointImage> getPassPointImageListing(){
+
+        List<PassPointImage> passPointImageList = new ArrayList<PassPointImage>();
+
+        SQLiteDatabase sdb = getReadableDatabase();
+        sdb.beginTransaction();
+
+        String query = String.format("SELECT %s, %s, %s, %s, %s FROM %s ORDER BY %s", PPI_ID, PPI_NAME, PPI_CREATED, PPI_UPDATED, PPI_FILE, TABLE_PPI, PPI_NAME);
+        Cursor cursor = sdb.rawQuery(query, null);
+
+        while(cursor.moveToNext()){ // iterate through the result
+            PassPointImage passPointImage = new PassPointImage(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getBlob(4));
+            passPointImageList.add(passPointImage);
+        }
+
+        sdb.setTransactionSuccessful();
+        sdb.endTransaction();
+        sdb.close();
+
+        return passPointImageList;
     }
 
     public void testUpdateInsertPassPointImage(){

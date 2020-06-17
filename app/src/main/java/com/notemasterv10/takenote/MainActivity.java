@@ -34,7 +34,7 @@ import com.notemasterv10.takenote.listeners.WebEventListener;
 import com.notemasterv10.takenote.listing.Note;
 import com.notemasterv10.takenote.listing.NoteListFragment;
 import com.notemasterv10.takenote.webservice.ArrayItemObject;
-import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
+import com.notemasterv10.takenote.webservice.UserDataResponse;
 import com.notemasterv10.takenote.webservice.WebServiceConnectService;
 import com.notemasterv10.takenote.webservice.WebServiceMethods;
 
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 return true;
 
             case R.id.action_upload_preferences:
-                ws.createSharedPreferenceObject(this);
+                ws.createUserDataObject(this);
                 return true;
 
             case R.id.action_download_preferences:
@@ -362,22 +362,22 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     }
 
     @Override
-    public void loadDownLoadedPreferences (SharedPreferenceResponse spr){
+    public void loadDownLoadedPreferences (UserDataResponse spr){
 
         for (final ArrayItemObject aio : spr.getShared_preference()) {
 
             SharedPreferences prefs = getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor prefsEdit = prefs.edit();
-            prefsEdit.putString(aio.getItem_name(), aio.getItem_value());
+            prefsEdit.putString(aio.getItemName(), aio.getItemValue());
             prefsEdit.apply(); // apply is background, commit is not
 
             // Direct load for BGC only (may be changed later when more preferences will be loaded) -->
-            if (aio.getItem_name().equals(BACKGROUND_COLOR)) {
+            if (aio.getItemName().equals(BACKGROUND_COLOR)) {
                 runOnUiThread(new Runnable() { // <-- must be run on the UI thread
                     @Override
                     public void run() {
                         EditText et = (EditText) findViewById(R.id.editText);
-                        et.setBackgroundColor(Integer.valueOf(aio.getItem_value())); // <-- quick load from the object not the saved value itself (both are the same)                    }
+                        et.setBackgroundColor(Integer.valueOf(aio.getItemValue())); // <-- quick load from the object not the saved value itself (both are the same)                    }
                     }
                 });
             }

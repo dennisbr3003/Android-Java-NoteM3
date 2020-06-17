@@ -325,7 +325,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
             @Override
             public void onShow(DialogInterface dialog) {
 
-                // if the error object are not visible dynamically extend the input EditText
+                // if the error objects are not visible dynamically extend the input EditText
                 // We must do this here because here the objects are known and the dimensions have values -->
                 etd.setWidthExtension(cdiv.getWidth());
                 etd.setWidthBase(cdet.getWidth());
@@ -538,7 +538,7 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     }
 
-    private class EditTextDimensions{
+    private static class EditTextDimensions{
 
         private int x;
         private int y;

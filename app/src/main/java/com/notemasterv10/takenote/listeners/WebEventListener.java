@@ -1,6 +1,6 @@
 package com.notemasterv10.takenote.listeners;
 
-import com.notemasterv10.takenote.webservice.SharedPreferenceResponse;
+import com.notemasterv10.takenote.webservice.UserDataResponse;
 
 public interface WebEventListener {
 
@@ -8,6 +8,6 @@ public interface WebEventListener {
         SHOW_UPL_DL, HIDE_UPL_DL
     }
 
-    void loadDownLoadedPreferences(SharedPreferenceResponse spr);
+    void loadDownLoadedPreferences(UserDataResponse spr);
 
 }

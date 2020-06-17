@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.constants.WebServiceConstants;
+import com.notemasterv10.takenote.database.ImageTable;
+import com.notemasterv10.takenote.database.NoteTable;
 import com.notemasterv10.takenote.listeners.WebEventListener;
 
 import org.jetbrains.annotations.NotNull;
@@ -50,10 +52,13 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void createSharedPreferenceObject(final Context context) {
+    public void createUserDataObject(final Context context) {
 
         @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        final SharedPreferencePayload spp = new SharedPreferencePayload(android_id);
+
+        final UserDataPayload spp = new UserDataPayload(android_id);
+        final NoteTable noteTable = new NoteTable(context);
+        final ImageTable imageTable = new ImageTable(context);
 
         new AsyncTask<Void, Void, Void>(){
 
@@ -62,10 +67,18 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 UUID uuid = UUID.randomUUID(); // <-- used in the webservice to identify a batch
                 SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
 
+                // shared preferences
                 Map<String, ?> keys = prefs.getAll();
                 for (Map.Entry<String, ?> entry : keys.entrySet()) {
                     spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), uuid.toString());
                 }
+
+                // notes
+                spp.setNoteList(noteTable.getNoteListing());
+
+                // passpoint image
+                spp.setPassPointImageList(imageTable.getPassPointImageListing());
+
                 return null;
             }
 
@@ -73,7 +86,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 try{
-                    uploadSharedPreferencePayload(spp, "sharedpreference", context); // <-- a asynchronous task is defined in here
+                    uploadUserDataPayload(spp, WEBSERVICE_PATH, context); // <-- a asynchronous task is defined in here
                 } catch(Exception e){
                     Log.e(context.getString(R.string.ErrorTag), e.getMessage());
                 }
@@ -123,7 +136,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                                     // Now cast the answer to the expected format by using a pojo -->
                                     ObjectMapper mapper = new ObjectMapper();
-                                    SharedPreferenceResponse spr = mapper.readValue(j_object.toString(), SharedPreferenceResponse.class);
+                                    UserDataResponse spr = mapper.readValue(j_object.toString(), UserDataResponse.class);
 
                                     // Handle the pojo and execute some actions -->
                                     if(spr != null){
@@ -155,7 +168,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void uploadSharedPreferencePayload(final SharedPreferencePayload spp, final String action, final Context context){
+    public void uploadUserDataPayload(final UserDataPayload spp, final String action, final Context context){
 
         final Callresult cr = new Callresult();
 

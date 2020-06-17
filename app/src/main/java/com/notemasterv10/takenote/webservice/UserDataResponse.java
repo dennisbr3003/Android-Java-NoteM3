@@ -5,20 +5,20 @@ import java.util.List;
 
 // pojo coming in -->
 
-public class SharedPreferenceResponse {
+public class UserDataResponse {
     private String device_id;
     private List<ArrayItemObject> shared_preference = new ArrayList<ArrayItemObject>();
 
-    public SharedPreferenceResponse() {
+    public UserDataResponse() {
         super();
     }
 
-    public SharedPreferenceResponse(String device_id) {
+    public UserDataResponse(String device_id) {
         super();
         this.device_id = device_id;
     }
 
-    public SharedPreferenceResponse(String device_id, List<ArrayItemObject> shared_preference) {
+    public UserDataResponse(String device_id, List<ArrayItemObject> shared_preference) {
         super();
         this.device_id = device_id;
         this.shared_preference = shared_preference;
