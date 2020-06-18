@@ -10,6 +10,9 @@ public class Note {
     private boolean isCurrentNote;
     private int listPosition;
 
+    public Note() {
+    }
+
     public Note(String id, String name, String created, String updated, byte[] file) {
         this.id = id;
         this.name = name;

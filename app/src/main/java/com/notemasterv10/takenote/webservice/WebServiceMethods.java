@@ -96,9 +96,11 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void downloadSharedPreferencePayload(final Context context){
+    public void downloadUserDataPayload(final Context context){
 
         @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        Log.d("DB", android_id);
 
         final Callresult cr = new Callresult();
 
@@ -110,7 +112,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         .build();
                 // okHttp3 does not support a body for GET, using the device_id as a path variable -->
                 Request request = new Request.Builder()
-                        .url(String.format("%s%s/%s", base_url, "sharedpreference", android_id))
+                        .url(String.format("%s%s/%s", base_url, "userdata", android_id))
                         .method("GET", null)
                         .build();
 
@@ -137,6 +139,12 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                     // Now cast the answer to the expected format by using a pojo -->
                                     ObjectMapper mapper = new ObjectMapper();
                                     UserDataResponse spr = mapper.readValue(j_object.toString(), UserDataResponse.class);
+
+                                    Log.d("DB", String.valueOf(spr!=null));
+                                    if(spr!=null){
+                                        Log.d("DB", String.valueOf(spr.getNoteArraySize()));
+                                        Log.d("DB", String.valueOf(spr.getPasspointImageArraySize()));
+                                    }
 
                                     // Handle the pojo and execute some actions -->
                                     if(spr != null){

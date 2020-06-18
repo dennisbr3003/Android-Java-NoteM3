@@ -104,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 return true;
 
             case R.id.action_download_preferences:
-                ws.downloadSharedPreferencePayload(this);
+                Log.d("DB", "start dl user data");
+                ws.downloadUserDataPayload(this);
                 return true;
             case R.id.action_find_notes:
                 showNoteList();

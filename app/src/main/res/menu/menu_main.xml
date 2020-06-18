@@ -24,13 +24,13 @@
     <item
         android:id="@+id/action_upload_preferences"
         android:orderInCategory="130"
-        android:title="@string/UploadPreferences"
+        android:title="@string/UploadUserData"
         android:visible="false"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_download_preferences"
         android:orderInCategory="140"
-        android:title="@string/DownloadPreferences"
+        android:title="@string/DownloadUserData"
         android:visible="false"
         app:showAsAction="never" />
     <!-- Action bar icons -->

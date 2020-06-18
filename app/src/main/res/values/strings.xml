@@ -44,11 +44,11 @@
     <string name="Status">Status</string>
     <string name="WebServiceAlive">Webservice available</string>
     <string name="WebServiceDead">Webservice unavailable</string>
-    <string name="UploadPreferences">Upload preferences</string>
+    <string name="UploadUserData">Upload user data</string>
     <string name="UploadSuccess">Upload to webservice completed successfully</string>
     <string name="DownloadSuccess">Download from webservice completed successfully</string>
     <string name="MappingFailed">object mapping failed</string>
-    <string name="DownloadPreferences">Download preferences</string>
+    <string name="DownloadUserData">Download user data</string>
     <string name="ButtonCaptionOk">OK</string>
     <string name="ButtonCaptionCancel">Cancel</string>
     <string name="NewNoteOpened">New note opened</string>
