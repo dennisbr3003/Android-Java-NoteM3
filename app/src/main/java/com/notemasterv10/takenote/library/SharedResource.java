@@ -112,7 +112,9 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
     public void resetSharedPrefsPasspointImage(Context context){
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
-        prefsEdit.putString(PASSPOINT_IMAGE, SETTING_UNKNOWN);
+        // remove the current saved passpoint image -->
+        this.deletePasspointImage(context, prefs.getString(PASSPOINT_IMAGE_NAME, PASSPOINT_IMAGE));
+        prefsEdit.putString(PASSPOINT_IMAGE_NAME, SETTING_UNKNOWN);
         prefsEdit.apply(); // apply is background, commit is not
     }
 
@@ -128,6 +130,11 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         return stream.toByteArray();
+    }
+
+    public void deletePasspointImage(Context context, String imageName){
+        ImageTable imageTable = new ImageTable(context);
+        imageTable.deletePasspointImage(imageName);
     }
 
     //---------------------------------------------------------------------------------------------->

@@ -28,7 +28,8 @@ public class PointTable extends Database implements DatabaseConstants {
         sdb.beginTransaction();
 
         //First clear the table
-        sdb.delete(TABLE_PNTS,null, null); // delete all so no arguments
+        //sdb.delete(TABLE_PNTS,null, null); // delete all so no arguments
+        clearTable();
         int i=0;
 
         for(Point p: points){
@@ -67,6 +68,10 @@ public class PointTable extends Database implements DatabaseConstants {
 
         return points;
 
+    }
+
+    public void clearTable(){
+        super.clearTable(TABLE_PNTS);
     }
 
 }

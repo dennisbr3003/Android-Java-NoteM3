@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 
 import com.notemasterv10.takenote.constants.DatabaseConstants;
 import com.notemasterv10.takenote.library.PassPointImage;
-import com.notemasterv10.takenote.listing.Note;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -191,6 +190,10 @@ public class ImageTable extends Database implements DatabaseConstants {
         sdb.close();
 
         return passPointImageList;
+    }
+
+    public void clearTable(){
+        super.clearTable(TABLE_PPI);
     }
 
     public void testUpdateInsertPassPointImage(){

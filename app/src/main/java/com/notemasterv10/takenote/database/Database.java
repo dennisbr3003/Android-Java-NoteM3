@@ -3,6 +3,7 @@ package com.notemasterv10.takenote.database;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 
 import androidx.annotation.Nullable;
 
@@ -51,6 +52,31 @@ public abstract class Database extends SQLiteOpenHelper implements DatabaseConst
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         return sdf.format(timestamp);
+    }
+
+    public void clearTable(String tableName){
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+            String sqlQuery = String.format("DELETE FROM %s ", tableName);
+
+            SQLiteStatement stmt = db.compileStatement(sqlQuery);
+
+            stmt.clearBindings();
+            stmt.executeUpdateDelete();
+
+            db.setTransactionSuccessful();
+
+        } catch(Exception e){
+            // do nothing
+        }
+        finally{
+            db.endTransaction();
+            db.close();
+        }
+
     }
 
 }

@@ -55,10 +55,16 @@
     <string name="ValidFileNameRequired">You must enter a valid note name</string>
     <string name="NoteExists">There already is a note with this name</string>
     <string name="SaveNote">Save note</string>
+    <string name="SynchronizeData">Synchronize userdata</string>
     <string name="SaveNoteExtraText">Enter a new name for your note...</string>
     <string name="RenameNote">Rename note</string>
     <string name="RenameNoteExtraText">Enter a new and unique name for your note...</string>
     <string name="ConfirmAction">Confirm action</string>
     <string name="CouldNotSaveToDatabase">Could not save the note</string>
+    <string name="NoErrorMessage">No error message found</string>
+    <string name="CloudSyncFailed">Cloud synchronization failed.</string>
+    <string name="ErrorContent">Error</string>
+    <string name="UploadingUserData">Uploading user data...</string>
+    <string name="ProgressContent">Progress</string>
 </resources>
  

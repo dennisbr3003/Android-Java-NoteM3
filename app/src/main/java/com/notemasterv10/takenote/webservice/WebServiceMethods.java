@@ -4,9 +4,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,6 +47,8 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     public static final MediaType JSON = MediaType.parse(JSON_UTF8);
 
     private WebEventListener webEventListener;
+    private Context context;
+    private Handler mHandler = new Handler();
 
     public WebEventListener getWebEventListener() {
         return webEventListener;
@@ -55,6 +62,8 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     public void createUserDataObject(final Context context) {
 
         @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        this.context = context;
 
         final UserDataPayload spp = new UserDataPayload(android_id);
         final NoteTable noteTable = new NoteTable(context);
@@ -100,6 +109,8 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
         @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
+        this.context = context;
+
         Log.d("DB", android_id);
 
         final Callresult cr = new Callresult();
@@ -123,7 +134,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                            readAnswer(new Callresult(false, e.getMessage()));
+                            //readAnswer(new Callresult(false, e.getMessage()));
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -134,7 +145,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                 // first cast the answer to a json object for easy handling -->
                                 j_object = new JSONObject(response.body().string());
                                 if (j_object.has("device_id")) {
-                                    readAnswer(new Callresult(true, context.getString(R.string.DownloadSuccess)));
+                                    //readAnswer(new Callresult(true, context.getString(R.string.DownloadSuccess)));
 
                                     // Now cast the answer to the expected format by using a pojo -->
                                     ObjectMapper mapper = new ObjectMapper();
@@ -152,7 +163,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                             webEventListener.loadDownLoadedPreferences(spr);
                                         }
                                     } else {
-                                        readAnswer(new Callresult(false, context.getString(R.string.MappingFailed)));
+                                        //readAnswer(new Callresult(false, context.getString(R.string.MappingFailed)));
                                     }
 
                                 } else { // error object is returned
@@ -162,12 +173,12 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                     }
                                 }
                             } catch (JSONException e) {
-                                readAnswer(new Callresult(false, e.getMessage()));
+                                //readAnswer(new Callresult(false, e.getMessage()));
                             }
                         }
                     });
                 } catch (Exception e) {
-                    readAnswer(new Callresult(false, e.getMessage()));
+                    //readAnswer(new Callresult(false, e.getMessage()));
                 }
                 return null;
             }
@@ -178,7 +189,16 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     @SuppressLint("StaticFieldLeak")
     public void uploadUserDataPayload(final UserDataPayload spp, final String action, final Context context){
 
-        final Callresult cr = new Callresult();
+        this.context = context;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context); // no title, icon or message
+        builder.setCancelable(false); // block back-button
+        LayoutInflater inf = LayoutInflater.from(context); // set op the dialog extra layout (cloud_up_dialog.xml)
+        View cloudDialogExtraLayout = inf.inflate(R.layout.cloud_up_dialog, null);
+        builder.setView(cloudDialogExtraLayout); // load the view into the dialog
+        final AlertDialog dlg = builder.create();
+
+        dlg.show();
 
         new AsyncTask<Void, Void, Void>(){
 
@@ -188,8 +208,14 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 ObjectMapper objectMapper = new ObjectMapper();
                 try {
                     json_payload = objectMapper.writeValueAsString(spp);
-                } catch (JsonProcessingException e) {
-                    readAnswer(new Callresult(false, e.getMessage()));
+                } catch (final JsonProcessingException e) {
+                    dlg.dismiss();
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                        }
+                    });
                     return null;
                 }
 
@@ -205,11 +231,23 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 Response response = null;
 
                 try {
+                    Thread.sleep(2000); // fake slow upload so the dialog will show
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                try {
                     client.newCall(request).enqueue(new Callback() {
 
                         @Override
-                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                            readAnswer(new Callresult(false, e.getMessage()));
+                        public void onFailure(@NotNull Call call, @NotNull final IOException e) {
+                            dlg.dismiss();
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                                }
+                            });
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -220,37 +258,90 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                 j_object = new JSONObject(response.body().string());
                                 if (j_object.has(RESPONSE_STATUS)) {
                                     if ((j_object.getString(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
-                                        readAnswer(new Callresult(true, context.getString(R.string.UploadSuccess)));
+                                        // interact with UI
+                                        dlg.dismiss();
+                                        mHandler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showClickableErrorDialog(new Callresult(true, context.getString(R.string.UploadSuccess)));
+                                            }
+                                        });
                                     } else {
-                                        cr.setAnswer(false);
+                                        dlg.dismiss();
+                                        final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
                                         if (j_object.has("message")) {
                                             cr.setMessage(j_object.getString("message"));
                                         }
-                                        readAnswer(cr);
+                                        mHandler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showClickableErrorDialog(cr);
+                                            }
+                                        });
                                     }
                                 } else {
-                                    cr.setAnswer(false);
+                                    dlg.dismiss();
+                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
                                     if (j_object.has("message")) {
                                         cr.setMessage(j_object.getString("message"));
                                     }
-                                    readAnswer(cr);
-                                }
-                            } catch (JSONException e) {
-                                readAnswer(new Callresult(false, e.getMessage()));
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showClickableErrorDialog(cr);
+                                        }
+                                    });                                    }
+                            } catch (final JSONException e) {
+                                dlg.dismiss();
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                                    }
+                                });
                             }
                         }
                     });
-                } catch (Exception e) {
-                    readAnswer(new Callresult(false, e.getMessage()));
+                } catch (final Exception e) {
+                    dlg.dismiss();
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                        }
+                    });
                 }
+                dlg.dismiss(); // everything went ok
                 return null;
             }
         }.execute();
     }
 
-    private void readAnswer(Callresult cr){
+    private void showClickableErrorDialog(Callresult cr){
+
+        Log.d("DB", "showCilckableErrorDialog");
         Log.d("DB", String.valueOf(cr.getAnswer()));
         Log.d("DB", cr.getMessage());
+
+        if (!cr.getAnswer()) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            LayoutInflater inf = LayoutInflater.from(context);
+            View cloudDialogExtraLayout = inf.inflate(R.layout.cloud_sync_error, null);
+            builder.setView(cloudDialogExtraLayout);
+            TextView tv = (TextView) cloudDialogExtraLayout.findViewById(R.id.txtViewErrorMessage);
+            tv.setText(cr.getMessage());
+            final AlertDialog dlg = builder.create();
+
+            cloudDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dlg.dismiss();
+                }
+            });
+
+            dlg.show();
+        }
     }
 
     private class Callresult{

@@ -240,6 +240,10 @@ public class NoteTable extends Database implements DatabaseConstants {
 
     }
 
+    public void clearTable(){
+        super.clearTable(TABLE_NTS);
+    }
+
     public void testUpdateInsertNote(){
 
         SQLiteDatabase sdb = getReadableDatabase();
