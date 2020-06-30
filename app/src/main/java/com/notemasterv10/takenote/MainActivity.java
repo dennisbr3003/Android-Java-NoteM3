@@ -201,20 +201,14 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 break;
 
             case GALLERY_CLICKED:
-                // check gallery for photo -->
-                // todo check permissions
-                // cannot update it in code. But you CAN assign a value to an array element
                 // Check for permission to access external storage (manifest.xml) and if needed ask for it: API 25+ -->
                 if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ) {
-
                     // this runs asynchronously so check the callback procedure (onRequestPermissionsResult) on what to do -->
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-
                 } else {
                     Intent intent_gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent_gallery, REQUEST_ID_GALLERY);
                 }
-
                 break;
 
             default:
