@@ -33,10 +33,6 @@ public class CameraWrapperActivity extends AppCompatActivity implements NoteMast
 
     private File picture_file;
 
-    // Variables for requesting permissions, API 25+
-    private int requestCode;
-    private int grantResults[]; // used because the variable needs to be final, therefor you
-                                // cannot update it in code. But you CAN assign a value to an array element
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +47,8 @@ public class CameraWrapperActivity extends AppCompatActivity implements NoteMast
 
         // Check for permission to access external storage (manifest.xml) and if needed ask for it: API 25+ -->
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ) {
-
             // this runs asynchronously so check the callback procedure (onRequestPermissionsResult) on what to do -->
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, requestCode);
-            onRequestPermissionsResult(requestCode, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, grantResults);
-
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
 
     }
@@ -66,8 +59,6 @@ public class CameraWrapperActivity extends AppCompatActivity implements NoteMast
             case 1: {
                 // If request is cancelled, the result arrays are empty.
                 if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    // permission denied, Disable the functionality that depends on this permission -->
-                    Toast.makeText(this, R.string.AccessExternalStorageDenied, Toast.LENGTH_SHORT).show();
                     //This part of the app (taking a photo) cannot function without this permission for now so close it -->
                     onDestroy();
                 }

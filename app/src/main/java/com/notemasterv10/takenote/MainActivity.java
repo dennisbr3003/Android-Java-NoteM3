@@ -1,11 +1,13 @@
 package com.notemasterv10.takenote;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -13,6 +15,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -198,14 +202,41 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
             case GALLERY_CLICKED:
                 // check gallery for photo -->
-                Intent intent_gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent_gallery, REQUEST_ID_GALLERY);
+                // todo check permissions
+                // cannot update it in code. But you CAN assign a value to an array element
+                // Check for permission to access external storage (manifest.xml) and if needed ask for it: API 25+ -->
+                if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ) {
+
+                    // this runs asynchronously so check the callback procedure (onRequestPermissionsResult) on what to do -->
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+
+                } else {
+                    Intent intent_gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(intent_gallery, REQUEST_ID_GALLERY);
+                }
+
                 break;
 
             default:
                 // unknown parameter, log error -->
                 Log.e(getString(R.string.ErrorTag), getString(R.string.ActivityUnknown));
                 break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    return; // do not start gallery
+                } else {
+                    Intent intent_gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(intent_gallery, REQUEST_ID_GALLERY);
+                }
+                return;
+            }
         }
     }
 
