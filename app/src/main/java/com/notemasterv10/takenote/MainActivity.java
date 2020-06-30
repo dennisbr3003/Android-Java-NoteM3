@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -25,9 +26,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
+import com.notemasterv10.takenote.database.ImageTable;
+import com.notemasterv10.takenote.database.NoteTable;
 import com.notemasterv10.takenote.interaction.ExtendedBooleanAnswer;
 import com.notemasterv10.takenote.interaction.ExtendedStringAnswer;
 import com.notemasterv10.takenote.interaction.SingleIntegerAnswer;
+import com.notemasterv10.takenote.library.PassPointImage;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
@@ -104,8 +108,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 return true;
 
             case R.id.action_download_preferences:
-                Log.d("DB", "start dl user data");
-                ws.downloadUserDataPayload(this);
+                ws.preDownloadCheck(this);
                 return true;
             case R.id.action_find_notes:
                 showNoteList();
@@ -228,9 +231,11 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                                 try {
                                     sr.saveSharedPasspointImage(data.getStringExtra(CAMERA_ABSOLUTE_FILEPATH), MainActivity.this);
                                 } catch (Exception e) {
+                                    Log.d(getString(R.string.ErrorTag), e.getMessage());
                                     return 0; // didn't work, do nothing and leave everything the same
                                 }
                             } else {
+                                Log.d(getString(R.string.ErrorTag), getString(R.string.NoBinaryData));
                                 return 0; // didn't work, do nothing and leave everything the same
                             }
                             return 1; // Selected and USED a picture so reset the passpoints
@@ -240,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                         protected void onPostExecute(Integer aInteger) {
                             super.onPostExecute(aInteger);
                             if (aInteger == 1) {
-
+                                Log.d(getString(R.string.DefaultTag), "Successfully selected a picture from the camera");
                                 // New picture successfully selected so change the passpoints (also in a asynchronous task) -->
                                 @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
                                     @Override
@@ -272,9 +277,11 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                                     // Uri is passed back through the data object but it's not an absolute path...it's through an UriWrapper -->
                                     sr.saveSharedPasspointImage(MediaUriWrapper.getRealPath(MainActivity.this, data.getData()), MainActivity.this);
                                 } catch (Exception e) {
+                                    Log.d(getString(R.string.ErrorTag), e.getMessage());
                                     return 0; // didn't work, do nothing and leave everything the same
                                 }
                             } else {
+                                Log.d(getString(R.string.ErrorTag), getString(R.string.NoBinaryData));
                                 return 0; // didn't work, do nothing and leave everything the same
                             }
                             return 1; // Selected and USED a picture from the gallery so reset the passpoints
@@ -284,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                         protected void onPostExecute(Integer aInteger) {
                             super.onPostExecute(aInteger);
                             if (aInteger == 1) {
-
+                                Log.d(getString(R.string.DefaultTag), "Successfully selected a picture from the gallery");
                                 // New picture successfully selected so change the passpoints (also in a asynchronous task) -->
                                 @SuppressLint("StaticFieldLeak") AsyncTask<Void, Void, Void> asynctask = new AsyncTask<Void, Void, Void>() {
                                     @Override
@@ -363,26 +370,33 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
     }
 
     @Override
-    public void loadDownLoadedPreferences (UserDataResponse spr){
+    public void loadDownLoadedUserData(UserDataResponse spr, AlertDialog cDlg){
 
-        for (final ArrayItemObject aio : spr.getShared_preference()) {
+        // load everything (if data is present) and ask for new pass points
+        // if no notes are retrieved everything is deleted (user choice)
+        NoteTable noteTable = new NoteTable(this);
+        noteTable.clearTable();
+        for (Note note : spr.getNoteList()){
+            noteTable.saveNote(note.getName(), note.getFile());
+        }
 
+        // if no images are retrieved everything is deleted (user choice)
+        ImageTable imageTable  =new ImageTable(this);
+        imageTable.clearTable();
+        for(PassPointImage passPointImage : spr.getPassPointImageList()){
+            imageTable.savePassPointImage(passPointImage.getName(), passPointImage.getFile());
+        }
+
+        for (ArrayItemObject aio : spr.getShared_preference()) {
             SharedPreferences prefs = getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor prefsEdit = prefs.edit();
             prefsEdit.putString(aio.getItemName(), aio.getItemValue());
             prefsEdit.apply(); // apply is background, commit is not
-
-            // Direct load for BGC only (may be changed later when more preferences will be loaded) -->
-            if (aio.getItemName().equals(BACKGROUND_COLOR)) {
-                runOnUiThread(new Runnable() { // <-- must be run on the UI thread
-                    @Override
-                    public void run() {
-                        EditText et = (EditText) findViewById(R.id.editText);
-                        et.setBackgroundColor(Integer.valueOf(aio.getItemValue())); // <-- quick load from the object not the saved value itself (both are the same)                    }
-                    }
-                });
-            }
         }
+
+        // now reset password and show whatever picture is needed...
+        cDlg.dismiss();
+        resetAndAquirePasspoints();
     }
 
 

@@ -24,12 +24,14 @@ public class PointTable extends Database implements DatabaseConstants {
 
     public void setPoints(List<Point> points) {
 
+        clearTable(); // do not do this in the transaction...or you will lock the database.
+
         SQLiteDatabase sdb = getWritableDatabase();
+        sdb.enableWriteAheadLogging();
         sdb.beginTransaction();
 
         //First clear the table
         //sdb.delete(TABLE_PNTS,null, null); // delete all so no arguments
-        clearTable();
         int i=0;
 
         for(Point p: points){

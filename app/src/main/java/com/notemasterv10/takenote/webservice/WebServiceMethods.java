@@ -2,6 +2,7 @@ package com.notemasterv10.takenote.webservice;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -41,10 +42,7 @@ import okhttp3.Response;
 
 public class WebServiceMethods extends AppCompatActivity implements NoteMasterConstants, WebServiceConstants {
 
-    private final String base_url = BASE_URL;
-
-    private String json_response;
-    public static final MediaType JSON = MediaType.parse(JSON_UTF8);
+    private static final MediaType JSON = MediaType.parse(JSON_UTF8);
 
     private WebEventListener webEventListener;
     private Context context;
@@ -65,7 +63,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
         this.context = context;
 
-        final UserDataPayload spp = new UserDataPayload(android_id);
+        final UserDataPayload userDataPayload = new UserDataPayload(android_id);
         final NoteTable noteTable = new NoteTable(context);
         final ImageTable imageTable = new ImageTable(context);
 
@@ -79,14 +77,14 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 // shared preferences
                 Map<String, ?> keys = prefs.getAll();
                 for (Map.Entry<String, ?> entry : keys.entrySet()) {
-                    spp.addElement(android_id, entry.getKey(), entry.getValue().toString(), uuid.toString());
+                    userDataPayload.addElement(android_id, entry.getKey(), entry.getValue().toString(), uuid.toString());
                 }
 
                 // notes
-                spp.setNoteList(noteTable.getNoteListing());
+                userDataPayload.setNoteList(noteTable.getNoteListing());
 
                 // passpoint image
-                spp.setPassPointImageList(imageTable.getPassPointImageListing());
+                userDataPayload.setPassPointImageList(imageTable.getPassPointImageListing());
 
                 return null;
             }
@@ -95,7 +93,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 try{
-                    uploadUserDataPayload(spp, WEBSERVICE_PATH, context); // <-- a asynchronous task is defined in here
+                    uploadUserDataPayload(userDataPayload, context); // <-- a asynchronous task is defined in here
                 } catch(Exception e){
                     Log.e(context.getString(R.string.ErrorTag), e.getMessage());
                 }
@@ -105,15 +103,13 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void downloadUserDataPayload(final Context context){
+    private void downloadUserDataPayload(final Context context){
 
         @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         this.context = context;
-
-        Log.d("DB", android_id);
-
-        final Callresult cr = new Callresult();
+        final AlertDialog dlg = createProgressDialog(SyncDirection.DOWN);
+        dlg.show();
 
         new AsyncTask<Void, Void, Void>(){
 
@@ -123,18 +119,30 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         .build();
                 // okHttp3 does not support a body for GET, using the device_id as a path variable -->
                 Request request = new Request.Builder()
-                        .url(String.format("%s%s/%s", base_url, "userdata", android_id))
+                        .url(String.format("%s%s/%s", BASE_URL, PROC_USER_DATA, android_id))
                         .method("GET", null)
                         .build();
 
                 Response response = null;
 
                 try {
+                    Thread.sleep(2000); // fake slow download so the dialog will show
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                try {
                     client.newCall(request).enqueue(new Callback() {
 
                         @Override
-                        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                            //readAnswer(new Callresult(false, e.getMessage()));
+                        public void onFailure(@NotNull Call call, @NotNull final IOException e) {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dlg.dismiss();
+                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                                }
+                            });
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -144,41 +152,63 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                             try {
                                 // first cast the answer to a json object for easy handling -->
                                 j_object = new JSONObject(response.body().string());
-                                if (j_object.has("device_id")) {
-                                    //readAnswer(new Callresult(true, context.getString(R.string.DownloadSuccess)));
+                                if (j_object.has(SIGNATURE_KEY)) {
 
                                     // Now cast the answer to the expected format by using a pojo -->
                                     ObjectMapper mapper = new ObjectMapper();
-                                    UserDataResponse spr = mapper.readValue(j_object.toString(), UserDataResponse.class);
-
-                                    Log.d("DB", String.valueOf(spr!=null));
-                                    if(spr!=null){
-                                        Log.d("DB", String.valueOf(spr.getNoteArraySize()));
-                                        Log.d("DB", String.valueOf(spr.getPasspointImageArraySize()));
-                                    }
+                                    UserDataResponse userDataResponse = mapper.readValue(j_object.toString(), UserDataResponse.class);
 
                                     // Handle the pojo and execute some actions -->
-                                    if(spr != null){
+                                    if(userDataResponse != null){
+
+                                        // pass the dialog along to the listener and dismiss it there
                                         if (webEventListener != null) {
-                                            webEventListener.loadDownLoadedPreferences(spr);
+                                            webEventListener.loadDownLoadedUserData(userDataResponse, dlg);
                                         }
+
                                     } else {
-                                        //readAnswer(new Callresult(false, context.getString(R.string.MappingFailed)));
+                                        dlg.dismiss();
+                                        mHandler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showClickableSyncErrorDialog(new Callresult(false, context.getString(R.string.MappingFailed)));
+                                            }
+                                        });
                                     }
 
                                 } else { // error object is returned
-                                    cr.setAnswer(false);
-                                    if (j_object.has("message")) {
-                                        cr.setMessage(j_object.getString("message"));
+                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
+                                    if (j_object.has(SIGNATURE_FIELD)) {
+                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
                                     }
+                                    dlg.dismiss();
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showClickableSyncErrorDialog(cr);
+                                        }
+                                    });
+
                                 }
-                            } catch (JSONException e) {
-                                //readAnswer(new Callresult(false, e.getMessage()));
+                            } catch (final JSONException e) {
+                                dlg.dismiss();
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                                    }
+                                });
                             }
                         }
                     });
-                } catch (Exception e) {
-                    //readAnswer(new Callresult(false, e.getMessage()));
+                } catch (final Exception e) {
+                    dlg.dismiss();
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                        }
+                    });;
                 }
                 return null;
             }
@@ -187,17 +217,11 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void uploadUserDataPayload(final UserDataPayload spp, final String action, final Context context){
+    private void uploadUserDataPayload(final UserDataPayload userDataPayload, final Context context){
 
         this.context = context;
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context); // no title, icon or message
-        builder.setCancelable(false); // block back-button
-        LayoutInflater inf = LayoutInflater.from(context); // set op the dialog extra layout (cloud_up_dialog.xml)
-        View cloudDialogExtraLayout = inf.inflate(R.layout.cloud_up_dialog, null);
-        builder.setView(cloudDialogExtraLayout); // load the view into the dialog
-        final AlertDialog dlg = builder.create();
-
+        final AlertDialog dlg = createProgressDialog(SyncDirection.UP);
         dlg.show();
 
         new AsyncTask<Void, Void, Void>(){
@@ -207,13 +231,13 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 String json_payload = "";
                 ObjectMapper objectMapper = new ObjectMapper();
                 try {
-                    json_payload = objectMapper.writeValueAsString(spp);
+                    json_payload = objectMapper.writeValueAsString(userDataPayload);
                 } catch (final JsonProcessingException e) {
                     dlg.dismiss();
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
                         }
                     });
                     return null;
@@ -224,7 +248,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                 RequestBody body = RequestBody.create(json_payload, JSON);
                 Request request = new Request.Builder()
-                        .url(String.format("%s%s", base_url, action))
+                        .url(String.format("%s%s", BASE_URL, PROC_USER_DATA))
                         .method("POST", body)
                         .build();
 
@@ -245,7 +269,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
                                 }
                             });
                         }
@@ -263,40 +287,41 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                         mHandler.post(new Runnable() {
                                             @Override
                                             public void run() {
-                                                showClickableErrorDialog(new Callresult(true, context.getString(R.string.UploadSuccess)));
+                                                showClickableSyncErrorDialog(new Callresult(true, context.getString(R.string.UploadSuccess)));
                                             }
                                         });
                                     } else {
                                         dlg.dismiss();
                                         final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
-                                        if (j_object.has("message")) {
-                                            cr.setMessage(j_object.getString("message"));
+                                        if (j_object.has(SIGNATURE_FIELD)) {
+                                            cr.setMessage(j_object.getString(SIGNATURE_FIELD));
                                         }
                                         mHandler.post(new Runnable() {
                                             @Override
                                             public void run() {
-                                                showClickableErrorDialog(cr);
+                                                showClickableSyncErrorDialog(cr);
                                             }
                                         });
                                     }
                                 } else {
                                     dlg.dismiss();
                                     final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
-                                    if (j_object.has("message")) {
-                                        cr.setMessage(j_object.getString("message"));
+                                    if (j_object.has(SIGNATURE_FIELD)) {
+                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
                                     }
                                     mHandler.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            showClickableErrorDialog(cr);
+                                            showClickableSyncErrorDialog(cr);
                                         }
-                                    });                                    }
+                                    });
+                                }
                             } catch (final JSONException e) {
                                 dlg.dismiss();
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
                                     }
                                 });
                             }
@@ -307,7 +332,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            showClickableErrorDialog(new Callresult(false, e.getMessage()));
+                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
                         }
                     });
                 }
@@ -317,11 +342,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
         }.execute();
     }
 
-    private void showClickableErrorDialog(Callresult cr){
-
-        Log.d("DB", "showCilckableErrorDialog");
-        Log.d("DB", String.valueOf(cr.getAnswer()));
-        Log.d("DB", cr.getMessage());
+    private void showClickableSyncErrorDialog(Callresult cr){
 
         if (!cr.getAnswer()) {
 
@@ -329,7 +350,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
             LayoutInflater inf = LayoutInflater.from(context);
             View cloudDialogExtraLayout = inf.inflate(R.layout.cloud_sync_error, null);
             builder.setView(cloudDialogExtraLayout);
-            TextView tv = (TextView) cloudDialogExtraLayout.findViewById(R.id.txtViewErrorMessage);
+            TextView tv = cloudDialogExtraLayout.findViewById(R.id.txtViewErrorMessage);
             tv.setText(cr.getMessage());
             final AlertDialog dlg = builder.create();
 
@@ -344,7 +365,167 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
+    public void preDownloadCheck(final Context context){
+
+        @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        this.context = context;
+
+        new AsyncTask<Void, Void, Void>(){
+
+            protected Void doInBackground(Void... voids) {
+
+                OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+                // okHttp3 does not support a body for GET, using the device_id as a path variable -->
+                Request request = new Request.Builder()
+                        .url(String.format("%s%s/%s", BASE_URL, DEVICE_HAS_DATA, android_id))
+                        .method("GET", null)
+                        .build();
+
+                Response response = null;
+
+                try {
+                    client.newCall(request).enqueue(new Callback() {
+
+                        @Override
+                        public void onFailure(@NotNull Call call, @NotNull final IOException e) {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                                }
+                            });
+                        }
+
+                        // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
+                        @Override
+                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                            JSONObject j_object = null;
+                            try {
+                                // first cast the answer to a json object for easy handling -->
+                                j_object = new JSONObject(response.body().string());
+
+                                if (j_object.has(RESPONSE_STATUS)) {
+
+                                    if(j_object.getString(RESPONSE_STATUS).equals(IS_SUCCESS)){
+                                        // device has uploaded data
+                                        mHandler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showConfirmDialog(true); // actual download is triggered here
+                                            }
+                                        });
+                                    } else {
+                                        // device does not have uploaded data
+                                        mHandler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                showConfirmDialog(false); // actual download is triggered here
+                                            }
+                                        });
+
+                                    }
+
+                                } else { // error object is returned
+                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
+                                    if (j_object.has(SIGNATURE_FIELD)) {
+                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
+                                    }
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showClickableSyncErrorDialog(cr);
+                                        }
+                                    });
+
+                                }
+                            } catch (final JSONException e) {
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } catch (final Exception e) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                        }
+                    });
+                }
+                return null;
+            }
+        }.execute();
+    }
+
+    private void showConfirmDialog(final boolean deviceHasData){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        StringBuilder sb = new StringBuilder();
+
+        builder.setTitle(R.string.ConfirmAction);
+        builder.setIcon(R.mipmap.dialog_orange_warning);
+        if(deviceHasData) {
+            sb.append(String.format("%s\n\n", context.getString(R.string.DeviceHasData)));
+            sb.append(String.format("%s", context.getString(R.string.AreYouSure)));
+            builder.setMessage(sb.toString());
+        } else {
+            sb.append(String.format("%s\n\n", context.getString(R.string.DeviceHasNoData)));
+            sb.append(String.format("%s", context.getString(R.string.AreYouSure)));
+            builder.setMessage(sb.toString());
+        }
+        builder.setCancelable(false); // <-- block back-button
+
+        builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                downloadUserDataPayload(context);
+            }
+        });
+
+        builder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dlg = builder.create();
+        dlg.show();
+
+    }
+
+    private AlertDialog createProgressDialog(SyncDirection syncDirection){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context); // no title, icon or message
+        builder.setCancelable(false); // block back-button
+
+        LayoutInflater inf = LayoutInflater.from(context); // set op the dialog extra layout (cloud_sync_dialog_animated.xml)
+        View cloudDialogExtraLayout = inf.inflate(R.layout.cloud_sync_dialog_animated, null);
+
+        TextView tv = cloudDialogExtraLayout.findViewById(R.id.txtViewProgressHeader);
+        if(syncDirection.equals(SyncDirection.UP)) {
+            tv.setText(R.string.UploadingUserData);
+        } else {
+            tv.setText(R.string.DownloadingUserData);
+        }
+
+        builder.setView(cloudDialogExtraLayout); // load the view into the dialog
+
+        AlertDialog dlg = builder.create();
+        return dlg;
+
+    }
+
     private class Callresult{
+
         private Boolean answer = false;
         private String message = "";
 

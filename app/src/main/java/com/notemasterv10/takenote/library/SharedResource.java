@@ -75,6 +75,10 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor prefsEdit = prefs.edit();
 
+        //this is actually the filepath (from camera or gallery)
+        Log.d("DB", "saveSharedPasspointImage" );
+        Log.d("DB", fileName);
+
         if (fileName.equals(SETTING_UNKNOWN)) {
             // reset, remove image from db
             if(imageTable.deletePasspointImage(PASSPOINT_IMAGE)){
@@ -82,11 +86,60 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
                 prefsEdit.apply(); // apply is background, commit is not
             } // if this fails do nothing...
         } else {
-            imageTable.savePassPointImage(PASSPOINT_IMAGE, convertBitmapToByteArray(createBitmapFromOSFile(fileName)));
-            prefsEdit.putString(PASSPOINT_IMAGE_NAME, PASSPOINT_IMAGE);
-            prefsEdit.apply();
+            try {
+                Bitmap bm = createBitmapFromOSFile(fileName);
+                Log.d("DB", String.format("Size decoded bitmap (#bytes) %s", bm.getByteCount()));
+                byte[] ba = convertBitmapToByteArray(bm);
+                Log.d("DB", String.format("Size bitmap converted to byte array (#bytes) %s", ba.length));
+                if((ba.length / 1024) >= MAX_IMAGE_SIZE_KB){
+                    // bigger then MAX_IMAGE_SIZE_KB so downsize without losing quality and aspect ratio
+                    Double dFactor =  ((((double)ba.length) / 1024) / MAX_IMAGE_SIZE_KB);
+                    Log.d("DB", String.format("File size (from byte array) is %s times bigger then %s (exactly) ", String.format("%.02f", dFactor), MAX_IMAGE_SIZE_KB));
+                    BitmapFactory.Options opt = new BitmapFactory.Options();
+                    opt.inJustDecodeBounds = true;
+                    int sampleSize = (int)Math.ceil(dFactor); // factor of downsizing the image rounded up
+                    Log.d("DB", String.format("Calculated sample size (based on size) = %s ", sampleSize));
+                    sampleSize = calculateNearestPowerOf2(sampleSize);
+                    Log.d("DB", String.format("Calculated sample size (nearest power of 2) = %s ", sampleSize));
+                    opt.inSampleSize =  sampleSize;
+                    opt.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    opt.inJustDecodeBounds = false;
+                    // overwrite bm with new file
+                    bm = createBitmapFromOSFile(fileName, opt);
+                }
+                imageTable.savePassPointImage(PASSPOINT_IMAGE, convertBitmapToByteArray(bm));
+                prefsEdit.putString(PASSPOINT_IMAGE_NAME, PASSPOINT_IMAGE);
+                prefsEdit.apply();
+            } catch(Exception e){
+                Log.d(getString(R.string.ErrorTag), e.getMessage());
+                // just log, do nothing else
+            }
         }
         imageTable.testUpdateInsertPassPointImage(); // test contents
+    }
+
+    private int calculateNearestPowerOf2(int sampleSize){
+
+        int power; // check if the sampleSize a power of 2 or otherwise take the closest one
+        int diff = 0;
+        int prev_power = 0;
+
+        for(int i = 0; i < sampleSize; i++){
+            power = i;
+            power *= 2;
+            if(power >= sampleSize){
+                if(diff < (power - sampleSize)){
+                    sampleSize = prev_power;
+                }else {
+                    sampleSize = power;
+                }
+                break;
+            } else {
+                diff = sampleSize - power;
+                prev_power = power;
+            }
+        }
+        return sampleSize;
     }
 
     public Bitmap getImageviewBitmapFromAbsolutePath (String absoluteFilePath){
@@ -122,8 +175,8 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         return BitmapFactory.decodeFile(absoluteFilePath); // should hold directory and filename (Attention this uses extra manifest permission)
     }
 
-    public Bitmap convertByteArrayToBitmap(byte[] passpointimmage){
-        return BitmapFactory.decodeByteArray(passpointimmage, 0, passpointimmage.length);
+    public Bitmap createBitmapFromOSFile(String absoluteFilePath, BitmapFactory.Options options) {
+        return BitmapFactory.decodeFile(absoluteFilePath, options); // should hold directory and filename (Attention this uses extra manifest permission)
     }
 
     public byte[] convertBitmapToByteArray(Bitmap bm) {

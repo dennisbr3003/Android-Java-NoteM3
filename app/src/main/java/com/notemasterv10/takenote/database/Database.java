@@ -57,6 +57,7 @@ public abstract class Database extends SQLiteOpenHelper implements DatabaseConst
     public void clearTable(String tableName){
 
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
 
         try {
             db.beginTransaction();

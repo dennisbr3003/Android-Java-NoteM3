@@ -10,4 +10,9 @@
     <color name="colorAccent">#696969</color>
     <color name="dialog_background">#eee8dc</color>
     <color name="toaster_red">#ff0000</color>
+    <color name="progress_green">#32cd32</color>
+    <color name="progress_spring_green">#00ff7f</color>
+    <color name="progress_lawn_green">#7cfc00</color>
+    <color name="progress_blue">#00bfff</color>
+    <color name="progress_darkblue">#0000ff</color>
 </resources>

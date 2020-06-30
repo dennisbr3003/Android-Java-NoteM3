@@ -43,13 +43,12 @@ public class WebServiceConnectService extends IntentService implements WebServic
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        String base_url = BASE_URL;
         String json_response ;
 
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         Request request = new Request.Builder()
-                .url(String.format("%s%s", base_url, TEST_CONNECTION))
+                .url(String.format("%s%s", BASE_URL, CONN_IS_ALIVE))
                 .method("GET", null)
                 .build();
 

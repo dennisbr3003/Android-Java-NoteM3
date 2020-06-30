@@ -58,6 +58,7 @@ public class NoteTable extends Database implements DatabaseConstants {
     public boolean deleteNote(String name){
 
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
 
         try {
             db.beginTransaction();
@@ -84,6 +85,7 @@ public class NoteTable extends Database implements DatabaseConstants {
     public boolean renameNote(String old_name, String new_name){
 
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
 
         try {
             db.beginTransaction();
@@ -110,6 +112,7 @@ public class NoteTable extends Database implements DatabaseConstants {
     private boolean updateNote(String name, byte[] note){
 
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
 
         try {
             db.beginTransaction();
@@ -160,6 +163,7 @@ public class NoteTable extends Database implements DatabaseConstants {
 
         UUID uuid = UUID.randomUUID();
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
 
         try {
             db.beginTransaction();

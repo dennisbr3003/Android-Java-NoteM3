@@ -1,5 +1,7 @@
 package com.notemasterv10.takenote.listeners;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.notemasterv10.takenote.webservice.UserDataResponse;
 
 public interface WebEventListener {
@@ -8,6 +10,6 @@ public interface WebEventListener {
         SHOW_UPL_DL, HIDE_UPL_DL
     }
 
-    void loadDownLoadedPreferences(UserDataResponse spr);
+    void loadDownLoadedUserData(UserDataResponse spr, AlertDialog dlg);
 
 }

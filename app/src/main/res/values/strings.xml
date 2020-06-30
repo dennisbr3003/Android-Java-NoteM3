@@ -19,6 +19,8 @@
     <string name="SelectColorEditor">selcolor\\</string>
     <string name="ResetPasspointsCaption">Reset passpoint sequence</string>
     <string name="ClearPassPoints">ClearPassPoints</string>
+    <string name="DeviceHasNoData">Your device does not have any uploaded data. Downloading would be equal to a complete reset.</string>
+    <string name="DeviceHasData">After downloading the saved data you will be asked to re-enter your passpoints.</string>
     <string name="AreYouSure">Are you sure you want to do this? This can not be undone.</string>
     <string name="ConfirmDelete">Confirm delete</string>
     <string name="Yes">Yes</string>
@@ -66,5 +68,8 @@
     <string name="ErrorContent">Error</string>
     <string name="UploadingUserData">Uploading user data...</string>
     <string name="ProgressContent">Progress</string>
+    <string name="Placeholder">placeholder</string>
+    <string name="DownloadingUserData">Downloading user data</string>
+    <string name="NoBinaryData">No binary data was returned</string>
 </resources>
  

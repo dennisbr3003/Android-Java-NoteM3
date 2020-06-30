@@ -25,7 +25,6 @@ public class ImageTable extends Database implements DatabaseConstants {
     }
 
     public boolean savePassPointImage(String name, byte[] passpointimage){
-        // First check if we have to do an update (if the record already exists)
         if(passPointImageExists(name)){ // update
             return updatePassPointImage(name, passpointimage);
         } else { // insert
@@ -36,6 +35,7 @@ public class ImageTable extends Database implements DatabaseConstants {
     public boolean deletePasspointImage(String name){
 
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
 
         try {
             db.beginTransaction();
@@ -62,6 +62,8 @@ public class ImageTable extends Database implements DatabaseConstants {
     private boolean updatePassPointImage(String name, byte[] passpointimage){
 
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
+
 
         try {
             db.beginTransaction();
@@ -90,6 +92,7 @@ public class ImageTable extends Database implements DatabaseConstants {
 
         UUID uuid = UUID.randomUUID();
         SQLiteDatabase db = getWritableDatabase();
+        db.enableWriteAheadLogging();
 
         try {
             db.beginTransaction();

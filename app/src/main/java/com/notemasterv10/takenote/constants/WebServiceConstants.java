@@ -6,6 +6,14 @@ public interface WebServiceConstants {
     String JSON_UTF8 = "application/json; charset=utf-8";
     String RESPONSE_STATUS = "status";
     String IS_SUCCESS = "1";
-    String TEST_CONNECTION = "test";
-    String WEBSERVICE_PATH = "userdata";
+    String CONN_IS_ALIVE = "test";
+    String PROC_USER_DATA = "userdata";
+    String DEVICE_HAS_DATA = "devicehasdata";
+    String SIGNATURE_FIELD = "message";
+    String SIGNATURE_KEY = "device_id";
+
+    enum SyncDirection{
+        UP, DOWN
+    }
+
 }
