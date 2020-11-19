@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         sr.setDialogAnswerListener(this);
         ws.setWebEventListener(this);
         supportInvalidateOptionsMenu();
-
+Log.d("debug", "start intent?");
         wscs = new Intent(this, WebServiceConnectService.class);
         startService(wscs);
     }
