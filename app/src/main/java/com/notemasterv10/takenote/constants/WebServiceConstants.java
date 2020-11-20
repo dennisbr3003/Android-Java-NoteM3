@@ -7,7 +7,7 @@ public interface WebServiceConstants {
     String JSON_UTF8 = "application/json; charset=utf-8";
     String RESPONSE_STATUS = "status";
     String IS_SUCCESS = "1";
-    String CONN_IS_ALIVE = "test";
+    String CONN_IS_ALIVE = "ping";
     String PROC_USER_DATA = "userdata";
     String DEVICE_HAS_DATA = "devicehasdata";
     String SIGNATURE_FIELD = "message";
