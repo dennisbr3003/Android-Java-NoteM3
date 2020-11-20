@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notemasterv10.takenote.Encryption;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.constants.WebServiceConstants;
@@ -105,12 +104,19 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("StaticFieldLeak")
     private void downloadUserDataPayload(final Context context){
 
-        @SuppressLint("HardwareIds") final String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        final Encryption encryption = new Encryption();
+
+        @SuppressLint("HardwareIds") String android_id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         this.context = context;
+
+        android_id = String.format("%s%s%s", System.currentTimeMillis() / 1000L, "-", android_id);
+        final String f_Android_id = encryption.encrypt(android_id);
+
         final AlertDialog dlg = createProgressDialog(SyncDirection.DOWN);
         dlg.show();
 
@@ -122,7 +128,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         .build();
                 // okHttp3 does not support a body for GET, using the device_id as a path variable -->
                 Request request = new Request.Builder()
-                        .url(String.format("%s%s/%s", BASE_URL, PROC_USER_DATA, android_id))
+                        .url(String.format("%s%s/%s", BASE_URL, PROC_USER_DATA, f_Android_id))
                         .method("GET", null)
                         .build();
 
@@ -378,6 +384,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
         this.context = context;
 
+        android_id = String.format("%s%s%s", System.currentTimeMillis() / 1000L, "-", android_id);
         final String f_Android_id = encryption.encrypt(android_id);
 
         new AsyncTask<Void, Void, Void>(){
@@ -491,6 +498,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
         builder.setCancelable(false); // <-- block back-button
 
         builder.setPositiveButton(R.string.Yes, new DialogInterface.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

@@ -65,6 +65,16 @@ public class PointCollector implements View.OnTouchListener {
                 e.printStackTrace();
             }
             image.setVisibility(View.INVISIBLE);
+            if(points_array.size() == 4) {
+                if (pointCollectorListener != null) {
+                    pointCollectorListener.pointsCollected(points_array); // this method is actually an interface method overridden in ImageActivity
+                    // Also check ImageActivity.java and PointCollectorListener.java (interface)
+                }
+                //points_array.clear(); better practise to do this after the points are saved to the db. The save is asynchronous
+                // so the array if passed by reference may be emptied before it is saved (?). Anyway the array is passed as a final
+                // because it is used in a separate thread and in order to use it like that it ahs t obe passed as a final; so it
+                // cannot be altered. We have ti facilitate a public method here where it is not final. See below:
+            }
             return true;
         }
 
@@ -91,19 +101,10 @@ public class PointCollector implements View.OnTouchListener {
 
         float x = event.getX();
         float y = event.getY();
-        Log.d("TakeNote_Info", "X " + String.valueOf(x) + " Y " + String.valueOf(y));
+        Log.d("DENNIS_BRINK", "X " + String.valueOf(x) + " Y " + String.valueOf(y));
         points_array.add(new Point((int) x, (int) y));
-        Log.d("TakeNote_Info", "Array size = " + String.valueOf(points_array.size()));
-        if(points_array.size() == 4) {
-            if (pointCollectorListener != null) {
-                pointCollectorListener.pointsCollected(points_array); // this method is actually an interface method overridden in ImageActivity
-                                                                      // Also check ImageActivity.java and PointCollectorListener.java (interface)
-            }
-            //points_array.clear(); better practise to do this after the points are saved to the db. The save is asynchronous
-            // so the array if passed by reference may be emptied before it is saved (?). Anyway the array is passed as a final
-            // because it is used in a separate thread and in order to use it like that it ahs t obe passed as a final; so it
-            // cannot be altered. We have ti facilitate a public method here where it is not final. See below:
-        }
+        Log.d("DENNIS_BRINK", "Array size = " + String.valueOf(points_array.size()));
+
         // set return value to true to be able to manipulate actions -->
         return true;
     }

@@ -9,9 +9,11 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -67,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         sr.setDialogAnswerListener(this);
         ws.setWebEventListener(this);
         supportInvalidateOptionsMenu();
-Log.d("debug", "start intent?");
         wscs = new Intent(this, WebServiceConnectService.class);
         startService(wscs);
     }
@@ -79,6 +80,7 @@ Log.d("debug", "start intent?");
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -526,29 +528,34 @@ Log.d("debug", "start intent?");
         final Context context = this;
 
         // execute the rename action in the filesystem (SQLite database) asynchronous
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                sr.renameNote(context, answer.getCurrentNoteName(), answer.getNewNoteName());
-                return null;
+        if (answer.getNewNoteName() != "" && answer.getNewNoteName() != null) { // not cancelled
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    sr.renameNote(context, answer.getCurrentNoteName(), answer.getNewNoteName());
+                    return null;
+                }
+            }.execute();
+
+            // this section can be executed independent from the database interaction -->
+            if (answer.getCurrentNote()) {
+                // if the rename if for the current note, then set the current note value -->
+                sr.setOpenNoteName(this, answer.getNewNoteName());
+                TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
+                tv.setText(answer.getNewNoteName());
             }
-        }.execute();
-
-        // this section can be executed independent from the database interaction -->
-        if(answer.getCurrentNote()) {
-            // if the rename if for the current note, then set the current note value -->
-            sr.setOpenNoteName(this, answer.getNewNoteName());
-            TextView tv = (TextView) findViewById(R.id.text_view_currentnote);
-            tv.setText(answer.getNewNoteName());
         }
-
         // try to reach the list fragment to update the list -->
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         Fragment ff = navHostFragment.getChildFragmentManager().getPrimaryNavigationFragment();
-        if(ff != null){
+        if (ff != null) {
             Fragment cf = ff.getChildFragmentManager().findFragmentByTag(NOTELIST_FRAGMENT_TAG);
-            if(cf != null){
-                ((NoteListFragment) cf).renameItemInList(answer.getPosition(), answer.getNewNoteName());
+            if (cf != null) {
+                if (answer.getNewNoteName() != "" && answer.getNewNoteName() != null) { // not cancelled
+                    ((NoteListFragment) cf).renameItemInList(answer.getPosition(), answer.getNewNoteName());
+                } else{ // if cancelled -->
+                    ((NoteListFragment) cf).resetSelection();
+                }
             }
         }
     }

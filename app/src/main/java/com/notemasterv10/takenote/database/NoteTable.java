@@ -87,6 +87,7 @@ public class NoteTable extends Database implements DatabaseConstants {
         SQLiteDatabase db = getWritableDatabase();
         db.enableWriteAheadLogging();
 
+
         try {
             db.beginTransaction();
             String sqlQuery = String.format("UPDATE %s SET %s = ? WHERE %s = ?", TABLE_NTS, NTS_NAME, NTS_NAME);
@@ -100,10 +101,9 @@ public class NoteTable extends Database implements DatabaseConstants {
 
             db.setTransactionSuccessful();
             return true;
-        } catch(Exception e){
+        } catch (Exception e) {
             return false;
-        }
-        finally{
+        } finally {
             db.endTransaction();
             db.close();
         }
