@@ -157,7 +157,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
                         @Override
                         public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                            JSONObject j_object = null;
+                            JSONObject j_object;
                             try {
                                 // first cast the answer to a json object for easy handling -->
                                 j_object = new JSONObject(response.body().string());
@@ -217,7 +217,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         public void run() {
                             showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
                         }
-                    });;
+                    });
                 }
                 return null;
             }
@@ -237,7 +237,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
             protected Void doInBackground(Void... voids) {
 
-                String json_payload = "";
+                String json_payload;
                 ObjectMapper objectMapper = new ObjectMapper();
                 try {
                     json_payload = objectMapper.writeValueAsString(userDataPayload);
@@ -286,7 +286,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
                         @Override
                         public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                            JSONObject j_object = null;
+                            JSONObject j_object;
                             try {
                                 j_object = new JSONObject(response.body().string());
                                 if (j_object.has(RESPONSE_STATUS)) {
@@ -417,7 +417,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
                         @Override
                         public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                            JSONObject j_object = null;
+                            JSONObject j_object;
                             try {
                                 // first cast the answer to a json object for easy handling -->
                                 j_object = new JSONObject(response.body().string());

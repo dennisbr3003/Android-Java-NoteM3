@@ -231,7 +231,6 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                     Intent intent_gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent_gallery, REQUEST_ID_GALLERY);
                 }
-                return;
             }
         }
     }
