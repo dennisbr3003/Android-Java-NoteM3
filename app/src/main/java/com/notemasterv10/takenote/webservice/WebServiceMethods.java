@@ -393,9 +393,12 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                 OkHttpClient client = new OkHttpClient().newBuilder()
                         .build();
-                // okHttp3 does not support a body for GET, using the device_id as a path variable -->
+                /*
+                    String BASE_URL = "https://takenote10.herokuapp.com/notemaster/";
+                    String DEVICE_HAS_DATA = "device/%s/hasdata";
+                */
                 Request request = new Request.Builder()
-                        .url(String.format("%s%s/%s", BASE_URL, DEVICE_HAS_DATA, f_Android_id))
+                        .url(String.format("%s%s", BASE_URL, String.format(DEVICE_HAS_DATA, f_Android_id)))
                         .method("GET", null)
                         .build();
 
