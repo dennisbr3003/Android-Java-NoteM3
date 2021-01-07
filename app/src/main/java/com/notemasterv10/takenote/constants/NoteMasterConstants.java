@@ -24,6 +24,7 @@ public interface NoteMasterConstants {
 
     int REQUEST_ID_CAMERA = 263;
     int REQUEST_ID_GALLERY = 264;
+    int REQUEST_LOGIN = 265;
     int DEFAULT_EDITOR_BACKGROUND_COLOR = -1;
     int MAX_IMAGE_SIZE_KB = 1200;
     int NOT_INDEXED = -1;

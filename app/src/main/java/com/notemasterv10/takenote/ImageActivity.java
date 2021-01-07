@@ -1,11 +1,14 @@
 package com.notemasterv10.takenote;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -19,14 +22,18 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.database.PointTable;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.PointCollectorListener;
+import com.notemasterv10.takenote.ui.login.LoginActivity;
 
 import java.util.List;
 
@@ -96,9 +103,34 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         else{
             Log.d("Test if points are set", String.valueOf(!sr.pointsSetInSharedPrefs(this)));
             if (!sr.pointsSetInSharedPrefs(this)) {
+                //TODO
+                // first show user / password dialog to register with the API (mandatory -> trap user)
+                // the show passpoints dialog
+
+                // 1. show the fragment for the username and password for registration with the server
+                showLogin();
+                // 2. show the dialog that urges the user to set passpoints
                 showSetPassPointsDialog(); // this may change as the build progresses
             }
         }
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.bringToFront();
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Snackbar.make(v, "The floating button has been clicked", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                //TODO
+                // async method to check the user with the user in the local database. If it is not there
+                // and this is not the first time using the app, block entrance
+                // if it is the first time upload user/password (and save it locally) and show the default
+                // image to get the point. This user/password combination is a backdoor if the touch points
+                // do not work (or are forgotten)
+                showLogin();
+                // todo where do I retrieve the result of the login?
+            }
+        });
 
     }
 
@@ -316,4 +348,26 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         }
     }
 
+    private void showLogin(){
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, REQUEST_LOGIN);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_LOGIN){
+            Log.d("DENNIS_BRINK", "Ok we zijn terug uit de activity");
+            Log.d("DENNIS_BRINK", "Resultaat is" + String.valueOf(resultCode));
+            if (resultCode == RESULT_OK){
+                Log.d("DENNIS_BRINK", "Resultaat is OK, kijken of we langs het scherm kunnen komen");
+                Intent i = new Intent(ImageActivity.this, MainActivity.class); // next step = MainActivity ?
+                startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
+            } else{
+                return;
+            }
+
+        }
+    }
 }

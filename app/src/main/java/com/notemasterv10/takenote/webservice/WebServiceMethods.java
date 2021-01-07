@@ -396,6 +396,10 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 /*
                     String BASE_URL = "https://takenote10.herokuapp.com/notemaster/";
                     String DEVICE_HAS_DATA = "device/%s/hasdata";
+
+                    String credential = Credentials.basic("name", "password");
+                    return response.request().newBuilder().header("Authorization", credential).build();
+
                 */
                 Request request = new Request.Builder()
                         .url(String.format("%s%s", BASE_URL, String.format(DEVICE_HAS_DATA, f_Android_id)))

@@ -24,4 +24,13 @@
         android:contentDescription="@string/test"
         android:visibility="invisible"
         app:srcCompat="@mipmap/question_mark" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="2pt"
+        app:srcCompat="@android:drawable/ic_partial_secure" />
+
 </FrameLayout>

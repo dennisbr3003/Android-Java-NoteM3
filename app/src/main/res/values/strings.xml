@@ -71,5 +71,18 @@
     <string name="Placeholder">placeholder</string>
     <string name="DownloadingUserData">Downloading user data</string>
     <string name="NoBinaryData">No binary data was returned</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome!"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="user">User or E-mail</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="cloud_auth_failed">Cloud authentication failed</string>
+    <string name="unknown_format_error">Response has a unknown format. Webservice call failed.</string>
+    <string name="bad_credentials">Unable to verify credentials</string>
 </resources>
  
