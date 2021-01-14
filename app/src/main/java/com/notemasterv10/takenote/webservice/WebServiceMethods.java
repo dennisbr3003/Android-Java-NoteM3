@@ -24,6 +24,7 @@ import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.constants.WebServiceConstants;
 import com.notemasterv10.takenote.database.ImageTable;
 import com.notemasterv10.takenote.database.NoteTable;
+import com.notemasterv10.takenote.listeners.LoginEventListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
 
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +48,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     private static final MediaType JSON = MediaType.parse(JSON_UTF8);
 
     private WebEventListener webEventListener;
+    private LoginEventListener loginEventListener;
     private Context context;
     private Handler mHandler = new Handler();
 
@@ -57,6 +59,15 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
     public void setWebEventListener(WebEventListener webEventListener) {
         this.webEventListener = webEventListener;
     }
+
+    public LoginEventListener getLoginEventListener() {
+        return loginEventListener;
+    }
+
+    public void setLoginEventListener(LoginEventListener loginEventListener) {
+        this.loginEventListener = loginEventListener;
+    }
+
 
     @SuppressLint("StaticFieldLeak")
     public void createUserDataObject(final Context context) {
@@ -349,6 +360,111 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 return null;
             }
         }.execute();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void registerUser(final WebUser webuser, final Context context){
+
+        this.context = context;
+
+        new AsyncTask<Void, Void, Void>(){
+
+            protected Void doInBackground(Void... voids) {
+
+                String json_payload;
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    json_payload = objectMapper.writeValueAsString(webuser);
+                } catch (final JsonProcessingException e) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                        }
+                    });
+                    return null;
+                }
+                RequestBody body = RequestBody.create(json_payload, JSON);
+
+                OkHttpClient client = new OkHttpClient().newBuilder()
+                        .build();
+
+                Request request = new Request.Builder()
+                        .url(String.format("%s%s", BASE_URL, ADD_USER))
+                        .method("POST", body)
+                        .build();
+
+                try {
+                    client.newCall(request).enqueue(new Callback() {
+
+                        @Override
+                        public void onFailure(@NotNull Call call, @NotNull final IOException e) {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                                }
+                            });
+                        }
+
+                        // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
+                        @Override
+                        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                            JSONObject j_object;
+                            try {
+                                // first cast the answer to a json object for easy handling -->
+                                j_object = new JSONObject(response.body().string());
+
+                                if (j_object.has(RESPONSE_STATUS)) {
+
+                                    if(j_object.getString(RESPONSE_STATUS).equals(IS_SUCCESS)){
+                                        // user credentials uploaded, so do something with a listener in LoginActivity
+                                        Log.d("DENNIS_BRINK", "User credentials verified and uploaded. Registration complete...");
+                                        Log.d("DENNIS_BRINK", "Is the loginEventListener alive ? " + String.valueOf(loginEventListener != null));
+                                        if(loginEventListener != null){
+                                            loginEventListener.processLogin(webuser, LoginEventListener.Action.REGISTER);
+                                        }
+                                    }
+                                    else {
+                                        // something else
+                                    }
+
+                                } else { // error object is returned
+                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
+                                    if (j_object.has(SIGNATURE_FIELD)) {
+                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
+                                    }
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showClickableSyncErrorDialog(cr);
+                                        }
+                                    });
+
+                                }
+                            } catch (final JSONException e) {
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } catch (final Exception e) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
+                        }
+                    });
+                }
+                return null;
+            }
+        }.execute();
+
     }
 
     private void showClickableSyncErrorDialog(Callresult cr){

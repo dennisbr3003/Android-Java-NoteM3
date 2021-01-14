@@ -10,6 +10,7 @@ public interface WebServiceConstants {
     String CONN_IS_ALIVE = "ping";
     String PROC_USER_DATA = "userdata";
     String AUTH_USER = "user/authenticate";
+    String ADD_USER = "user/add";
     String DEVICE_HAS_DATA = "device/%s/hasdata";
     String SIGNATURE_FIELD = "message";
     String SIGNATURE_KEY = "device_id";

@@ -84,5 +84,13 @@
     <string name="cloud_auth_failed">Cloud authentication failed</string>
     <string name="unknown_format_error">Response has a unknown format. Webservice call failed.</string>
     <string name="bad_credentials">Unable to verify credentials</string>
+    <string name="login_caption">Login</string>
+    <string name="register_caption">Register</string>
+    <string name="cloud_registration">Cloud registration</string>
+    <string name="reset_cloud_registration">Reset cloud registration</string>
+    <string name="regitration_text">Registration is required to be able to use online back-up and restore facility. The credentials can also be used as an alternative way to log in to the app itself, bypassing the touchpoints.</string>
+    <string name="success">Success</string>
+    <string name="registration_complete">Registration complete</string>
+    <string name="new_options">New options are now available. Check the options menu.</string>
 </resources>
  

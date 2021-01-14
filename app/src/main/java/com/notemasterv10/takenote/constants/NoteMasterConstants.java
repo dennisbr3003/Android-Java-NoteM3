@@ -12,6 +12,7 @@ public interface NoteMasterConstants {
     String PASSPOINT_IMAGE_NAME = "passpointImageName";
     String SETTING_UNKNOWN = "Unknown";
     String PASSPOINTS_SET = "PointsSet";
+    String USER_IS_REGISTERED = "registered";
     String CAMERA_ABSOLUTE_FILEPATH = "New_Photo_Filepath";
     String SAVED_INSTANCE_EDITORTEXT_TAG = "EditorText";
     String CAMERA_PHOTO_FILENAME = "passpoint_picture.jpg";
@@ -25,6 +26,7 @@ public interface NoteMasterConstants {
     int REQUEST_ID_CAMERA = 263;
     int REQUEST_ID_GALLERY = 264;
     int REQUEST_LOGIN = 265;
+    int REQUEST_REGISTRATION = 266;
     int DEFAULT_EDITOR_BACKGROUND_COLOR = -1;
     int MAX_IMAGE_SIZE_KB = 1200;
     int NOT_INDEXED = -1;

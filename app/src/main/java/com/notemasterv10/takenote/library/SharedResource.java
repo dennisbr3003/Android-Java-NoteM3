@@ -21,11 +21,13 @@ import com.notemasterv10.takenote.constants.NoteMasterConstants;
 import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.database.ImageTable;
 import com.notemasterv10.takenote.database.NoteTable;
+import com.notemasterv10.takenote.database.UserTable;
 import com.notemasterv10.takenote.interaction.ExtendedBooleanAnswer;
 import com.notemasterv10.takenote.interaction.ExtendedStringAnswer;
 import com.notemasterv10.takenote.interaction.SingleIntegerAnswer;
 import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listing.Note;
+import com.notemasterv10.takenote.webservice.WebUser;
 
 import java.io.ByteArrayOutputStream;
 
@@ -50,6 +52,20 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     private String getCurrentTimestamp(){
         return String.valueOf(System.currentTimeMillis());
+    }
+
+    //---------------------------------------------------------------------------------------------->
+
+    public void saveUserRegistration(boolean registered, Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefsEdit = prefs.edit();
+        prefsEdit.putString(USER_IS_REGISTERED, String.valueOf(registered));
+        prefsEdit.apply(); // apply is background, commit is not
+    }
+
+    public boolean getUserRegistration(Context context){
+        SharedPreferences prefs = context.getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
+        return Boolean.parseBoolean(prefs.getString(USER_IS_REGISTERED, "false"));
     }
 
     //---------------------------------------------------------------------------------------------->
@@ -209,6 +225,18 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
         SharedPreferences.Editor prefsEdit = prefs.edit();
         prefsEdit.putString(PASSPOINTS_SET, String.valueOf(false));
         prefsEdit.apply(); // apply does it's work in the background, commit does not.
+    }
+
+    //---------------------------------------------------------------------------------------------->
+
+    public WebUser getUser (Context context, String name){
+        UserTable userTable = new UserTable(context);
+        return userTable.getUser(name);
+    }
+
+    public void insertUser (Context context, WebUser webuser){
+        UserTable userTable = new UserTable(context);
+        userTable.insertUser(webuser);
     }
 
     //---------------------------------------------------------------------------------------------->

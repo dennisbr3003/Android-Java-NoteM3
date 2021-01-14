@@ -114,24 +114,20 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
             }
         }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.bringToFront();
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Snackbar.make(v, "The floating button has been clicked", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                //TODO
-                // async method to check the user with the user in the local database. If it is not there
-                // and this is not the first time using the app, block entrance
-                // if it is the first time upload user/password (and save it locally) and show the default
-                // image to get the point. This user/password combination is a backdoor if the touch points
-                // do not work (or are forgotten)
-                showLogin();
-                // todo where do I retrieve the result of the login?
-            }
-        });
-
+        // only offer this possibility if the user is registered (in the cloud) -->
+        if (sr.getUserRegistration(this)) {
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.bringToFront();
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showLogin();
+                }
+            });
+        } else{
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setVisibility(View.INVISIBLE);
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -351,7 +347,6 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
     private void showLogin(){
         Intent intent = new Intent(this, LoginActivity.class);
         startActivityForResult(intent, REQUEST_LOGIN);
-
     }
 
     @Override

@@ -43,6 +43,7 @@ import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
 import com.notemasterv10.takenote.listing.Note;
 import com.notemasterv10.takenote.listing.NoteListFragment;
+import com.notemasterv10.takenote.ui.login.LoginActivity;
 import com.notemasterv10.takenote.webservice.ArrayItemObject;
 import com.notemasterv10.takenote.webservice.UserDataResponse;
 import com.notemasterv10.takenote.webservice.WebServiceConnectService;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         NoteMasterConstants,
         NoteListFragment.OnListFragmentInteractionListener {
 
-    private Boolean showItemUploadDownload = false;
+    private Boolean webServiceAvailable = false;
     SharedResource sr = new SharedResource();
     WebServiceMethods ws = new WebServiceMethods();
     WebServiceConnectReceiver webServiceConnectReceiver = new WebServiceConnectReceiver();
@@ -71,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         supportInvalidateOptionsMenu();
         wscs = new Intent(this, WebServiceConnectService.class);
         startService(wscs);
+        // todo run some method to get the user from the db, put in it's pojo and load it into the login singleton
+
     }
 
     @Override
@@ -109,6 +112,14 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 resetAndAquirePasspoints();
                 return true;
 
+            case R.id.action_reset_register_user:
+                // todo do something
+                return true;
+
+            case R.id.action_register_user:
+                showLogin();
+                return true;
+
             case R.id.action_upload_preferences:
                 ws.createUserDataObject(this);
                 return true;
@@ -123,6 +134,11 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                 return super.onOptionsItemSelected(item);
 
         }
+    }
+
+    private void showLogin(){
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, REQUEST_REGISTRATION);
     }
 
     private void showNoteList() {
@@ -159,9 +175,17 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
         MenuItem itemUpload = menu.findItem(R.id.action_upload_preferences);
         MenuItem itemDownload = menu.findItem(R.id.action_download_preferences);
+        MenuItem itemUserRegistration = menu.findItem(R.id.action_register_user);
+        MenuItem itemResetUserRegistration = menu.findItem(R.id.action_reset_register_user);
 
-        itemUpload.setVisible(showItemUploadDownload);
-        itemDownload.setVisible(showItemUploadDownload);
+        // webservice available but user not registered, offer the registration possibility -->
+        itemUserRegistration.setVisible(webServiceAvailable && (!sr.getUserRegistration(this)));
+        // User can unregister itself by resetting the shared preference, but the remote account also has te be removed -->
+        itemResetUserRegistration.setVisible(webServiceAvailable && sr.getUserRegistration(this));
+        // The webservice has to be available and the user has to be registered
+        // (used for basic authentication for calls to the webservice) for the items to be available -->
+        itemUpload.setVisible(webServiceAvailable && sr.getUserRegistration(this));
+        itemDownload.setVisible(webServiceAvailable && sr.getUserRegistration(this));
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -333,7 +357,8 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
                     asynctask.execute();
                 }
                 break; // Ends REQUEST_ID_GALLERY
-
+            case REQUEST_REGISTRATION:
+                break;
             default:
                 // unknown parameter, log error -->
                 Log.e(getString(R.string.ErrorTag), getString(R.string.ActivityUnknown));
@@ -368,11 +393,12 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
             @Override
             public void run() {
-                showItemUploadDownload = (action == Action.SHOW_UPL_DL);
+                // This parameter is used for the drop-down menu -->
+                webServiceAvailable = (action == Action.SHOW_UPL_DL);
 
                 ImageView im = (ImageView) findViewById(R.id.imgStatus);
                 TextView tv = (TextView) findViewById(R.id.textview_status);
-
+                // this is just the update of the status bar icon -->
                 switch (action){
                     case HIDE_UPL_DL:
                         try {

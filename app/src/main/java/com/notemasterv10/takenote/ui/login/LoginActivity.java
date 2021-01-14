@@ -3,6 +3,7 @@ package com.notemasterv10.takenote.ui.login;
 import android.app.Activity;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -12,9 +13,12 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -24,7 +28,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.notemasterv10.takenote.R;
-import com.notemasterv10.takenote.data.LoginDataSource;
+import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listeners.LoginEventListener;
 import com.notemasterv10.takenote.webservice.WebUser;
 
@@ -32,6 +36,8 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
 
     private LoginViewModel loginViewModel;
     LoginDataSource loginDataSource = new LoginDataSource();
+    SharedResource sr = new SharedResource();
+    private Handler mHandler = new Handler();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,7 +49,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         final EditText usernameEditText = findViewById(R.id.username);
         final EditText passwordEditText = findViewById(R.id.password);
         final Button loginButton = findViewById(R.id.login);
-        final ProgressBar loadingProgressBar = findViewById(R.id.loading);
+        final ProgressBar loadingProgressBar = findViewById(R.id.pBar);
 
         loginDataSource.setLoginEventListener(this); // listener
         loginDataSource.setContext(this);            // context
@@ -90,12 +96,17 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-
+//todo check if both field are empty?
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     loadingProgressBar.setVisibility(View.VISIBLE);
                     hideKeyBoard();
-                    loginDataSource.login(usernameEditText.getText().toString(),
-                                          passwordEditText.getText().toString());
+                    if (((String) loginButton.getText()).equalsIgnoreCase("Register")){
+                        loginDataSource.register(usernameEditText.getText().toString(),
+                                passwordEditText.getText().toString());
+                    } else {
+                        loginDataSource.login(usernameEditText.getText().toString(),
+                                passwordEditText.getText().toString());
+                    }
                 }
                 return false;
 
@@ -106,14 +117,25 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-
+//todo check if both field are empty?
                 loadingProgressBar.setVisibility(View.VISIBLE);
                 hideKeyBoard();
-                loginDataSource.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                if (((String) loginButton.getText()).equalsIgnoreCase("Register")){
+                  loginDataSource.register(usernameEditText.getText().toString(),
+                          passwordEditText.getText().toString());
+                } else {
+                    loginDataSource.login(usernameEditText.getText().toString(),
+                            passwordEditText.getText().toString());
+                }
 
             }
         });
+
+        if (sr.getUserRegistration(this)){
+            loginButton.setText(R.string.login_caption);
+        }else{
+            loginButton.setText(R.string.register_caption);
+        }
     }
 
     private void hideKeyBoard(){
@@ -123,15 +145,50 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
     }
 
     @Override
-    public void processLogin(WebUser loggedInUser) {
-
+    public void processLogin(WebUser webuser, Action action) {
+        Log.d("DENNIS_BRINK", "Ok dit is het event dat de listener is van het login event");
         // the values will be passed back to the calling activity -->
-        if (loggedInUser != null) {
+        if (webuser != null) {
+            Login.getInstance().setWebuser(webuser);
+            // todo run some method to save to user to the db
+            // todo run some code to set the correct preference
             setResult(Activity.RESULT_OK);
+            showRegistrationDialog();
         } else {
+            Login.getInstance().setWebuser(null);
             setResult(Activity.RESULT_CANCELED);
+            finish();
         }
-        finish();
+
 
     }
+
+    private void showRegistrationDialog(){
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                showClickableRegistrationDialog();
+            }
+        });
+    }
+
+    private void showClickableRegistrationDialog(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inf = LayoutInflater.from(this);
+        View registrationDialogExtraLayout = inf.inflate(R.layout.registration_dialog, null);
+        builder.setView(registrationDialogExtraLayout);
+        final AlertDialog dlg = builder.create();
+
+        registrationDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dlg.dismiss();
+                finish();
+            }
+        });
+
+        dlg.show();
+    }
+
 }

@@ -3,6 +3,7 @@ package com.notemasterv10.takenote.listeners;
 import androidx.appcompat.app.AlertDialog;
 
 import com.notemasterv10.takenote.webservice.UserDataResponse;
+import com.notemasterv10.takenote.webservice.WebUser;
 
 public interface WebEventListener {
 

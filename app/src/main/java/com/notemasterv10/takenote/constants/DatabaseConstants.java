@@ -24,4 +24,12 @@ public interface DatabaseConstants {
     String PPI_FILE = "FILE";
     String PPI_UPDATED = "UPDATED";
 
+    String TABLE_USER = "ACCOUNT";
+    String USER_ID = "ID";
+    String USER_NAME = "NAME";
+    String USER_PASSWORD = "PASSWORD";
+    String USER_ROLE = "ROLE";
+    String USER_CREATED = "CREATED";
+    String USER_UPDATED = "UPDATED";
+
 }

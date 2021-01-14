@@ -40,6 +40,13 @@ public abstract class Database extends SQLiteOpenHelper implements DatabaseConst
                 TABLE_PPI, PPI_ID, PPI_NAME, PPI_CREATED, PPI_FILE, PPI_UPDATED);
         db.execSQL(sql);
 
+        // user
+        sql = String.format("CREATE TABLE %s (%s VARCHAR(50), %s VARCHAR(30) PRIMARY KEY NOT NULL UNIQUE, %s VARCHAR(100) NOT NULL, " +
+                        "%s VARCHAR(20) DEFAULT ('USER'), %s DATETIME DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')), %s DATETIME "+
+                        "DEFAULT (datetime(CURRENT_TIMESTAMP, 'localtime')))",
+                TABLE_USER, USER_ID, USER_NAME, USER_PASSWORD, USER_ROLE, USER_CREATED, USER_UPDATED);
+        db.execSQL(sql);
+
     }
 
     @Override
