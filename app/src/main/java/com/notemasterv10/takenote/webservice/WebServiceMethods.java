@@ -26,6 +26,7 @@ import com.notemasterv10.takenote.database.ImageTable;
 import com.notemasterv10.takenote.database.NoteTable;
 import com.notemasterv10.takenote.listeners.LoginEventListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
+import com.notemasterv10.takenote.ui.login.LoginDataSource;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -148,7 +149,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 try {
                     Thread.sleep(2000); // fake slow download so the dialog will show
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    showSyncErrorDialog(e.getMessage());
                 }
 
                 try {
@@ -156,13 +157,8 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull final IOException e) {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dlg.dismiss();
-                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                }
-                            });
+                            dlg.dismiss();
+                            showSyncErrorDialog(e.getMessage());
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -188,47 +184,26 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                                     } else {
                                         dlg.dismiss();
-                                        mHandler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                showClickableSyncErrorDialog(new Callresult(false, context.getString(R.string.MappingFailed)));
-                                            }
-                                        });
+                                        showSyncErrorDialog("userdata did not download successfully. Nothing was retrieved");
                                     }
 
                                 } else { // error object is returned
-                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
-                                    if (j_object.has(SIGNATURE_FIELD)) {
-                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
-                                    }
                                     dlg.dismiss();
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            showClickableSyncErrorDialog(cr);
-                                        }
-                                    });
-
+                                    if (j_object.has(SIGNATURE_FIELD)) {
+                                        showSyncErrorDialog(j_object.getString(SIGNATURE_FIELD));
+                                    }else {
+                                        showSyncErrorDialog(context.getString(R.string.NoErrorMessage));
+                                    }
                                 }
                             } catch (final JSONException e) {
                                 dlg.dismiss();
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                    }
-                                });
+                                showSyncErrorDialog(e.getMessage());
                             }
                         }
                     });
                 } catch (final Exception e) {
                     dlg.dismiss();
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                        }
-                    });
+                    showSyncErrorDialog(e.getMessage());
                 }
                 return null;
             }
@@ -253,13 +228,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 try {
                     json_payload = objectMapper.writeValueAsString(userDataPayload);
                 } catch (final JsonProcessingException e) {
-                    dlg.dismiss();
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                        }
-                    });
+                    showSyncErrorDialog(e.getMessage());
                     return null;
                 }
 
@@ -277,7 +246,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 try {
                     Thread.sleep(2000); // fake slow upload so the dialog will show
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    showSyncErrorDialog(e.getMessage());
                 }
 
                 try {
@@ -286,12 +255,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull final IOException e) {
                             dlg.dismiss();
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                }
-                            });
+                            showSyncErrorDialog(e.getMessage());
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -304,62 +268,153 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                     if ((j_object.getString(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
                                         // interact with UI
                                         dlg.dismiss();
-                                        mHandler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                showClickableSyncErrorDialog(new Callresult(true, context.getString(R.string.UploadSuccess)));
-                                            }
-                                        });
+                                        showSyncErrorDialog(context.getString(R.string.UploadSuccess));
                                     } else {
                                         dlg.dismiss();
-                                        final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
                                         if (j_object.has(SIGNATURE_FIELD)) {
-                                            cr.setMessage(j_object.getString(SIGNATURE_FIELD));
+                                            showSyncErrorDialog(j_object.getString(SIGNATURE_FIELD));
+                                        }else {
+                                            showSyncErrorDialog(context.getString(R.string.NoErrorMessage));
                                         }
-                                        mHandler.post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                showClickableSyncErrorDialog(cr);
-                                            }
-                                        });
                                     }
                                 } else {
                                     dlg.dismiss();
-                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
                                     if (j_object.has(SIGNATURE_FIELD)) {
-                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
+                                        showSyncErrorDialog(j_object.getString(SIGNATURE_FIELD));
+                                    }else {
+                                        showSyncErrorDialog(context.getString(R.string.NoErrorMessage));
                                     }
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            showClickableSyncErrorDialog(cr);
-                                        }
-                                    });
                                 }
                             } catch (final JSONException e) {
                                 dlg.dismiss();
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                    }
-                                });
+                                showSyncErrorDialog(e.getMessage());
                             }
                         }
                     });
                 } catch (final Exception e) {
                     dlg.dismiss();
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                        }
-                    });
+                    showSyncErrorDialog(e.getMessage());
                 }
                 dlg.dismiss(); // everything went ok
                 return null;
             }
         }.execute();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void verifyLoginCredentials (final WebUser webuser, final Context context) {
+
+        this.context = context;
+
+        try {
+
+            new AsyncTask<Void, Void, Void>(){
+
+                @Override
+                protected Void doInBackground(Void... voids) {
+
+                    /*
+                       since the webservice is hosted on Heroku (free) server we have to wake-up the
+                       service first. It goes to sleep after half an hour without activity so we have to
+                       ping the service to see it's alive before we send the credentials -->
+                    */
+
+                    OkHttpClient client = new OkHttpClient().newBuilder().build();
+
+                    Request request = new Request.Builder()
+                            .url(String.format("%s%s", BASE_URL, CONN_IS_ALIVE))
+                            .method("GET", null)
+                            .build();
+                    try {
+                        client.newCall(request).enqueue(new Callback(){
+
+                            @SuppressLint("StaticFieldLeak")
+                            @Override
+                            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+                                JSONObject j_object;
+                                try {
+                                    j_object = new JSONObject(response.body().string());
+                                    if(j_object.has(RESPONSE_STATUS)){
+                                        if(((String) j_object.get(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
+
+                                            // The webservice is live, so we can send a new call to verify credentials -->
+                                            String json_payload="";
+                                            ObjectMapper objectMapper = new ObjectMapper();
+                                            try {
+                                                json_payload = objectMapper.writeValueAsString(webuser);
+                                            } catch (JsonProcessingException e) {
+                                                showLoginErrorDialog(e.getMessage());
+                                            }
+
+                                            OkHttpClient client = new OkHttpClient().newBuilder().build();
+
+                                            RequestBody body = RequestBody.create(json_payload, JSON);
+                                            Request request = new Request.Builder()
+                                                    .url(String.format("%s%s", BASE_URL, AUTH_USER))
+                                                    .method("POST", body)
+                                                    .build();
+
+                                            // try and verify the user with the credentials it is registered with -->
+                                            try {
+                                                client.newCall(request).enqueue(new Callback() {
+
+                                                    @Override
+                                                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+
+                                                        JSONObject j_object;
+
+                                                        try {
+                                                            j_object = new JSONObject(response.body().string());
+                                                            if (j_object.has(RESPONSE_STATUS)) {
+                                                                if (((String) j_object.get(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
+                                                                    if (loginEventListener != null){ // user credentials verified successfully, continue -->
+                                                                        loginEventListener.processLogin(webuser, LoginEventListener.Action.LOGIN);
+                                                                    }
+                                                                }
+                                                            }else { // bad credentials, user could not be verified -->
+                                                                showLoginErrorDialog(context.getResources().getString(R.string.bad_credentials));
+                                                            }
+                                                        } catch (JSONException e) {
+                                                            showLoginErrorDialog(e.getMessage());
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                                                        showLoginErrorDialog(e.getMessage());
+                                                    }
+
+                                                });
+
+                                            } catch (Exception e) { // call failed completely -->
+                                                showLoginErrorDialog(e.getMessage());
+                                            }
+                                        }
+                                    } else {
+                                        showLoginErrorDialog(context.getResources().getString(R.string.unknown_format_error));
+                                    }
+                                } catch (JSONException e) {
+                                    showLoginErrorDialog(e.getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                                // webservice could not be pinged. It probably is not alive -->
+                                showLoginErrorDialog(e.getMessage());
+                            }
+                        });
+                    } catch (Exception e) {
+                        showLoginErrorDialog(e.getMessage());
+                    }
+                    return null;
+                }
+            }.execute();
+        } catch (Exception e) {
+            showLoginErrorDialog(e.getMessage());
+        }
     }
 
     @SuppressLint("StaticFieldLeak")
@@ -372,18 +427,12 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
             protected Void doInBackground(Void... voids) {
 
-                String json_payload;
+                String json_payload=null;
                 ObjectMapper objectMapper = new ObjectMapper();
                 try {
                     json_payload = objectMapper.writeValueAsString(webuser);
                 } catch (final JsonProcessingException e) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                        }
-                    });
-                    return null;
+                    showRegistrationErrorDialog(e.getMessage());
                 }
                 RequestBody body = RequestBody.create(json_payload, JSON);
 
@@ -400,12 +449,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull final IOException e) {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                }
-                            });
+                            showRegistrationErrorDialog(e.getMessage());
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -431,63 +475,24 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                     }
 
                                 } else { // error object is returned
-                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
                                     if (j_object.has(SIGNATURE_FIELD)) {
-                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
+                                        showRegistrationErrorDialog(j_object.getString(SIGNATURE_FIELD));
+                                    }else {
+                                        showRegistrationErrorDialog(context.getString(R.string.NoErrorMessage));
                                     }
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            showClickableSyncErrorDialog(cr);
-                                        }
-                                    });
-
                                 }
                             } catch (final JSONException e) {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                    }
-                                });
+                                showRegistrationErrorDialog(e.getMessage());
                             }
                         }
                     });
                 } catch (final Exception e) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                        }
-                    });
+                    showRegistrationErrorDialog(e.getMessage());
                 }
                 return null;
             }
         }.execute();
 
-    }
-
-    private void showClickableSyncErrorDialog(Callresult cr){
-
-        if (!cr.getAnswer()) {
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            LayoutInflater inf = LayoutInflater.from(context);
-            View cloudDialogExtraLayout = inf.inflate(R.layout.cloud_sync_error, null);
-            builder.setView(cloudDialogExtraLayout);
-            TextView tv = cloudDialogExtraLayout.findViewById(R.id.txtViewErrorMessage);
-            tv.setText(cr.getMessage());
-            final AlertDialog dlg = builder.create();
-
-            cloudDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dlg.dismiss();
-                }
-            });
-
-            dlg.show();
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -529,12 +534,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                         @Override
                         public void onFailure(@NotNull Call call, @NotNull final IOException e) {
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                }
-                            });
+                            showSyncErrorDialog(e.getMessage());
                         }
 
                         // call m.b.v.enqueue is zelf asynchrone, onPostExecute is hier dan niet nodig; alles gaat via de callback
@@ -567,35 +567,19 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                     }
 
                                 } else { // error object is returned
-                                    final Callresult cr = new Callresult(false, context.getString(R.string.NoErrorMessage));
                                     if (j_object.has(SIGNATURE_FIELD)) {
-                                        cr.setMessage(j_object.getString(SIGNATURE_FIELD));
+                                        showSyncErrorDialog(j_object.getString(SIGNATURE_FIELD));
+                                    }else {
+                                        showSyncErrorDialog(context.getString(R.string.NoErrorMessage));
                                     }
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            showClickableSyncErrorDialog(cr);
-                                        }
-                                    });
-
                                 }
                             } catch (final JSONException e) {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                                    }
-                                });
+                                showSyncErrorDialog(e.getMessage());
                             }
                         }
                     });
                 } catch (final Exception e) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            showClickableSyncErrorDialog(new Callresult(false, e.getMessage()));
-                        }
-                    });
+                    showSyncErrorDialog(e.getMessage());
                 }
                 return null;
             }
@@ -637,6 +621,88 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
         });
 
         AlertDialog dlg = builder.create();
+        dlg.show();
+
+    }
+
+    private void showLoginErrorDialog(final String message){
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                showErrorDialog(new Callresult(false, message), DialogType.LOGIN);
+            }
+        });
+    }
+
+    private void showSyncErrorDialog(final String message){
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                //showSyncErrorDialog(new Callresult(false, message));
+                showErrorDialog(new Callresult(false, message), DialogType.SYNCHRONIZATION);
+            }
+        });
+    }
+
+    private void showRegistrationErrorDialog(final String message){
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                showErrorDialog(new Callresult(false, message), DialogType.REGISTRATION);
+            }
+        });
+    }
+
+    private void showErrorDialog(Callresult cr, final DialogType dialogType){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inf = LayoutInflater.from(context);
+        View errorDialogExtraLayout;
+        TextView tv;
+
+        switch (dialogType){
+            case REGISTRATION:
+                errorDialogExtraLayout = inf.inflate(R.layout.registration_error_dialog, null);
+                tv = errorDialogExtraLayout.findViewById(R.id.txtViewRegistrationErrorMessage);
+                break;
+            case LOGIN:
+                errorDialogExtraLayout = inf.inflate(R.layout.credential_error_dialog, null);
+                tv = errorDialogExtraLayout.findViewById(R.id.txtViewCredErrorMessage);
+                break;
+            case SYNCHRONIZATION:
+                errorDialogExtraLayout = inf.inflate(R.layout.cloud_sync_error, null);
+                tv = errorDialogExtraLayout.findViewById(R.id.txtViewErrorMessage);
+                break;
+            default: // todo: so the extra layout will never be null (must become something else, not this layout)
+                 errorDialogExtraLayout = inf.inflate(R.layout.registration_error_dialog, null);
+                 tv = errorDialogExtraLayout.findViewById(R.id.txtViewRegistrationErrorMessage);
+                 break;
+        }
+
+        builder.setView(errorDialogExtraLayout);
+        tv.setText(cr.getMessage());
+        final AlertDialog dlg = builder.create();
+
+        errorDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                switch (dialogType) {
+                    case REGISTRATION:
+                        if (loginEventListener != null) {
+                            loginEventListener.processLogin(null, LoginEventListener.Action.REGISTER);
+                        }
+                        break;
+                    case LOGIN:
+                        if (loginEventListener != null) {
+                            loginEventListener.processLogin(null, LoginEventListener.Action.LOGIN);
+                        }
+                        break;
+                }
+                dlg.dismiss();
+            }
+        });
+
         dlg.show();
 
     }

@@ -442,8 +442,10 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         for (ArrayItemObject aio : spr.getShared_preference()) {
             SharedPreferences prefs = getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor prefsEdit = prefs.edit();
-            prefsEdit.putString(aio.getItemName(), aio.getItemValue());
-            prefsEdit.apply(); // apply is background, commit is not
+            if(!aio.getItemName().equals(USER_IS_REGISTERED)) { // this must remain unchanged
+                prefsEdit.putString(aio.getItemName(), aio.getItemValue());
+                prefsEdit.apply(); // apply is background, commit is not
+            }
         }
 
         // now reset password and show whatever picture is needed...

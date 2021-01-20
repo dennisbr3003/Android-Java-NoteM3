@@ -233,12 +233,7 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                     startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
                 }
                 else {
-                    Toast toast = Toast.makeText(ImageActivity.this,"Access denied", Toast.LENGTH_LONG);
-                    toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-                    // Set the background color like this or lose the rounded edges of the toaster message (it becomes square) -->
-                    int backgroundColor = ResourcesCompat.getColor(toast.getView().getResources(), R.color.toaster_red, null);
-                    toast.getView().getBackground().setColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN);
-                    toast.show();
+                    showToasterLoginFailed();
                 }
             }
         };
@@ -247,6 +242,14 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
 
     }
 
+    private void showToasterLoginFailed(){
+        Toast toast = Toast.makeText(ImageActivity.this,"Access denied", Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+        // Set the background color like this or lose the rounded edges of the toaster message (it becomes rectangular) -->
+        int backgroundColor = ResourcesCompat.getColor(toast.getView().getResources(), R.color.toaster_red, null);
+        toast.getView().getBackground().setColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN);
+        toast.show();
+    }
 
     private void savePointsCollected(final List<Point> points_list) {
         // this code could hold up the UI thread so we should move this to a asynchronous thread of its own
@@ -359,10 +362,10 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
                 Log.d("DENNIS_BRINK", "Resultaat is OK, kijken of we langs het scherm kunnen komen");
                 Intent i = new Intent(ImageActivity.this, MainActivity.class); // next step = MainActivity ?
                 startActivity(i); // you need an intent to pass to startActivity() so that's why the intent was declared
-            } else{
+            } else{ // cancelled (could also mean failed)
+                showToasterLoginFailed();
                 return;
             }
-
         }
     }
 }

@@ -92,5 +92,6 @@
     <string name="success">Success</string>
     <string name="registration_complete">Registration complete</string>
     <string name="new_options">New options are now available. Check the options menu.</string>
+    <string name="registration_failed">Registration failed</string>
 </resources>
  

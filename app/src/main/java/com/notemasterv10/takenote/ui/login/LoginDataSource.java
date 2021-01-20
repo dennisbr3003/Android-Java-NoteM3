@@ -75,6 +75,8 @@ public class LoginDataSource implements WebServiceConstants {
         // create the websuer with the credentials so it can be verified and uploaded -->
         WebUser webuser = new WebUser(username, f_User_Password, f_Android_id, USER_ROLE);
         ws.setLoginEventListener(getLoginEventListener());
+
+        // this option is only available if the connection is established so we do not need to wake up the service -->
         ws.registerUser(webuser, this.context);
 
     }
@@ -93,195 +95,14 @@ public class LoginDataSource implements WebServiceConstants {
 
         // create the websuer with the credentials so it can be verified -->
         final WebUser webuser = new WebUser(username, f_User_Password, f_Android_id, USER_ROLE);
-// todo : dit moet naar webservice methods -->
-        try {
 
-            new AsyncTask<Void, Void, Void>(){
+        ws.setLoginEventListener(getLoginEventListener());
+        ws.verifyLoginCredentials(webuser, this.context);
 
-                @Override
-                protected Void doInBackground(Void... voids) {
-
-                    /*
-                       since the webservice is hosted on Heroku (free) server we have to wake-up the
-                       service first. It goes to sleep after half an hour without activity so we have to
-                       ping the service to see it's alive before we send the credentials -->
-                    */
-
-                    OkHttpClient client = new OkHttpClient().newBuilder().build();
-
-                    Request request = new Request.Builder()
-                            .url(String.format("%s%s", BASE_URL, CONN_IS_ALIVE))
-                            .method("GET", null)
-                            .build();
-                    try {
-                        client.newCall(request).enqueue(new Callback(){
-
-                            @SuppressLint("StaticFieldLeak")
-                            @Override
-                            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-
-                                JSONObject j_object;
-                                try {
-                                    j_object = new JSONObject(response.body().string());
-                                    if(j_object.has(RESPONSE_STATUS)){
-                                        if(((String) j_object.get(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
-
-                                            // The webservice is live, so we can send a new call to verify credentials -->
-                                            String json_payload="";
-                                            ObjectMapper objectMapper = new ObjectMapper();
-                                            try {
-                                                json_payload = objectMapper.writeValueAsString(webuser);
-                                            } catch (JsonProcessingException e) {
-                                                showErrorDialog(e.getMessage());
-                                            }
-
-                                            OkHttpClient client = new OkHttpClient().newBuilder().build();
-
-                                            RequestBody body = RequestBody.create(json_payload, JSON);
-                                            Request request = new Request.Builder()
-                                                    .url(String.format("%s%s", BASE_URL, AUTH_USER))
-                                                    .method("POST", body)
-                                                    .build();
-
-                                            // try and verify the user with the credentials it is registered with -->
-                                            try {
-                                                client.newCall(request).enqueue(new Callback() {
-
-                                                    @Override
-                                                    public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-
-                                                        JSONObject j_object;
-
-                                                        try {
-                                                            j_object = new JSONObject(response.body().string());
-                                                            if (j_object.has(RESPONSE_STATUS)) {
-                                                                if (((String) j_object.get(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
-                                                                    if (loginEventListener != null){ // user credentials verified successfully, continue -->
-                                                                        loginEventListener.processLogin(webuser, LoginEventListener.Action.LOGIN);
-                                                                    }
-                                                                }
-                                                            }else { // bad credentials, user could not be verified -->
-                                                                showErrorDialog(context.getResources().getString(R.string.bad_credentials));
-                                                            }
-                                                        } catch (JSONException e) {
-                                                            showErrorDialog(e.getMessage());
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                                                        showErrorDialog(e.getMessage());
-                                                    }
-
-                                                });
-
-                                            } catch (Exception e) { // call failed completely -->
-                                                showErrorDialog(e.getMessage());
-                                            }
-                                        }
-                                    } else {
-                                        showErrorDialog(context.getResources().getString(R.string.unknown_format_error));
-                                    }
-                                } catch (JSONException e) {
-                                    showErrorDialog(e.getMessage());
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                                // webservice could not be pinged. It probably is not alive -->
-                                showErrorDialog(e.getMessage());
-                            }
-                        });
-                    } catch (Exception e) {
-                        showErrorDialog(e.getMessage());
-                    }
-                    return null;
-                }
-            }.execute();
-        } catch (Exception e) {
-            showErrorDialog(e.getMessage());
-        }
-        //return null;
     }
 
     public void logout() {
         // TODO: revoke authentication
-    }
-
-    private void showErrorDialog(final String message){
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                showClickableSyncErrorDialog(new LoginDataSource.Callresult(false, message));
-            }
-        });
-    }
-
-    private void showClickableSyncErrorDialog(LoginDataSource.Callresult cr){
-
-        if (!cr.getAnswer()) {
-
-            try {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                LayoutInflater inf = LayoutInflater.from(context);
-                View cloudDialogExtraLayout = inf.inflate(R.layout.cloud_sync_error, null);
-                builder.setView(cloudDialogExtraLayout);
-                TextView tv = cloudDialogExtraLayout.findViewById(R.id.txtViewErrorMessage);
-                tv.setText(cr.getMessage());
-                TextView errorHeader = cloudDialogExtraLayout.findViewById(R.id.txtViewErrorHeader);
-                errorHeader.setText(R.string.cloud_auth_failed);
-                final AlertDialog dlg = builder.create();
-
-                cloudDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dlg.dismiss();
-                        if (loginEventListener != null){
-                            loginEventListener.processLogin(null, LoginEventListener.Action.LOGIN);
-                        }
-                    }
-                });
-
-                dlg.show();
-
-            } catch (Exception e) {
-                Log.d("DENNIS_BRINK", "Error when trying to build and show a dialog. Details: " + e.getMessage());
-                if (loginEventListener != null){
-                    loginEventListener.processLogin(null, LoginEventListener.Action.LOGIN);
-                }
-            }
-        }
-    }
-
-    private class Callresult{
-
-        private Boolean answer = false;
-        private String message = "";
-
-        public Callresult() {
-        }
-
-        public Callresult(Boolean answer, String message) {
-            this.answer = answer;
-            this.message = message;
-        }
-
-        public Boolean getAnswer() {
-            return answer;
-        }
-
-        public void setAnswer(Boolean answer) {
-            this.answer = answer;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
     }
 
 }

@@ -17,8 +17,13 @@ public interface WebServiceConstants {
     String USER_ROLE = "USER";
     String ADMIN_ROLE = "ADMIN";
     String GOD_ROLE = "GOD_MODE";
+
     enum SyncDirection{
         UP, DOWN
+    }
+
+    enum DialogType{
+        REGISTRATION, LOGIN, SYNCHRONIZATION
     }
 
 }

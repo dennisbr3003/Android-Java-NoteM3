@@ -96,7 +96,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-//todo check if both field are empty?
+
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     loadingProgressBar.setVisibility(View.VISIBLE);
                     hideKeyBoard();
@@ -117,7 +117,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-//todo check if both field are empty?
+
                 loadingProgressBar.setVisibility(View.VISIBLE);
                 hideKeyBoard();
                 if (((String) loginButton.getText()).equalsIgnoreCase("Register")){
@@ -139,27 +139,33 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
     }
 
     private void hideKeyBoard(){
-        //this code works if executed from an activity (not from a fragment) -->
+        // this code works if executed from an activity (not from a fragment) -->
         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
     }
 
     @Override
     public void processLogin(WebUser webuser, Action action) {
-        Log.d("DENNIS_BRINK", "Ok dit is het event dat de listener is van het login event");
+        Log.d("DENNIS_BRINK", "Event listener of the registration and login event (LoginActivity.processLogin)");
         // the values will be passed back to the calling activity -->
         if (webuser != null) {
             Login.getInstance().setWebuser(webuser);
-            // todo run some method to save to user to the db
-            // todo run some code to set the correct preference
             setResult(Activity.RESULT_OK);
-            showRegistrationDialog();
+            if(action.equals(Action.REGISTER)) {
+                sr.saveUserRegistration(true, this);
+                sr.insertUser(this, webuser);
+                showRegistrationDialog(); // finish() is executed in the onClickListener of this dialog -->
+            } else {
+                finish();
+            }
         } else {
-            Login.getInstance().setWebuser(null);
+            if(action.equals(Action.REGISTER)) {
+                Login.getInstance().setWebuser(null);
+                sr.saveUserRegistration(false, this);
+            }
             setResult(Activity.RESULT_CANCELED);
             finish();
         }
-
 
     }
 
@@ -174,11 +180,17 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
 
     private void showClickableRegistrationDialog(){
 
+        ProgressBar pb = findViewById(R.id.pBar);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inf = LayoutInflater.from(this);
         View registrationDialogExtraLayout = inf.inflate(R.layout.registration_dialog, null);
         builder.setView(registrationDialogExtraLayout);
         final AlertDialog dlg = builder.create();
+
+        if(pb != null) {
+            pb.setVisibility(View.INVISIBLE);
+        }
 
         registrationDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
             @Override
