@@ -1,11 +1,17 @@
 package com.notemasterv10.takenote.webservice;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 public class WebUser {
 
     private String name;
     private String password;
     private String device_id;
     private String remark;
+
+    Encryption encryption = new Encryption();
 
     public WebUser() {
     }
@@ -25,8 +31,10 @@ public class WebUser {
         this.name = name;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public String getPassword() {
-        return password;
+        // password is stored encrypted but published decrypted
+        return encryption.decrypt(this.password);
     }
 
     public void setPassword(String password) {

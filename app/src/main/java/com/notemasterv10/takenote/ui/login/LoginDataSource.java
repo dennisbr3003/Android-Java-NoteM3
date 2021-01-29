@@ -2,40 +2,19 @@ package com.notemasterv10.takenote.ui.login;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.provider.Settings;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notemasterv10.takenote.R;
 import com.notemasterv10.takenote.constants.WebServiceConstants;
 import com.notemasterv10.takenote.listeners.LoginEventListener;
 import com.notemasterv10.takenote.webservice.Encryption;
-import com.notemasterv10.takenote.webservice.WebServiceMethods;
+import com.notemasterv10.takenote.webservice.WebService;
 import com.notemasterv10.takenote.webservice.WebUser;
 
-import java.io.IOException;
-
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * Class that handles authentication w/ login credentials and retrieves user information.
@@ -55,7 +34,7 @@ public class LoginDataSource implements WebServiceConstants {
         return loginEventListener;
     }
 
-    private WebServiceMethods ws = new WebServiceMethods();
+    private WebService ws = new WebService();
 
     public void setLoginEventListener(LoginEventListener loginEventListener) {
         this.loginEventListener = loginEventListener;

@@ -103,13 +103,6 @@ public class ImageActivity extends AppCompatActivity implements PointCollectorLi
         else{
             Log.d("Test if points are set", String.valueOf(!sr.pointsSetInSharedPrefs(this)));
             if (!sr.pointsSetInSharedPrefs(this)) {
-                //TODO
-                // first show user / password dialog to register with the API (mandatory -> trap user)
-                // the show passpoints dialog
-
-                // 1. show the fragment for the username and password for registration with the server
-                showLogin();
-                // 2. show the dialog that urges the user to set passpoints
                 showSetPassPointsDialog(); // this may change as the build progresses
             }
         }

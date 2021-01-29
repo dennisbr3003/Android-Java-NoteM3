@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/imgViewCredError"
+        android:id="@+id/imgViewLoginError"
         android:layout_width="46dp"
         android:layout_height="42dp"
         android:layout_alignParentStart="true"
@@ -19,7 +19,7 @@
         app:srcCompat="@mipmap/general_error" />
 
     <TextView
-        android:id="@+id/txtViewCredErrorHeader"
+        android:id="@+id/txtViewLoginErrorHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -28,20 +28,20 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="15dp"
         android:layout_marginRight="15dp"
-        android:layout_toEndOf="@id/imgViewCredError"
-        android:layout_toRightOf="@id/imgViewCredError"
-        android:text="@string/login_failed"
+        android:layout_toEndOf="@id/imgViewLoginError"
+        android:layout_toRightOf="@id/imgViewLoginError"
+        android:text="@string/login_failed2"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="16sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/txtViewCredErrorMessage"
+        android:id="@+id/txtViewLoginErrorMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/txtViewCredErrorHeader"
-        android:layout_alignStart="@id/txtViewCredErrorHeader"
-        android:layout_alignLeft="@id/txtViewCredErrorHeader"
+        android:layout_below="@id/txtViewLoginErrorHeader"
+        android:layout_alignStart="@id/txtViewLoginErrorHeader"
+        android:layout_alignLeft="@id/txtViewLoginErrorHeader"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginEnd="15dp"

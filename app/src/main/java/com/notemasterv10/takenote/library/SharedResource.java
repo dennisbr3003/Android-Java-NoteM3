@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -229,11 +231,20 @@ public class SharedResource extends AppCompatActivity implements NoteMasterConst
 
     //---------------------------------------------------------------------------------------------->
 
+    public WebUser getUser (Context context){
+
+        Log.d("DENNIS_BRINK", "SharedResource: getUser without name argument");
+
+        UserTable userTable = new UserTable(context);
+        return userTable.getFirstUser();
+    }
+
     public WebUser getUser (Context context, String name){
         UserTable userTable = new UserTable(context);
         return userTable.getUser(name);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void insertUser (Context context, WebUser webuser){
         UserTable userTable = new UserTable(context);
         userTable.insertUser(webuser);

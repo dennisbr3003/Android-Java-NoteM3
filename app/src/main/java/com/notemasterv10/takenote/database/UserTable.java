@@ -4,9 +4,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
 import com.notemasterv10.takenote.constants.DatabaseConstants;
 import com.notemasterv10.takenote.webservice.WebUser;
 
@@ -21,6 +25,7 @@ public class UserTable extends Database implements DatabaseConstants  {
         this.context = context;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean insertUser(WebUser webuser){
 
         UUID uuid = UUID.randomUUID();
@@ -51,9 +56,42 @@ public class UserTable extends Database implements DatabaseConstants  {
         }
     }
 
+    public WebUser getFirstUser(){
+        WebUser webuser = new WebUser();
+
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            db.beginTransaction();
+
+            // create SQL statement   columnIndex 0   1 (starts with 0)
+            String query = String.format("SELECT %s, %s, %s, %s " +
+                    "FROM %s ORDER BY %s LIMIT 1", USER_ID, USER_NAME, USER_PASSWORD, USER_ROLE, TABLE_USER, USER_NAME);
+
+            Cursor c = db.rawQuery(query, null);
+
+            if (!(c.getCount() <= 0)) {
+                if (c.moveToFirst()) {
+                    webuser.setName(c.getString(1));
+                    webuser.setPassword(c.getString(2)); /* encrypted */
+                    webuser.setDevice_id(Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
+                    webuser.setRemark(c.getString(3));
+                }
+            }
+            db.setTransactionSuccessful();
+        } catch(Exception e){
+            Log.d("DENNIS_BRINK", "Retrieve webuser without name argument failed: " + e.getMessage());
+            return null;
+        }
+        finally {
+            db.endTransaction();
+            db.close();
+            return webuser; // may be null may be not null
+        }
+    }
+
     public WebUser getUser(String name){
 
-        WebUser webuser = null;
+        WebUser webuser = new WebUser();
 
         SQLiteDatabase db = getReadableDatabase();
         try {
@@ -65,7 +103,6 @@ public class UserTable extends Database implements DatabaseConstants  {
 
             if (!(c.getCount() <= 0)) {
                 if (c.moveToFirst()) {
-                    //note = c.getBlob(0);
                     webuser.setName(c.getString(0));
                     webuser.setPassword(c.getString(1));
                     webuser.setDevice_id(Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID));
@@ -74,6 +111,7 @@ public class UserTable extends Database implements DatabaseConstants  {
             }
             db.setTransactionSuccessful();
         } catch(Exception e){
+            Log.d("DENNIS_BRINK", "Retrieve webuser with name argument failed: " + e.getMessage());
             return null;
         }
         finally {

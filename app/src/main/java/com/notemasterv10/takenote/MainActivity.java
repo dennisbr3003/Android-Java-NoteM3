@@ -43,11 +43,13 @@ import com.notemasterv10.takenote.listeners.DialogAnswerListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
 import com.notemasterv10.takenote.listing.Note;
 import com.notemasterv10.takenote.listing.NoteListFragment;
+import com.notemasterv10.takenote.ui.login.Login;
 import com.notemasterv10.takenote.ui.login.LoginActivity;
 import com.notemasterv10.takenote.webservice.ArrayItemObject;
 import com.notemasterv10.takenote.webservice.UserDataResponse;
 import com.notemasterv10.takenote.webservice.WebServiceConnectService;
-import com.notemasterv10.takenote.webservice.WebServiceMethods;
+import com.notemasterv10.takenote.webservice.WebService;
+import com.notemasterv10.takenote.webservice.WebUser;
 
 public class MainActivity extends AppCompatActivity implements DialogAnswerListener,
         WebEventListener,
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
 
     private Boolean webServiceAvailable = false;
     SharedResource sr = new SharedResource();
-    WebServiceMethods ws = new WebServiceMethods();
+    WebService ws = new WebService();
     WebServiceConnectReceiver webServiceConnectReceiver = new WebServiceConnectReceiver();
     Intent wscs;
 
@@ -72,7 +74,25 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         supportInvalidateOptionsMenu();
         wscs = new Intent(this, WebServiceConnectService.class);
         startService(wscs);
-        // todo run some method to get the user from the db, put in it's pojo and load it into the login singleton
+        loadWebUser();
+    }
+
+    private void loadWebUser(){
+
+        Log.d("DENNIS_BRINK", "Retrieve registered user from SQLite db");
+        WebUser webUser = sr.getUser(this);
+        Log.d("DENNIS_BRINK", "Webuser = null? " + (webUser == null));
+
+        // now add it to the singleton container (null or not)
+        Login.getInstance().setWebuser(webUser);
+        Log.d("DENNIS_BRINK", "Webuser saved into singleton repository (Login)");
+
+        if (!Login.getInstance().webUserIsNull()) {
+            Log.d("DENNIS_BRINK", "Registered username: " + Login.getInstance().getWebuser().getName());
+        }else{
+            Log.d("DENNIS_BRINK", "WebUser not instantiated yet");
+        }
+
 
     }
 
@@ -442,10 +462,8 @@ public class MainActivity extends AppCompatActivity implements DialogAnswerListe
         for (ArrayItemObject aio : spr.getShared_preference()) {
             SharedPreferences prefs = getSharedPreferences(SHAREDPREF_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor prefsEdit = prefs.edit();
-            if(!aio.getItemName().equals(USER_IS_REGISTERED)) { // this must remain unchanged
-                prefsEdit.putString(aio.getItemName(), aio.getItemValue());
-                prefsEdit.apply(); // apply is background, commit is not
-            }
+            prefsEdit.putString(aio.getItemName(), aio.getItemValue());
+            prefsEdit.apply(); // apply is background, commit is not
         }
 
         // now reset password and show whatever picture is needed...

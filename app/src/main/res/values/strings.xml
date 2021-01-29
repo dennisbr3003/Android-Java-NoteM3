@@ -93,5 +93,9 @@
     <string name="registration_complete">Registration complete</string>
     <string name="new_options">New options are now available. Check the options menu.</string>
     <string name="registration_failed">Registration failed</string>
+    <string name="cloud_synchronization_complete">Cloud synchronization complete</string>
+    <string name="login_failed2">Login failed</string>
+    <string name="impossible_error">Impossible error</string>
+    <string name="impossible_error_text">The impossible error ocurred. The error that logically can never happen just happened.</string>
 </resources>
  

@@ -1,5 +1,6 @@
 package com.notemasterv10.takenote.ui.login;
 
+import com.notemasterv10.takenote.webservice.Encryption;
 import com.notemasterv10.takenote.webservice.WebUser;
 
 public class Login {
@@ -25,4 +26,9 @@ public class Login {
     public void setWebuser(WebUser webuser) {
         this.webuser = webuser;
     }
+
+    public boolean webUserIsNull(){
+        return this.webuser == null;
+    }
+
 }

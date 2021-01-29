@@ -26,7 +26,7 @@ import com.notemasterv10.takenote.database.ImageTable;
 import com.notemasterv10.takenote.database.NoteTable;
 import com.notemasterv10.takenote.listeners.LoginEventListener;
 import com.notemasterv10.takenote.listeners.WebEventListener;
-import com.notemasterv10.takenote.ui.login.LoginDataSource;
+import com.notemasterv10.takenote.ui.login.Login;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -38,13 +38,14 @@ import java.util.UUID;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Credentials;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class WebServiceMethods extends AppCompatActivity implements NoteMasterConstants, WebServiceConstants {
+public class WebService extends AppCompatActivity implements NoteMasterConstants, WebServiceConstants {
 
     private static final MediaType JSON = MediaType.parse(JSON_UTF8);
 
@@ -138,10 +139,14 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                 OkHttpClient client = new OkHttpClient().newBuilder()
                         .build();
+
+                String basicAuthorization = Credentials.basic(Login.getInstance().getWebuser().getName(), Login.getInstance().getWebuser().getPassword());
+
                 // okHttp3 does not support a body for GET, using the device_id as a path variable -->
                 Request request = new Request.Builder()
                         .url(String.format("%s%s/%s", BASE_URL, PROC_USER_DATA, f_Android_id))
                         .method("GET", null)
+                        .addHeader("Authorization", basicAuthorization)
                         .build();
 
                 Response response = null;
@@ -219,8 +224,12 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
         final AlertDialog dlg = createProgressDialog(SyncDirection.UP);
         dlg.show();
 
+        Log.d("DENNIS_BRINK", "1: Dialog alive ? " + dlg.isShowing());
+
+
         new AsyncTask<Void, Void, Void>(){
 
+            @RequiresApi(api = Build.VERSION_CODES.O)
             protected Void doInBackground(Void... voids) {
 
                 String json_payload;
@@ -235,10 +244,16 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 OkHttpClient client = new OkHttpClient().newBuilder()
                         .build();
 
+                String basicAuthorization = Credentials.basic(Login.getInstance().getWebuser().getName(), Login.getInstance().getWebuser().getPassword());
+
+                Log.d("DENNIS_BRINK", "Username: " + Login.getInstance().getWebuser().getName());
+                Log.d("DENNIS_BRINK", "Basic authorization string: " + basicAuthorization);
+
                 RequestBody body = RequestBody.create(json_payload, JSON);
                 Request request = new Request.Builder()
                         .url(String.format("%s%s", BASE_URL, PROC_USER_DATA))
                         .method("POST", body)
+                        .addHeader("Authorization", basicAuthorization)
                         .build();
 
                 Response response = null;
@@ -266,9 +281,8 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                                 j_object = new JSONObject(response.body().string());
                                 if (j_object.has(RESPONSE_STATUS)) {
                                     if ((j_object.getString(RESPONSE_STATUS)).equalsIgnoreCase(IS_SUCCESS)) {
-                                        // interact with UI
-                                        dlg.dismiss();
-                                        showSyncErrorDialog(context.getString(R.string.UploadSuccess));
+                                        Log.d("DENNIS_BRINK", "Upload complete, showing confirmation dialog");
+                                        showSyncCompleteDialog(context.getString(R.string.UploadSuccess), dlg);
                                     } else {
                                         dlg.dismiss();
                                         if (j_object.has(SIGNATURE_FIELD)) {
@@ -295,7 +309,6 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                     dlg.dismiss();
                     showSyncErrorDialog(e.getMessage());
                 }
-                dlg.dismiss(); // everything went ok
                 return null;
             }
         }.execute();
@@ -514,17 +527,13 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
 
                 OkHttpClient client = new OkHttpClient().newBuilder()
                         .build();
-                /*
-                    String BASE_URL = "https://takenote10.herokuapp.com/notemaster/";
-                    String DEVICE_HAS_DATA = "device/%s/hasdata";
 
-                    String credential = Credentials.basic("name", "password");
-                    return response.request().newBuilder().header("Authorization", credential).build();
+                String basicAuthorization = Credentials.basic(Login.getInstance().getWebuser().getName(), Login.getInstance().getWebuser().getPassword());
 
-                */
                 Request request = new Request.Builder()
                         .url(String.format("%s%s", BASE_URL, String.format(DEVICE_HAS_DATA, f_Android_id)))
                         .method("GET", null)
+                        .addHeader("Authorization", basicAuthorization)
                         .build();
 
                 Response response = null;
@@ -638,7 +647,6 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                //showSyncErrorDialog(new Callresult(false, message));
                 showErrorDialog(new Callresult(false, message), DialogType.SYNCHRONIZATION);
             }
         });
@@ -651,6 +659,43 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 showErrorDialog(new Callresult(false, message), DialogType.REGISTRATION);
             }
         });
+    }
+
+    private void showSyncCompleteDialog(final String message, final AlertDialog pDialog){
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                showSyncConfirmationDialog(new Callresult(false, message), pDialog);
+            }
+        });
+    }
+
+    private void showSyncConfirmationDialog(Callresult cr, AlertDialog pDialog) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inf = LayoutInflater.from(context);
+        View dialogExtraLayout;
+        TextView tv;
+
+        dialogExtraLayout = inf.inflate(R.layout.cloud_sync_success, null);
+        tv = dialogExtraLayout.findViewById(R.id.txtViewMessage);
+
+        builder.setView(dialogExtraLayout);
+        tv.setText(cr.getMessage());
+        AlertDialog dlg = builder.create();
+        dlg.setCancelable(false);
+        dlg.setCanceledOnTouchOutside(false);
+        final AlertDialog f_dlg = dlg; // because it is used in another thread it has to be final
+
+        dialogExtraLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                f_dlg.dismiss();
+            }
+        });
+        pDialog.dismiss(); /* progress bar is on this dialog */
+        dlg.show();
+
     }
 
     private void showErrorDialog(Callresult cr, final DialogType dialogType){
@@ -666,22 +711,25 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                 tv = errorDialogExtraLayout.findViewById(R.id.txtViewRegistrationErrorMessage);
                 break;
             case LOGIN:
-                errorDialogExtraLayout = inf.inflate(R.layout.credential_error_dialog, null);
-                tv = errorDialogExtraLayout.findViewById(R.id.txtViewCredErrorMessage);
+                errorDialogExtraLayout = inf.inflate(R.layout.login_error_dialog, null);
+                tv = errorDialogExtraLayout.findViewById(R.id.txtViewLoginErrorMessage);
                 break;
             case SYNCHRONIZATION:
                 errorDialogExtraLayout = inf.inflate(R.layout.cloud_sync_error, null);
                 tv = errorDialogExtraLayout.findViewById(R.id.txtViewErrorMessage);
                 break;
-            default: // todo: so the extra layout will never be null (must become something else, not this layout)
-                 errorDialogExtraLayout = inf.inflate(R.layout.registration_error_dialog, null);
-                 tv = errorDialogExtraLayout.findViewById(R.id.txtViewRegistrationErrorMessage);
+            default:
+                 errorDialogExtraLayout = inf.inflate(R.layout.impossible_error_dialog, null);
+                 tv = errorDialogExtraLayout.findViewById(R.id.txtViewImpossibleErrorMessage);
                  break;
         }
 
         builder.setView(errorDialogExtraLayout);
         tv.setText(cr.getMessage());
-        final AlertDialog dlg = builder.create();
+        AlertDialog dlg = builder.create();
+        dlg.setCancelable(false);
+        dlg.setCanceledOnTouchOutside(false);
+        final AlertDialog f_dlg = dlg; // because it is used in another thread it has to be final
 
         errorDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -699,7 +747,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
                         }
                         break;
                 }
-                dlg.dismiss();
+                f_dlg.dismiss();
             }
         });
 
@@ -725,6 +773,7 @@ public class WebServiceMethods extends AppCompatActivity implements NoteMasterCo
         builder.setView(cloudDialogExtraLayout); // load the view into the dialog
 
         AlertDialog dlg = builder.create();
+        dlg.setCanceledOnTouchOutside(false);
         return dlg;
 
     }

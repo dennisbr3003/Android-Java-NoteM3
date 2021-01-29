@@ -144,16 +144,23 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void processLogin(WebUser webuser, Action action) {
+
         Log.d("DENNIS_BRINK", "Event listener of the registration and login event (LoginActivity.processLogin)");
+
+        // shut down the progress bar -->
+        ProgressBar loadingProgressBar = findViewById(R.id.pBar);
+        loadingProgressBar.setVisibility(View.INVISIBLE);
+
         // the values will be passed back to the calling activity -->
         if (webuser != null) {
             Login.getInstance().setWebuser(webuser);
             setResult(Activity.RESULT_OK);
             if(action.equals(Action.REGISTER)) {
-                sr.saveUserRegistration(true, this);
-                sr.insertUser(this, webuser);
+                sr.saveUserRegistration(true, this); // shared preference
+                sr.insertUser(this, webuser); // database
                 showRegistrationDialog(); // finish() is executed in the onClickListener of this dialog -->
             } else {
                 finish();
@@ -186,7 +193,10 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         LayoutInflater inf = LayoutInflater.from(this);
         View registrationDialogExtraLayout = inf.inflate(R.layout.registration_dialog, null);
         builder.setView(registrationDialogExtraLayout);
-        final AlertDialog dlg = builder.create();
+        AlertDialog dlg = builder.create();
+        dlg.setCancelable(false);
+        dlg.setCanceledOnTouchOutside(false);
+        final AlertDialog f_dlg = dlg; // because it is used in another thread it has to be final
 
         if(pb != null) {
             pb.setVisibility(View.INVISIBLE);
@@ -195,7 +205,7 @@ public class LoginActivity extends AppCompatActivity implements LoginEventListen
         registrationDialogExtraLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dlg.dismiss();
+                f_dlg.dismiss();
                 finish();
             }
         });

@@ -27,12 +27,12 @@ import com.notemasterv10.takenote.library.ChildFragmentControlMethods;
 import com.notemasterv10.takenote.library.SharedResource;
 import com.notemasterv10.takenote.listing.NoteListEmpty;
 import com.notemasterv10.takenote.listing.NoteListFragment;
-import com.notemasterv10.takenote.webservice.WebServiceMethods;
+import com.notemasterv10.takenote.webservice.WebService;
 
 public class FirstFragment extends Fragment implements NoteMasterConstants, ChildFragmentControlMethods {
 
     SharedResource sr = new SharedResource();
-    WebServiceMethods ws = new WebServiceMethods();
+    WebService ws = new WebService();
     private View view;
 
     private int requestCode;
