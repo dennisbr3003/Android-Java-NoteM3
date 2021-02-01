@@ -18,12 +18,36 @@
         app:srcCompat="@mipmap/login_r2" />
 
     <ImageView
-        android:id="@+id/imageview_counter"
+        android:id="@+id/imageview_counter2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/test"
         android:visibility="invisible"
-        app:srcCompat="@mipmap/question_mark" />
+        app:srcCompat="@mipmap/no_2a" />
+
+    <ImageView
+        android:id="@+id/imageview_counter3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/test"
+        android:visibility="invisible"
+        app:srcCompat="@mipmap/no_3a" />
+
+    <ImageView
+        android:id="@+id/imageview_counter4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/test"
+        android:visibility="invisible"
+        app:srcCompat="@mipmap/no_4a" />
+
+    <ImageView
+        android:id="@+id/imageview_counter1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/test"
+        android:visibility="invisible"
+        app:srcCompat="@mipmap/no_1a" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

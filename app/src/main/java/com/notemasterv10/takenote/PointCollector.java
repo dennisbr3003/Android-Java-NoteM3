@@ -32,56 +32,46 @@ public class PointCollector implements View.OnTouchListener {
 
     public boolean onTouch(View v, MotionEvent event) {
 
-        ImageView image = (ImageView) v.getRootView().findViewById(R.id.imageview_counter);
-        ImageView image_background = (ImageView) v.getRootView().findViewById(R.id.imageView);
+        /*
+        I have tried to use one ImageView object and update the image on runtime. I tried to do this
+        with setImageResource. It did show the correct image but with the wrong dimensions. At this
+        point the image had to be repositioned to the center. The images had different sizes and at runtime
+        the sizes of the image where those of the previous image and the counter did reposition correctly.
+        I could not find a way to force a refresh (invalidate() did not work) So I had to create 4 images,
+        one for each number. This way I could successfully update the layout parameters and reposition
+        the numbers correctly, hence this construction :(
+        */
+        ImageView image1 = (ImageView) v.getRootView().findViewById(R.id.imageview_counter1);
+        ImageView image2 = (ImageView) v.getRootView().findViewById(R.id.imageview_counter2);
+        ImageView image3 = (ImageView) v.getRootView().findViewById(R.id.imageview_counter3);
+        ImageView image4 = (ImageView) v.getRootView().findViewById(R.id.imageview_counter4);
 
-        image.setVisibility(View.INVISIBLE);
+        ImageView image_background = (ImageView) v.getRootView().findViewById(R.id.imageView);
 
         if (event.getAction() == android.view.MotionEvent.ACTION_DOWN){
 
             switch(points_array.size()){
                 case 0:
-                    // show picture number 1
-                    image.setImageResource(R.mipmap.no_1a);
+                    image1 = updateLayoutParams(event, image1, image_background);
+                    image1.setVisibility(VISIBLE);
                     break;
                 case 1:
-                    // show picture number 2
-                    image.setImageResource(R.mipmap.no_2a);
+                    image2 = updateLayoutParams(event, image2, image_background);
+                    image2.setVisibility(VISIBLE);
                     break;
                 case 2:
-                    // show picture number 3
-                    image.setImageResource(R.mipmap.no_3a);
+                    image3 = updateLayoutParams(event, image3, image_background);
+                    image3.setVisibility(VISIBLE);
                     break;
                 case 3:
-                    // show picture number 4
-                    image.setImageResource(R.mipmap.no_4a);
+                    image4 = updateLayoutParams(event, image4, image_background);
+                    image4.setVisibility(VISIBLE);
                     break;
             }
-
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) image.getLayoutParams();
-            // Initial location relative to the touch point coordinates (left lower corner) -->
-            int iLeft = (int) ((int) event.getX() - ((int) image.getWidth() * 1.2));
-            // If the touch point coordinates are close to the left border switch location (to lower right corner) -->
-            if (iLeft <= 0) {
-                iLeft = (int) ((int) event.getX() + ((int) image.getWidth() * 0.2));
-            }
-            // If the touch point coordinates are (too) close to the upper border, adjust location and prevent partial visibility -->
-            int iTop = ((int) event.getY());
-            if (iTop <= (int) image.getHeight() * 0.2) {
-                iTop = (int) (image.getHeight() * 0.5);
-            }
-            // If the touch point coordinates are (too) close to the lower border, adjust location and prevent shrinking of image -->
-            if (((int) event.getY() + (int) (image.getHeight()) >= (int) image_background.getHeight())) {
-                iTop = (int) event.getY() - (int) (image.getHeight());
-            }
-            // set image location coordinates -->
-            params.setMargins(iLeft, iTop, 0, 0); //left, top, right, bottom
-            image.setLayoutParams(params);
-            image.setVisibility(VISIBLE); // leave it there for a quarter of a second (see delay in ACTION_UP), so the user can keep count
 
             float x = event.getX();
             float y = event.getY();
-            Log.d("DENNIS_BRINK", "X " + String.valueOf(x) + " Y " + String.valueOf(y));
+            Log.d("DENNIS_BRINK", "X " + x + " Y " + y);
             points_array.add(new Point((int) x, (int) y));
             Log.d("DENNIS_BRINK", "touch action down, added touched coordinate = " + String.valueOf(points_array.size()));
         }
@@ -90,13 +80,18 @@ public class PointCollector implements View.OnTouchListener {
 
             try { // delay disappearance of image a little bit so it lingers
                 Thread.sleep(250);
+                image1.setVisibility(View.INVISIBLE);
+                image2.setVisibility(View.INVISIBLE);
+                image3.setVisibility(View.INVISIBLE);
+                image4.setVisibility(View.INVISIBLE);
             } catch (InterruptedException e) {
                 // ignore
             }
+            catch (Exception e){
+                Log.d("DENNIS_BRINK", e.getMessage());
+            }
 
             if(points_array.size() == 4) {
-
-                image.setVisibility(View.INVISIBLE);
 
                 if (pointCollectorListener != null) {
                     pointCollectorListener.pointsCollected(points_array); // this method is actually an interface method overridden in ImageActivity
@@ -111,6 +106,111 @@ public class PointCollector implements View.OnTouchListener {
 
         // set return value to true to be able to manipulate actions -->
         return true;
+    }
+
+    private ImageView updateLayoutParams(MotionEvent event, ImageView child, ImageView parent){
+
+        Coordinate coordinate = calculateNumberPosition(event, child, parent);
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) child.getLayoutParams();
+        params.setMargins(coordinate.getLeft(), coordinate.getTop(), 0, 0);
+        child.setLayoutParams(params);
+        return child;
+
+    }
+
+    private Coordinate calculateNumberPosition(MotionEvent event, ImageView child, ImageView parent){
+
+        // constants -->
+        double x_correction = 1.3;
+        double y_correction = 1.65;
+        int y_upperlimit = 245;
+
+        // which coordinates where touched -->
+        int x = (int)event.getX();
+        int y = (int)event.getY();
+
+        // what are the dimension of the image you want to show -->
+        int childH = 0;
+        int childW = 0;
+
+        Log.d("DENNIS_BRINK", "Original child (h,w) " + child.getMeasuredHeight() + "," + child.getMeasuredWidth());
+
+        // we create a calculation box (same width and height) -->
+        if(child.getWidth() > child.getHeight()){
+            childH = child.getWidth();
+            childW = child.getWidth();
+        } else {
+            childH = child.getHeight();
+            childW = child.getHeight();
+        }
+
+        // the (absolute) difference between the actual image width and the calculation box width (144) -->
+        int totalDeviationSquareDimensions = Math.abs(child.getWidth() - child.getHeight());
+
+        // what are the dimension of the underlying parent -->
+        int parentH = parent.getHeight();
+        int parentW = parent.getWidth();
+
+        Coordinate c = new Coordinate();
+
+        Log.d("DENNIS_BRINK", "touch point (x,y) " + x + "," + y);
+        Log.d("DENNIS_BRINK", "child (h,w) " + childH + "," + childW);
+        Log.d("DENNIS_BRINK", "parent (h,w) " + parentH + "," + parentW);
+        Log.d("DENNIS_BRINK", "totalDeviationSquareDimensions " + totalDeviationSquareDimensions);
+
+        // first we want it at our fingertip (slightly above it)
+        if(((y - (int)(childH * y_correction)) <= parentH) && y >= y_upperlimit){
+            c.setTop(y - (int)(childH * y_correction));
+            c.setLeft(x - (int) ((childW) / 2) + (totalDeviationSquareDimensions / 2));
+            if((c.getLeft() <= 0)){
+                c.setLeft(0);
+            }
+            if((parentW - c.getLeft()) < childW) {
+                c.setLeft(parentW - childW);
+            }
+            return c;
+        } else { // not enough room at the top
+            // Do we have enough room on the left? --> (like when we touch somewhere in the center)
+            if((x) >= (int)(x_correction * childW)){
+                c.setLeft(x - (int)(x_correction * childW));
+                c.setTop(0);
+                return c;
+            }
+            // we do not have enough space on the left so we go to the right -->
+            if((x) < (int)(x_correction * childW)){
+                c.setLeft(x + childW);
+                c.setTop(0);
+                return c;
+            }
+        }
+
+        return null; // this should never happen
+
+    }
+
+    class Coordinate{
+
+        private int left;
+        private int top;
+
+        public Coordinate() {
+        }
+
+        public int getLeft() {
+            return left;
+        }
+
+        public void setLeft(int left) {
+            this.left = left;
+        }
+
+        public int getTop() {
+            return top;
+        }
+
+        public void setTop(int top) {
+            this.top = top;
+        }
     }
 
     public void clearPoints() {
